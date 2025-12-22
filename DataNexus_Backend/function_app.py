@@ -10,6 +10,7 @@ from azure.ai.contentsafety import ContentSafetyClient
 from azure.ai.contentsafety.models import TextCategory, ImageCategory, AnalyzeTextOptions, AnalyzeImageOptions, ImageData
 from azure.core.credentials import AzureKeyCredential
 from azure.cosmos import CosmosClient, PartitionKey
+from azure.storage.blob import generate_container_sas, ContainerSasPermissions
 
 app = func.FunctionApp()
 
@@ -178,8 +179,39 @@ def handle_user_auth(req: func.HttpRequest) -> func.HttpResponse:
              return func.HttpResponse(json.dumps({"error": "Invalid action"}), status_code=400)
 
     except Exception as e:
-        logging.error(f"Auth error: {e}")
         return func.HttpResponse(json.dumps({"error": str(e)}), status_code=500)
+
+@app.route(route="storage/sas", auth_level=func.AuthLevel.ANONYMOUS)
+def get_upload_sas(req: func.HttpRequest) -> func.HttpResponse:
+    logging.info('Generating SAS token.')
+    try:
+        conn_str = os.environ.get("AzureWebJobsStorage")
+        # Quick parsing
+        account_name = None
+        account_key = None
+        
+        parts = conn_str.split(';')
+        for part in parts:
+            if part.startswith('AccountName='):
+                account_name = part.split('=', 1)[1]
+            if part.startswith('AccountKey='):
+                account_key = part.split('=', 1)[1]
+                
+        if not account_name or not account_key:
+             return func.HttpResponse(json.dumps({"error": "Invalid storage config"}), status_code=500)
+
+        sas_token = generate_container_sas(
+            account_name=account_name,
+            container_name="uploads",
+            account_key=account_key,
+            permission=ContainerSasPermissions(write=True, create=True, list=True),
+            expiry=datetime.datetime.utcnow() + datetime.timedelta(minutes=30)
+        )
+        
+        sas_url = f"https://{account_name}.blob.core.windows.net/uploads?{sas_token}"
+        return func.HttpResponse(json.dumps({"sasUrl": sas_url}), status_code=200)
+    except Exception as e:
+         return func.HttpResponse(json.dumps({"error": str(e)}), status_code=500)
 
 @app.route(route="market/summaries", auth_level=func.AuthLevel.ANONYMOUS)
 def get_market_summaries(req: func.HttpRequest) -> func.HttpResponse:
@@ -448,11 +480,14 @@ def blob_process_trigger(myblob: func.InputStream):
     blob_metadata = myblob.metadata or {}
     user_id = blob_metadata.get("userid", "public_contributor") # Keys are often lowercased by Azure
 
+    # Read content ONCE into memory to avoid seek() issues
+    blob_bytes = myblob.read()
+
     metadata = {
         "id": filename, 
         "userId": user_id, 
         "original_name": filename,
-        "size": myblob.length,
+        "size": len(blob_bytes),
         "upload_timestamp": datetime.datetime.utcnow().isoformat(),
         "processed": True,
         "analysis_type": "unknown",
@@ -470,11 +505,10 @@ def blob_process_trigger(myblob: func.InputStream):
         safety_reason = "Safe"
         
         if file_extension in ['.jpg', '.jpeg', '.png']:
-            is_safe, safety_reason = analyze_content_safety_image(myblob.read())
-            myblob.seek(0) # Reset scroll for next analysis
+            is_safe, safety_reason = analyze_content_safety_image(blob_bytes)
+            # No seek needed
         elif file_extension in ['.txt', '.py', '.dart', '.js', '.md', '.json', '.html', '.css']:
-            content_str = myblob.read().decode('utf-8', errors='ignore')
-            myblob.seek(0)
+            content_str = blob_bytes.decode('utf-8', errors='ignore')
             is_safe, safety_reason = analyze_content_safety_text(content_str)
             
         metadata['is_safe'] = is_safe
@@ -494,7 +528,7 @@ def blob_process_trigger(myblob: func.InputStream):
         # 2. Determine File Type and Analyze (Phase 1)
         if file_extension in ['.jpg', '.jpeg', '.png']:
             metadata['analysis_type'] = 'image'
-            vision_result = analyze_image_vision_40(myblob.read())
+            vision_result = analyze_image_vision_40(blob_bytes)
             metadata.update(vision_result)
             
             # For images, we calculate a score based on richness of tags
@@ -507,7 +541,8 @@ def blob_process_trigger(myblob: func.InputStream):
 
         elif file_extension in ['.txt', '.py', '.dart', '.js', '.md', '.json', '.html', '.css']:
              metadata['analysis_type'] = 'code_or_text'
-             content_str = myblob.read().decode('utf-8', errors='ignore')
+             # Re-use content_str if available, or decode again
+             content_str = blob_bytes.decode('utf-8', errors='ignore')
              
              # GPT-4o Analysis
              ai_result = analyze_content_quality_gpt4o(content_str, filename)

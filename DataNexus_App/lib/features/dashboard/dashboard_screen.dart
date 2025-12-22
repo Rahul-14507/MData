@@ -38,7 +38,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
           final userId = user?.id ?? 'guest_user';
 
           // In a real app, determine mimeType properly
-          await ref.read(dataUploadServiceProvider).uploadFile(name, bytes, 'application/octet-stream', userId);
+          await ref.read(dataUploadServiceProvider).uploadFile(name, bytes, userId);
           ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Upload Successful! Processing...')));
           
           // Wait for Azure Function to process (Blob Trigger -> Cosmos DB)
