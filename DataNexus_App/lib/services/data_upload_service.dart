@@ -2,13 +2,16 @@ import 'dart:typed_data';
 import 'package:http/http.dart' as http;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'dart:io'; // Added for File and Platform
+import 'package:flutter/foundation.dart';
 import 'dart:convert'; // Added for json.decode
+import 'package:data_nexus/core/api_config.dart';
 
 class DataUploadService {
   Future<void> uploadFile(String fileName, Uint8List fileBytes, String userId) async {
     try {
       // 1. Get SAS Token from Backend
-      final sasRes = await http.get(Uri.parse('http://localhost:7071/api/storage/sas'));
+      final baseUrl = ApiConfig.baseUrl;     
+      final sasRes = await http.get(Uri.parse('$baseUrl/api/storage/sas'));
       if (sasRes.statusCode != 200) throw Exception('Failed to get upload token: ${sasRes.body}');
       
       final sasUrl = json.decode(sasRes.body)['sasUrl'];

@@ -1,0 +1,1042 @@
+<!DOCTYPE html>
+<html class="dark" lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>AI Agency - Browse Datasets</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+      rel="stylesheet"
+    />
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script>
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "glass-border": "rgba(255, 255, 255, 0.08)",
+              "glass-surface": "rgba(30, 41, 59, 0.4)",
+              "glass-highlight": "rgba(255, 255, 255, 0.05)",
+              primary: "#3b82f6",
+              "primary-glow": "#60a5fa",
+              accent: "#8b5cf6",
+            },
+            fontFamily: {
+              sans: ["Inter", "sans-serif"],
+            },
+            backgroundImage: {
+              "gradient-radial": "radial-gradient(var(--tw-gradient-stops))",
+              "hero-glow":
+                "conic-gradient(from 180deg at 50% 50%, #1e293b 0deg, #0f172a 180deg, #1e293b 360deg)",
+            },
+          },
+        },
+      };
+    </script>
+    <style>
+      body {
+        background-color: #0f172a;
+        background-image: radial-gradient(
+            circle at 15% 50%,
+            rgba(59, 130, 246, 0.08),
+            transparent 25%
+          ),
+          radial-gradient(
+            circle at 85% 30%,
+            rgba(139, 92, 246, 0.08),
+            transparent 25%
+          );
+      }
+      ::-webkit-scrollbar {
+        width: 6px;
+        height: 6px;
+      }
+      ::-webkit-scrollbar-track {
+        background: transparent;
+      }
+      ::-webkit-scrollbar-thumb {
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 10px;
+      }
+      ::-webkit-scrollbar-thumb:hover {
+        background: rgba(255, 255, 255, 0.2);
+      }
+      .glass-panel {
+        background: rgba(17, 24, 39, 0.6);
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+      }
+      .glass-card {
+        background: rgba(30, 41, 59, 0.3);
+        backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      }
+      .glass-card:hover {
+        background: rgba(30, 41, 59, 0.5);
+        border-color: rgba(59, 130, 246, 0.3);
+        transform: translateY(-4px);
+        box-shadow: 0 10px 40px -10px rgba(0, 0, 0, 0.5);
+      }
+      .sidebar-item-active {
+        background: linear-gradient(
+          90deg,
+          rgba(59, 130, 246, 0.15) 0%,
+          rgba(59, 130, 246, 0.05) 100%
+        );
+        border-left: 3px solid #3b82f6;
+        color: #ffffff;
+      }
+      .sidebar-item-inactive {
+        color: #94a3b8;
+        border-left: 3px solid transparent;
+      }
+      .sidebar-item-inactive:hover {
+        color: #f8fafc;
+        background: rgba(255, 255, 255, 0.03);
+      }
+    </style>
+    <style>
+      body {
+        min-height: max(884px, 100dvh);
+      }
+    </style>
+  </head>
+  <body
+    class="text-slate-200 font-sans h-screen flex overflow-hidden selection:bg-primary/30 selection:text-white"
+  >
+    <aside
+      class="hidden lg:flex flex-col w-72 h-full glass border-r border-gray-200/50 dark:border-white/5 shrink-0 transition-all duration-300 z-50 pt-0"
+    >
+      <div class="p-6 pb-8">
+        <div class="flex items-center gap-3">
+          <div
+            class="flex items-center justify-center w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 text-white shadow-lg shadow-blue-500/20"
+          >
+            <span class="material-symbols-outlined text-[24px]">smart_toy</span>
+          </div>
+          <div class="flex flex-col">
+            <span
+              class="font-bold text-lg tracking-tight text-white leading-none"
+              >MData</span
+            >
+            <span class="text-xs text-slate-400 font-medium mt-1"
+              >Agency Portal</span
+            >
+          </div>
+        </div>
+      </div>
+      <nav class="flex-1 px-4 sidebar-scroll overflow-y-auto space-y-1.5">
+        <a
+          class="group flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-xl text-slate-400 hover:bg-white/5 hover:text-white transition-all duration-200"
+          href="dashboard.html"
+        >
+          <span
+            class="material-symbols-outlined text-[20px] text-slate-500 group-hover:text-blue-500 transition-colors"
+            >dashboard</span
+          >
+          Dashboard
+        </a>
+        <a
+          class="relative flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-xl bg-primary/10 text-blue-400 transition-all duration-200 shadow-sm ring-1 ring-blue-500/20"
+          href="browse_datasets.html"
+        >
+          <span
+            class="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-blue-500 rounded-r-full"
+          ></span>
+          <span class="material-symbols-outlined text-[20px] fill-1"
+            >travel_explore</span
+          >
+          Browse Datasets
+        </a>
+        <a
+          class="group flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-xl text-slate-400 hover:bg-white/5 hover:text-white transition-all duration-200"
+          href="my_library.html"
+        >
+          <span
+            class="material-symbols-outlined text-[20px] text-slate-500 group-hover:text-blue-500 transition-colors"
+            >library_books</span
+          >
+          My Library
+        </a>
+        <a
+          class="group flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-xl text-slate-400 hover:bg-white/5 hover:text-white transition-all duration-200"
+          href="cart.html"
+        >
+          <span
+            class="material-symbols-outlined text-[20px] text-slate-500 group-hover:text-blue-500 transition-colors"
+            >shopping_cart</span
+          >
+          Cart
+          <span
+            class="ml-auto bg-blue-500/20 text-blue-400 text-xs py-0.5 px-2 rounded-full border border-blue-500/20"
+            >2</span
+          >
+        </a>
+        <div class="pt-4 mt-4 border-t border-white/5">
+          <p
+            class="px-4 text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2"
+          >
+            Account
+          </p>
+          <a
+            class="group flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-xl text-slate-400 hover:bg-white/5 hover:text-white transition-all duration-200"
+            href="profile.html"
+          >
+            <span
+              class="material-symbols-outlined text-[20px] text-slate-500 group-hover:text-blue-500 transition-colors"
+              >person</span
+            >
+            Profile
+          </a>
+          <a
+            class="group flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-xl text-slate-400 hover:bg-white/5 hover:text-white transition-all duration-200"
+            href="settings.html"
+          >
+            <span
+              class="material-symbols-outlined text-[20px] text-slate-500 group-hover:text-blue-500 transition-colors"
+              >settings</span
+            >
+            Settings
+          </a>
+        </div>
+      </nav>
+      <div class="p-4 mt-auto border-t border-white/5">
+        <a
+          class="group flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-xl text-slate-400 hover:bg-red-500/10 hover:text-red-400 transition-all duration-200"
+          href="#"
+        >
+          <span class="material-symbols-outlined text-[20px] transition-colors"
+            >logout</span
+          >
+          Logout
+        </a>
+      </div>
+    </aside>
+    <div class="flex-1 flex flex-col min-w-0 relative h-full">
+      <header
+        class="h-20 shrink-0 glass-panel border-b-0 border-l border-white/5 flex items-center justify-between px-8 z-20 sticky top-0"
+      >
+        <button class="md:hidden text-slate-400 hover:text-white mr-4 p-2">
+          <span class="material-symbols-outlined">menu</span>
+        </button>
+        <div class="hidden md:block flex-1 max-w-lg">
+          <div class="relative group">
+            <div
+              class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"
+            >
+              <span
+                class="material-symbols-outlined text-slate-500 group-focus-within:text-primary transition-colors"
+                >search</span
+              >
+            </div>
+            <input
+              class="block w-full pl-10 pr-4 py-2.5 bg-slate-900/50 border border-white/10 rounded-full text-sm text-slate-200 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-transparent focus:bg-slate-900/80 transition-all shadow-inner"
+              placeholder="Search datasets, users, or tags..."
+              type="text"
+            />
+            <div
+              class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none"
+            >
+              <kbd
+                class="hidden lg:inline-flex items-center rounded border border-white/10 px-1.5 py-0.5 font-sans text-xs text-slate-500"
+                >⌘K</kbd
+              >
+            </div>
+          </div>
+        </div>
+        <div class="flex items-center gap-6 ml-auto">
+          <button
+            class="relative p-2 text-slate-400 hover:text-white hover:bg-white/5 rounded-full transition-colors"
+          >
+            <span class="material-symbols-outlined">notifications</span>
+            <span
+              class="absolute top-2 right-2 size-2.5 bg-red-500 rounded-full border-2 border-[#151b28]"
+            ></span>
+          </button>
+          <div class="h-8 w-px bg-white/10"></div>
+          <button
+            class="flex items-center gap-3 pl-1 pr-2 py-1 rounded-full hover:bg-white/5 border border-transparent hover:border-white/5 transition-all"
+          >
+            <img
+              class="size-9 rounded-full object-cover ring-2 ring-white/10"
+              data-alt="User profile picture"
+              src="https://lh3.googleusercontent.com/aida-public/AB6AXuD2_WDC6OIXh6oKzz-CZaF28NUal3-bDQPAbErPnS4DArzH5gSIGMLeIfGYxwtgFM1gOpxvHTTmA-KzjKJxcsPP_YWI_NmVzxwHjj_QY8JLnJB5u6-86dy1ZH-BttL5bSZTeMHdql2HyyzL_bH8fLYb4NpHNGbwEzVKK13R_pPrz2erVW1WbQ8kxMXl-NpJum4xFp3IwnqJ8OkJHkXq_soqrAlpk0rlb6peI2uhTWPP58L5u2awcksaAWogh0eQTRNM-QneTFNUfI3-"
+            />
+            <div class="text-left hidden sm:block">
+              <p class="text-sm font-semibold text-white leading-none">
+                Alex Morgan
+              </p>
+              <p
+                class="text-[10px] text-slate-400 mt-1 uppercase tracking-wide font-medium"
+              >
+                Pro Member
+              </p>
+            </div>
+            <span class="material-symbols-outlined text-slate-400 text-sm ml-1"
+              >expand_more</span
+            >
+          </button>
+        </div>
+      </header>
+      <main class="flex-1 overflow-y-auto scroll-smooth">
+        <div class="max-w-screen-2xl mx-auto p-6 md:p-8 space-y-8">
+          <section
+            class="relative rounded-2xl overflow-hidden p-8 md:p-12 border border-white/10 group"
+          >
+            <div
+              class="absolute inset-0 bg-gradient-to-r from-blue-600/20 via-indigo-900/40 to-slate-900/60 z-0"
+            ></div>
+            <div
+              class="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 z-0"
+            ></div>
+            <div class="relative z-10 max-w-3xl">
+              <div
+                class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/20 border border-blue-500/30 text-blue-300 text-xs font-semibold mb-6 backdrop-blur-md"
+              >
+                <span class="relative flex h-2 w-2">
+                  <span
+                    class="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"
+                  ></span>
+                  <span
+                    class="relative inline-flex rounded-full h-2 w-2 bg-blue-500"
+                  ></span>
+                </span>
+                New Datasets Added Weekly
+              </div>
+              <h2
+                class="text-4xl md:text-5xl font-bold text-white mb-6 tracking-tight leading-tight"
+              >
+                Power your AI with <br />
+                <span
+                  class="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-indigo-400"
+                  >verified data.</span
+                >
+              </h2>
+              <div
+                class="flex flex-col sm:flex-row gap-3 mt-8 max-w-2xl relative"
+              >
+                <div class="relative flex-1">
+                  <span
+                    class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-lg"
+                    >manage_search</span
+                  >
+                  <input
+                    class="w-full bg-slate-900/60 backdrop-blur-xl border border-white/10 text-white rounded-xl py-4 pl-12 pr-4 shadow-2xl focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all placeholder:text-slate-500"
+                    placeholder="Try 'Lidar point clouds', 'Medical MRI', or 'Financial sentiment'..."
+                    type="text"
+                  />
+                </div>
+                <button
+                  class="bg-primary hover:bg-blue-600 text-white px-8 py-4 rounded-xl font-semibold shadow-lg shadow-blue-500/25 transition-all hover:scale-[1.02] active:scale-95 flex items-center justify-center gap-2"
+                >
+                  Search
+                </button>
+              </div>
+            </div>
+            <span
+              class="material-symbols-outlined absolute -right-12 -bottom-24 text-[300px] text-white/5 rotate-12 pointer-events-none select-none"
+              >dataset</span
+            >
+          </section>
+          <div class="flex flex-col lg:flex-row gap-8 items-start">
+            <aside
+              class="w-full lg:w-72 shrink-0 space-y-6 lg:sticky lg:top-8 z-10"
+            >
+              <div class="glass-card p-6 rounded-xl">
+                <div class="flex items-center justify-between mb-6">
+                  <h3 class="text-white font-bold flex items-center gap-2">
+                    <span class="material-symbols-outlined text-blue-400"
+                      >tune</span
+                    >
+                    Filters
+                  </h3>
+                  <button
+                    class="text-xs text-blue-400 hover:text-blue-300 font-medium underline decoration-blue-500/30"
+                  >
+                    Reset
+                  </button>
+                </div>
+                <div class="space-y-4 mb-6">
+                  <p
+                    class="text-xs font-bold text-slate-500 uppercase tracking-widest"
+                  >
+                    Modality
+                  </p>
+                  <div class="space-y-2">
+                    <label
+                      class="flex items-center gap-3 cursor-pointer group p-2 rounded-lg hover:bg-white/5 transition-colors -mx-2"
+                    >
+                      <div class="relative flex items-center">
+                        <input
+                          class="peer appearance-none w-5 h-5 border border-slate-600 rounded bg-slate-800/50 checked:bg-primary checked:border-primary transition-all"
+                          type="checkbox"
+                        />
+                        <span
+                          class="material-symbols-outlined absolute inset-0 text-white text-[16px] opacity-0 peer-checked:opacity-100 pointer-events-none"
+                          >check</span
+                        >
+                      </div>
+                      <span
+                        class="text-sm text-slate-300 group-hover:text-white transition-colors"
+                        >Computer Vision</span
+                      >
+                    </label>
+                    <label
+                      class="flex items-center gap-3 cursor-pointer group p-2 rounded-lg hover:bg-white/5 transition-colors -mx-2"
+                    >
+                      <div class="relative flex items-center">
+                        <input
+                          checked=""
+                          class="peer appearance-none w-5 h-5 border border-slate-600 rounded bg-slate-800/50 checked:bg-primary checked:border-primary transition-all"
+                          type="checkbox"
+                        />
+                        <span
+                          class="material-symbols-outlined absolute inset-0 text-white text-[16px] opacity-0 peer-checked:opacity-100 pointer-events-none"
+                          >check</span
+                        >
+                      </div>
+                      <span
+                        class="text-sm text-slate-300 group-hover:text-white transition-colors"
+                        >NLP / Text</span
+                      >
+                    </label>
+                    <label
+                      class="flex items-center gap-3 cursor-pointer group p-2 rounded-lg hover:bg-white/5 transition-colors -mx-2"
+                    >
+                      <div class="relative flex items-center">
+                        <input
+                          class="peer appearance-none w-5 h-5 border border-slate-600 rounded bg-slate-800/50 checked:bg-primary checked:border-primary transition-all"
+                          type="checkbox"
+                        />
+                        <span
+                          class="material-symbols-outlined absolute inset-0 text-white text-[16px] opacity-0 peer-checked:opacity-100 pointer-events-none"
+                          >check</span
+                        >
+                      </div>
+                      <span
+                        class="text-sm text-slate-300 group-hover:text-white transition-colors"
+                        >Audio &amp; Speech</span
+                      >
+                    </label>
+                    <label
+                      class="flex items-center gap-3 cursor-pointer group p-2 rounded-lg hover:bg-white/5 transition-colors -mx-2"
+                    >
+                      <div class="relative flex items-center">
+                        <input
+                          class="peer appearance-none w-5 h-5 border border-slate-600 rounded bg-slate-800/50 checked:bg-primary checked:border-primary transition-all"
+                          type="checkbox"
+                        />
+                        <span
+                          class="material-symbols-outlined absolute inset-0 text-white text-[16px] opacity-0 peer-checked:opacity-100 pointer-events-none"
+                          >check</span
+                        >
+                      </div>
+                      <span
+                        class="text-sm text-slate-300 group-hover:text-white transition-colors"
+                        >Tabular / Structured</span
+                      >
+                    </label>
+                  </div>
+                </div>
+                <div class="h-px bg-white/10 mb-6"></div>
+                <div class="space-y-4 mb-6">
+                  <div class="flex items-center justify-between">
+                    <p
+                      class="text-xs font-bold text-slate-500 uppercase tracking-widest"
+                    >
+                      Price Range
+                    </p>
+                    <span class="text-xs text-blue-400 font-mono"
+                      >$0 - $5k</span
+                    >
+                  </div>
+                  <input
+                    class="w-full h-1.5 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-primary hover:accent-blue-400"
+                    type="range"
+                  />
+                </div>
+                <div class="h-px bg-white/10 mb-6"></div>
+                <div class="space-y-4">
+                  <p
+                    class="text-xs font-bold text-slate-500 uppercase tracking-widest"
+                  >
+                    Format
+                  </p>
+                  <div class="flex flex-wrap gap-2">
+                    <button
+                      class="px-3 py-1.5 rounded-md bg-blue-500/20 border border-blue-500/30 text-blue-200 text-xs font-medium hover:bg-blue-500/30 transition-colors"
+                    >
+                      JSON
+                    </button>
+                    <button
+                      class="px-3 py-1.5 rounded-md bg-slate-800/50 border border-slate-700 text-slate-400 text-xs font-medium hover:bg-slate-700 hover:text-white transition-colors"
+                    >
+                      CSV
+                    </button>
+                    <button
+                      class="px-3 py-1.5 rounded-md bg-slate-800/50 border border-slate-700 text-slate-400 text-xs font-medium hover:bg-slate-700 hover:text-white transition-colors"
+                    >
+                      Parquet
+                    </button>
+                    <button
+                      class="px-3 py-1.5 rounded-md bg-slate-800/50 border border-slate-700 text-slate-400 text-xs font-medium hover:bg-slate-700 hover:text-white transition-colors"
+                    >
+                      DICOM
+                    </button>
+                    <button
+                      class="px-3 py-1.5 rounded-md bg-slate-800/50 border border-slate-700 text-slate-400 text-xs font-medium hover:bg-slate-700 hover:text-white transition-colors"
+                    >
+                      WAV
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </aside>
+            <div class="flex-1 min-w-0">
+              <div
+                class="flex flex-wrap items-center justify-between mb-6 gap-4 p-1"
+              >
+                <p class="text-slate-400 text-sm">
+                  Showing <span class="text-white font-bold">124</span> results
+                </p>
+                <div class="flex items-center gap-3">
+                  <div class="relative group">
+                    <select
+                      class="appearance-none bg-slate-800/50 border border-white/10 text-white text-sm rounded-lg pl-4 pr-10 py-2 focus:ring-1 focus:ring-primary focus:outline-none cursor-pointer hover:bg-slate-800 transition-colors"
+                    >
+                      <option>Relevance</option>
+                      <option>Newest</option>
+                      <option>Price: Low to High</option>
+                      <option>Price: High to Low</option>
+                    </select>
+                    <span
+                      class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none text-lg"
+                      >sort</span
+                    >
+                  </div>
+                  <div
+                    class="bg-slate-800/50 border border-white/10 rounded-lg p-1 flex"
+                  >
+                    <button
+                      class="p-1.5 rounded bg-slate-700/80 text-white shadow-sm"
+                    >
+                      <span class="material-symbols-outlined text-xl"
+                        >grid_view</span
+                      >
+                    </button>
+                    <button
+                      class="p-1.5 rounded text-slate-500 hover:text-white transition-colors"
+                    >
+                      <span class="material-symbols-outlined text-xl"
+                        >view_list</span
+                      >
+                    </button>
+                  </div>
+                </div>
+              </div>
+              <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                <div
+                  class="glass-card rounded-xl overflow-hidden group flex flex-col h-full"
+                >
+                  <div class="relative h-48 overflow-hidden">
+                    <div
+                      class="absolute inset-0 bg-gradient-to-t from-slate-900 via-transparent to-transparent z-10 opacity-60"
+                    ></div>
+                    <img
+                      class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 ease-in-out"
+                      data-alt="Abstract data visualization"
+                      src="https://lh3.googleusercontent.com/aida-public/AB6AXuB69bfhSpLeLLUfmgSczul8SYj56wUXtKIiFseeRMs7_FN6C5I-96Rj66O3nHzfRvsQuSGToupiAWxcZIKBc1IJk8SvSWktxbwktvyaog03YLiX3gUxXtB7pU4bLJMkN9l4Gxp5rxAve1Vmm9_1rW9nMsvl6V-NHi6AuVyItXazE10Lh6iYTUOZQtsAuBMyMBR_Whd6E-hH_VwDEv2q-CvR10zDy9IVnmj1zR_Cl5H1iKHilL2o9lg54zX0u8ogRP--XHKlcAMVtwAk"
+                    />
+                    <div class="absolute top-3 right-3 z-20">
+                      <span
+                        class="bg-black/40 backdrop-blur-md border border-white/10 text-white text-[10px] font-bold px-2 py-1 rounded shadow-sm flex items-center gap-1"
+                      >
+                        <span
+                          class="material-symbols-outlined text-xs text-yellow-400"
+                          >trending_up</span
+                        >
+                        POPULAR
+                      </span>
+                    </div>
+                    <div class="absolute bottom-3 left-3 z-20 flex gap-2">
+                      <span
+                        class="bg-blue-600/90 backdrop-blur text-white text-[10px] font-bold px-2 py-0.5 rounded shadow-lg shadow-blue-900/50"
+                        >VISION</span
+                      >
+                      <span
+                        class="bg-slate-700/80 backdrop-blur text-white text-[10px] font-bold px-2 py-0.5 rounded border border-white/10"
+                        >COCO</span
+                      >
+                    </div>
+                  </div>
+                  <div class="p-5 flex-1 flex flex-col">
+                    <div class="flex justify-between items-start mb-2">
+                      <h3
+                        class="text-lg font-bold text-white leading-tight group-hover:text-blue-400 transition-colors"
+                      >
+                        Retail Object Detection
+                      </h3>
+                      <div
+                        class="flex items-center gap-1 bg-yellow-500/10 px-1.5 py-0.5 rounded border border-yellow-500/20"
+                      >
+                        <span
+                          class="material-symbols-outlined text-xs text-yellow-400 fill-current"
+                          >star</span
+                        >
+                        <span class="text-xs font-bold text-yellow-200"
+                          >4.9</span
+                        >
+                      </div>
+                    </div>
+                    <p
+                      class="text-slate-400 text-sm line-clamp-2 mb-4 leading-relaxed"
+                    >
+                      50,000 annotated images of retail shelf products for
+                      object detection models. Includes bounding boxes.
+                    </p>
+                    <div
+                      class="mt-auto pt-4 border-t border-white/5 flex items-center justify-between"
+                    >
+                      <div>
+                        <span class="text-xs text-slate-500 block mb-0.5"
+                          >Price</span
+                        >
+                        <span class="text-lg font-bold text-white">$250</span>
+                      </div>
+                      <button
+                        class="bg-white/5 hover:bg-primary hover:shadow-lg hover:shadow-primary/25 border border-white/10 hover:border-transparent text-white p-2.5 rounded-lg transition-all group/btn"
+                      >
+                        <span
+                          class="material-symbols-outlined group-hover/btn:scale-110 transition-transform"
+                          >add_shopping_cart</span
+                        >
+                      </button>
+                    </div>
+                  </div>
+                </div>
+                <div
+                  class="glass-card rounded-xl overflow-hidden group flex flex-col h-full"
+                >
+                  <div
+                    class="relative h-48 overflow-hidden bg-gradient-to-br from-purple-900 to-slate-900 flex items-center justify-center"
+                  >
+                    <div
+                      class="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20"
+                    ></div>
+                    <span
+                      class="material-symbols-outlined text-7xl text-white/10 group-hover:text-white/20 transition-colors duration-500"
+                      >forum</span
+                    >
+                    <div class="absolute bottom-3 left-3 z-20 flex gap-2">
+                      <span
+                        class="bg-purple-600/90 backdrop-blur text-white text-[10px] font-bold px-2 py-0.5 rounded shadow-lg shadow-purple-900/50"
+                        >NLP</span
+                      >
+                      <span
+                        class="bg-slate-700/80 backdrop-blur text-white text-[10px] font-bold px-2 py-0.5 rounded border border-white/10"
+                        >CSV</span
+                      >
+                    </div>
+                  </div>
+                  <div class="p-5 flex-1 flex flex-col">
+                    <div class="flex justify-between items-start mb-2">
+                      <h3
+                        class="text-lg font-bold text-white leading-tight group-hover:text-purple-400 transition-colors"
+                      >
+                        Finance Sentiment
+                      </h3>
+                      <div
+                        class="flex items-center gap-1 bg-yellow-500/10 px-1.5 py-0.5 rounded border border-yellow-500/20"
+                      >
+                        <span
+                          class="material-symbols-outlined text-xs text-yellow-400 fill-current"
+                          >star</span
+                        >
+                        <span class="text-xs font-bold text-yellow-200"
+                          >4.5</span
+                        >
+                      </div>
+                    </div>
+                    <p
+                      class="text-slate-400 text-sm line-clamp-2 mb-4 leading-relaxed"
+                    >
+                      Over 1 million rows of financial news headlines labeled
+                      with sentiment scores (positive, negative, neutral).
+                    </p>
+                    <div
+                      class="mt-auto pt-4 border-t border-white/5 flex items-center justify-between"
+                    >
+                      <div>
+                        <span class="text-xs text-slate-500 block mb-0.5"
+                          >Price</span
+                        >
+                        <span class="text-lg font-bold text-white">$45</span>
+                      </div>
+                      <button
+                        class="bg-white/5 hover:bg-primary hover:shadow-lg hover:shadow-primary/25 border border-white/10 hover:border-transparent text-white p-2.5 rounded-lg transition-all group/btn"
+                      >
+                        <span
+                          class="material-symbols-outlined group-hover/btn:scale-110 transition-transform"
+                          >add_shopping_cart</span
+                        >
+                      </button>
+                    </div>
+                  </div>
+                </div>
+                <div
+                  class="glass-card rounded-xl overflow-hidden group flex flex-col h-full border-blue-500/20 shadow-[0_0_20px_rgba(59,130,246,0.05)]"
+                >
+                  <div class="relative h-48 overflow-hidden">
+                    <div
+                      class="absolute inset-0 bg-gradient-to-t from-slate-900 via-transparent to-transparent z-10 opacity-60"
+                    ></div>
+                    <img
+                      class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 ease-in-out"
+                      data-alt="MRI Scan"
+                      src="https://lh3.googleusercontent.com/aida-public/AB6AXuAPiTGvQj8uSJu3aCpAkZ92Ct9sOG6BMIqCe7oT0LxGVP84BvdM8jDaWtB6jY95tUMAiYX_AbaUxlidv1TP17DUJ0HMzrLx2wMGM1Sq4CMDYy0w_akdbcFbOru8gMRznun26t1R4V-hOIjbbZXGZyWQM3Ztr2eTYQC8TY4JSRuYUGyFupmNHJcn4SFcVdIjv8iEEQ57PkE_bkietbBGCcVKNvwQ8aKRa4mA8ViK3nQXaIJi0zmS8gjfP7bKsGlgmrG74PtGOkiGbknB"
+                    />
+                    <div class="absolute top-3 right-3 z-20">
+                      <span
+                        class="bg-gradient-to-r from-blue-600 to-indigo-600 text-white text-[10px] font-bold px-2 py-1 rounded shadow-lg border border-white/20 flex items-center gap-1"
+                      >
+                        <span class="material-symbols-outlined text-xs"
+                          >verified</span
+                        >
+                        VERIFIED
+                      </span>
+                    </div>
+                    <div class="absolute bottom-3 left-3 z-20 flex gap-2">
+                      <span
+                        class="bg-cyan-600/90 backdrop-blur text-white text-[10px] font-bold px-2 py-0.5 rounded shadow-lg"
+                        >MEDICAL</span
+                      >
+                      <span
+                        class="bg-slate-700/80 backdrop-blur text-white text-[10px] font-bold px-2 py-0.5 rounded border border-white/10"
+                        >DICOM</span
+                      >
+                    </div>
+                  </div>
+                  <div class="p-5 flex-1 flex flex-col">
+                    <div class="flex justify-between items-start mb-2">
+                      <h3
+                        class="text-lg font-bold text-white leading-tight group-hover:text-cyan-400 transition-colors"
+                      >
+                        Medical MRI Scans v2
+                      </h3>
+                      <div
+                        class="flex items-center gap-1 bg-yellow-500/10 px-1.5 py-0.5 rounded border border-yellow-500/20"
+                      >
+                        <span
+                          class="material-symbols-outlined text-xs text-yellow-400 fill-current"
+                          >star</span
+                        >
+                        <span class="text-xs font-bold text-yellow-200"
+                          >5.0</span
+                        >
+                      </div>
+                    </div>
+                    <p
+                      class="text-slate-400 text-sm line-clamp-2 mb-4 leading-relaxed"
+                    >
+                      High-resolution MRI scans of brain and spine. Anonymized,
+                      annotated, and verified by certified radiologists.
+                    </p>
+                    <div
+                      class="mt-auto pt-4 border-t border-white/5 flex items-center justify-between"
+                    >
+                      <div>
+                        <span class="text-xs text-slate-500 block mb-0.5"
+                          >Price</span
+                        >
+                        <span class="text-lg font-bold text-white">$1,200</span>
+                      </div>
+                      <button
+                        class="bg-white/5 hover:bg-primary hover:shadow-lg hover:shadow-primary/25 border border-white/10 hover:border-transparent text-white p-2.5 rounded-lg transition-all group/btn"
+                      >
+                        <span
+                          class="material-symbols-outlined group-hover/btn:scale-110 transition-transform"
+                          >add_shopping_cart</span
+                        >
+                      </button>
+                    </div>
+                  </div>
+                </div>
+                <div
+                  class="glass-card rounded-xl overflow-hidden group flex flex-col h-full"
+                >
+                  <div
+                    class="relative h-48 overflow-hidden bg-gradient-to-tr from-emerald-900 to-slate-900 flex items-center justify-center"
+                  >
+                    <div
+                      class="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20"
+                    ></div>
+                    <span
+                      class="material-symbols-outlined text-7xl text-white/10 group-hover:text-white/20 transition-colors duration-500"
+                      >graphic_eq</span
+                    >
+                    <div class="absolute bottom-3 left-3 z-20 flex gap-2">
+                      <span
+                        class="bg-emerald-600/90 backdrop-blur text-white text-[10px] font-bold px-2 py-0.5 rounded shadow-lg shadow-emerald-900/50"
+                        >AUDIO</span
+                      >
+                      <span
+                        class="bg-slate-700/80 backdrop-blur text-white text-[10px] font-bold px-2 py-0.5 rounded border border-white/10"
+                        >WAV</span
+                      >
+                    </div>
+                  </div>
+                  <div class="p-5 flex-1 flex flex-col">
+                    <div class="flex justify-between items-start mb-2">
+                      <h3
+                        class="text-lg font-bold text-white leading-tight group-hover:text-emerald-400 transition-colors"
+                      >
+                        Urban Soundscape
+                      </h3>
+                      <div
+                        class="flex items-center gap-1 bg-slate-700/50 px-1.5 py-0.5 rounded border border-slate-600/50"
+                      >
+                        <span
+                          class="material-symbols-outlined text-xs text-slate-400"
+                          >star</span
+                        >
+                        <span class="text-xs font-bold text-slate-300">--</span>
+                      </div>
+                    </div>
+                    <p
+                      class="text-slate-400 text-sm line-clamp-2 mb-4 leading-relaxed"
+                    >
+                      Recordings of urban environments for noise cancellation
+                      training. Includes traffic, construction, and crowd noise.
+                    </p>
+                    <div
+                      class="mt-auto pt-4 border-t border-white/5 flex items-center justify-between"
+                    >
+                      <div>
+                        <span class="text-xs text-slate-500 block mb-0.5"
+                          >Price</span
+                        >
+                        <span class="text-lg font-bold text-emerald-400"
+                          >Free</span
+                        >
+                      </div>
+                      <button
+                        class="bg-white/5 hover:bg-emerald-600 hover:shadow-lg hover:shadow-emerald-600/25 border border-white/10 hover:border-transparent text-white p-2.5 rounded-lg transition-all group/btn"
+                      >
+                        <span
+                          class="material-symbols-outlined group-hover/btn:scale-110 transition-transform"
+                          >download</span
+                        >
+                      </button>
+                    </div>
+                  </div>
+                </div>
+                <div
+                  class="glass-card rounded-xl overflow-hidden group flex flex-col h-full"
+                >
+                  <div
+                    class="relative h-48 overflow-hidden bg-gradient-to-bl from-orange-900 to-slate-900 flex items-center justify-center"
+                  >
+                    <div
+                      class="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20"
+                    ></div>
+                    <span
+                      class="material-symbols-outlined text-7xl text-white/10 group-hover:text-white/20 transition-colors duration-500"
+                      >smart_toy</span
+                    >
+                    <div class="absolute bottom-3 left-3 z-20 flex gap-2">
+                      <span
+                        class="bg-orange-600/90 backdrop-blur text-white text-[10px] font-bold px-2 py-0.5 rounded shadow-lg shadow-orange-900/50"
+                        >ROBOTICS</span
+                      >
+                      <span
+                        class="bg-slate-700/80 backdrop-blur text-white text-[10px] font-bold px-2 py-0.5 rounded border border-white/10"
+                        >SIM</span
+                      >
+                    </div>
+                  </div>
+                  <div class="p-5 flex-1 flex flex-col">
+                    <div class="flex justify-between items-start mb-2">
+                      <h3
+                        class="text-lg font-bold text-white leading-tight group-hover:text-orange-400 transition-colors"
+                      >
+                        Robotic Manipulation
+                      </h3>
+                      <div
+                        class="flex items-center gap-1 bg-yellow-500/10 px-1.5 py-0.5 rounded border border-yellow-500/20"
+                      >
+                        <span
+                          class="material-symbols-outlined text-xs text-yellow-400 fill-current"
+                          >star</span
+                        >
+                        <span class="text-xs font-bold text-yellow-200"
+                          >4.2</span
+                        >
+                      </div>
+                    </div>
+                    <p
+                      class="text-slate-400 text-sm line-clamp-2 mb-4 leading-relaxed"
+                    >
+                      Simulation data for robotic arm grasping tasks. Includes
+                      physics metadata and joint angles.
+                    </p>
+                    <div
+                      class="mt-auto pt-4 border-t border-white/5 flex items-center justify-between"
+                    >
+                      <div>
+                        <span class="text-xs text-slate-500 block mb-0.5"
+                          >Price</span
+                        >
+                        <span class="text-lg font-bold text-white">$150</span>
+                      </div>
+                      <button
+                        class="bg-white/5 hover:bg-primary hover:shadow-lg hover:shadow-primary/25 border border-white/10 hover:border-transparent text-white p-2.5 rounded-lg transition-all group/btn"
+                      >
+                        <span
+                          class="material-symbols-outlined group-hover/btn:scale-110 transition-transform"
+                          >add_shopping_cart</span
+                        >
+                      </button>
+                    </div>
+                  </div>
+                </div>
+                <div
+                  class="glass-card rounded-xl overflow-hidden group flex flex-col h-full"
+                >
+                  <div class="relative h-48 overflow-hidden">
+                    <div
+                      class="absolute inset-0 bg-gradient-to-t from-slate-900 via-transparent to-transparent z-10 opacity-60"
+                    ></div>
+                    <img
+                      class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 ease-in-out"
+                      data-alt="Dashboard Analytics"
+                      src="https://lh3.googleusercontent.com/aida-public/AB6AXuAzezCnfEoQf4pgJIJxsRhhkQ_HMmfdksldzlHX7WQPjXnBpCTxfSZWs4sEl0rBg_5lzS4eMhn4ULgU_EiBAOCjT-R7c_aUM4NpMV93CRVHCOsTnZJBcTuD5pGE-QUq-D76yJoy0tTtTGIH5kTARjel_Xnoi9rd5ehgQu4GIHhMSYwhgPzCFzWcdMgVn9bnL9KLFP6NZGNs9fWgD2rNrp59VDCFmEfqkkOMaFGj_Wy9SaL_HibjJZ0RW6VPu1QKdkS1zhR8juIVhvJE"
+                    />
+                    <div class="absolute bottom-3 left-3 z-20 flex gap-2">
+                      <span
+                        class="bg-blue-500/90 backdrop-blur text-white text-[10px] font-bold px-2 py-0.5 rounded shadow-lg"
+                        >BI</span
+                      >
+                      <span
+                        class="bg-slate-700/80 backdrop-blur text-white text-[10px] font-bold px-2 py-0.5 rounded border border-white/10"
+                        >XLSX</span
+                      >
+                    </div>
+                  </div>
+                  <div class="p-5 flex-1 flex flex-col">
+                    <div class="flex justify-between items-start mb-2">
+                      <h3
+                        class="text-lg font-bold text-white leading-tight group-hover:text-blue-400 transition-colors"
+                      >
+                        E-commerce Sales Logs
+                      </h3>
+                      <div
+                        class="flex items-center gap-1 bg-yellow-500/10 px-1.5 py-0.5 rounded border border-yellow-500/20"
+                      >
+                        <span
+                          class="material-symbols-outlined text-xs text-yellow-400 fill-current"
+                          >star</span
+                        >
+                        <span class="text-xs font-bold text-yellow-200"
+                          >4.8</span
+                        >
+                      </div>
+                    </div>
+                    <p
+                      class="text-slate-400 text-sm line-clamp-2 mb-4 leading-relaxed"
+                    >
+                      Detailed transaction logs from a major electronics
+                      retailer. Great for predictive sales modeling and
+                      forecasting.
+                    </p>
+                    <div
+                      class="mt-auto pt-4 border-t border-white/5 flex items-center justify-between"
+                    >
+                      <div>
+                        <span class="text-xs text-slate-500 block mb-0.5"
+                          >Price</span
+                        >
+                        <span class="text-lg font-bold text-white">$89</span>
+                      </div>
+                      <button
+                        class="bg-white/5 hover:bg-primary hover:shadow-lg hover:shadow-primary/25 border border-white/10 hover:border-transparent text-white p-2.5 rounded-lg transition-all group/btn"
+                      >
+                        <span
+                          class="material-symbols-outlined group-hover/btn:scale-110 transition-transform"
+                          >add_shopping_cart</span
+                        >
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="flex items-center justify-center mt-12 gap-2">
+                <button
+                  class="size-10 flex items-center justify-center rounded-lg border border-white/10 text-slate-400 hover:text-white hover:bg-white/5 disabled:opacity-50 transition-colors"
+                >
+                  <span class="material-symbols-outlined">chevron_left</span>
+                </button>
+                <button
+                  class="size-10 flex items-center justify-center rounded-lg bg-primary text-white font-bold shadow-lg shadow-blue-500/20"
+                >
+                  1
+                </button>
+                <button
+                  class="size-10 flex items-center justify-center rounded-lg border border-white/10 text-slate-400 hover:text-white hover:bg-white/5 transition-colors"
+                >
+                  2
+                </button>
+                <button
+                  class="size-10 flex items-center justify-center rounded-lg border border-white/10 text-slate-400 hover:text-white hover:bg-white/5 transition-colors"
+                >
+                  3
+                </button>
+                <span class="text-slate-500 px-2">...</span>
+                <button
+                  class="size-10 flex items-center justify-center rounded-lg border border-white/10 text-slate-400 hover:text-white hover:bg-white/5 transition-colors"
+                >
+                  <span class="material-symbols-outlined">chevron_right</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        const menuButtons = document.querySelectorAll("button");
+        const menuBtn = Array.from(menuButtons).find(
+          (btn) =>
+            btn.textContent.trim().includes("menu") ||
+            btn.querySelector("span")?.textContent.trim() === "menu"
+        );
+        const sidebar = document.querySelector("aside");
+
+        if (menuBtn && sidebar) {
+          menuBtn.addEventListener("click", () => {
+            sidebar.classList.toggle("hidden");
+            sidebar.classList.toggle("fixed");
+            sidebar.classList.toggle("inset-0");
+            sidebar.classList.toggle("z-40");
+            if (sidebar.classList.contains("fixed")) {
+              sidebar.classList.add("bg-[#0f172a]");
+            }
+          });
+
+          sidebar.addEventListener("click", (e) => {
+            // Close if clicking outside
+          });
+        }
+      });
+    </script>
+  </body>
+</html>

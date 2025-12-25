@@ -1,0 +1,669 @@
+<!DOCTYPE html>
+<html class="dark" lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>AI Agency Dashboard</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+      rel="stylesheet"
+    />
+    <link href="https://fonts.googleapis.com" rel="preconnect" />
+    <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;display=swap"
+      rel="stylesheet"
+    />
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              primary: "#3b82f6",
+              "primary-glow": "#60a5fa",
+              accent: "#8b5cf6",
+            },
+            fontFamily: {
+              display: ["Inter", "sans-serif"],
+            },
+            backgroundImage: {
+              "gradient-radial": "radial-gradient(var(--tw-gradient-stops))",
+            },
+          },
+        },
+      };
+    </script>
+    <style>
+      ::-webkit-scrollbar {
+        width: 6px;
+        height: 6px;
+      }
+      ::-webkit-scrollbar-track {
+        background: transparent;
+      }
+      ::-webkit-scrollbar-thumb {
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 10px;
+      }
+      ::-webkit-scrollbar-thumb:hover {
+        background: rgba(255, 255, 255, 0.2);
+      }
+      .glass-panel {
+        background: rgba(15, 23, 42, 0.6);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+      }
+      .glass-card {
+        background: rgba(30, 41, 59, 0.4);
+        backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+      }
+      .glass-card:hover {
+        background: rgba(30, 41, 59, 0.6);
+        border-color: rgba(255, 255, 255, 0.15);
+        transform: translateY(-2px);
+        box-shadow: 0 10px 40px -10px rgba(0, 0, 0, 0.5);
+      }
+      .nav-item-active {
+        background: rgba(59, 130, 246, 0.15);
+        border-left: 3px solid #3b82f6;
+        color: white;
+      }
+      .text-glow {
+        text-shadow: 0 0 20px rgba(59, 130, 246, 0.5);
+      }
+    </style>
+    <style>
+      body {
+        min-height: max(884px, 100dvh);
+      }
+    </style>
+  </head>
+  <body
+    class="bg-slate-950 font-display text-slate-200 antialiased selection:bg-primary selection:text-white h-screen overflow-hidden"
+  >
+    <div class="fixed inset-0 z-0 pointer-events-none overflow-hidden">
+      <div
+        class="absolute top-[-10%] left-[-10%] w-[500px] h-[500px] bg-primary/20 rounded-full blur-[100px] opacity-40 animate-pulse"
+      ></div>
+      <div
+        class="absolute bottom-[0%] right-[-5%] w-[600px] h-[600px] bg-accent/10 rounded-full blur-[120px] opacity-30"
+      ></div>
+      <div
+        class="absolute top-[40%] left-[30%] w-[300px] h-[300px] bg-emerald-500/10 rounded-full blur-[80px] opacity-20"
+      ></div>
+    </div>
+    <div class="relative z-10 flex h-full w-full">
+      <aside
+        class="hidden lg:flex flex-col w-72 h-full glass border-r border-gray-200/50 dark:border-white/5 shrink-0 transition-all duration-300 z-50"
+      >
+        <div class="p-6 pb-8">
+          <div class="flex items-center gap-3">
+            <div
+              class="flex items-center justify-center w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 text-white shadow-lg shadow-blue-500/20"
+            >
+              <span class="material-symbols-outlined text-[24px]"
+                >smart_toy</span
+              >
+            </div>
+            <div class="flex flex-col">
+              <span
+                class="font-bold text-lg tracking-tight text-white leading-none"
+                >MData</span
+              >
+              <span class="text-xs text-slate-400 font-medium mt-1"
+                >Agency Portal</span
+              >
+            </div>
+          </div>
+        </div>
+        <nav class="flex-1 px-4 sidebar-scroll overflow-y-auto space-y-1.5">
+          <a
+            class="relative flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-xl bg-primary/10 text-blue-400 transition-all duration-200 shadow-sm ring-1 ring-blue-500/20"
+            href="dashboard.html"
+          >
+            <span
+              class="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-blue-500 rounded-r-full"
+            ></span>
+            <span class="material-symbols-outlined text-[20px] fill-1"
+              >dashboard</span
+            >
+            Dashboard
+          </a>
+          <a
+            class="group flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-xl text-slate-400 hover:bg-white/5 hover:text-white transition-all duration-200"
+            href="browse_datasets.html"
+          >
+            <span
+              class="material-symbols-outlined text-[20px] text-slate-500 group-hover:text-blue-500 transition-colors"
+              >travel_explore</span
+            >
+            Browse Datasets
+          </a>
+          <a
+            class="group flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-xl text-slate-400 hover:bg-white/5 hover:text-white transition-all duration-200"
+            href="my_library.html"
+          >
+            <span
+              class="material-symbols-outlined text-[20px] text-slate-500 group-hover:text-blue-500 transition-colors"
+              >library_books</span
+            >
+            My Library
+          </a>
+          <a
+            class="group flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-xl text-slate-400 hover:bg-white/5 hover:text-white transition-all duration-200"
+            href="cart.html"
+          >
+            <span
+              class="material-symbols-outlined text-[20px] text-slate-500 group-hover:text-blue-500 transition-colors"
+              >shopping_cart</span
+            >
+            Cart
+            <span
+              class="ml-auto bg-blue-500/20 text-blue-400 text-xs py-0.5 px-2 rounded-full border border-blue-500/20"
+              >2</span
+            >
+          </a>
+          <div class="pt-4 mt-4 border-t border-white/5">
+            <p
+              class="px-4 text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2"
+            >
+              Account
+            </p>
+            <a
+              class="group flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-xl text-slate-400 hover:bg-white/5 hover:text-white transition-all duration-200"
+              href="profile.html"
+            >
+              <span
+                class="material-symbols-outlined text-[20px] text-slate-500 group-hover:text-blue-500 transition-colors"
+                >person</span
+              >
+              Profile
+            </a>
+            <a
+              class="group flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-xl text-slate-400 hover:bg-white/5 hover:text-white transition-all duration-200"
+              href="settings.html"
+            >
+              <span
+                class="material-symbols-outlined text-[20px] text-slate-500 group-hover:text-blue-500 transition-colors"
+                >settings</span
+              >
+              Settings
+            </a>
+          </div>
+        </nav>
+        <div class="p-4 mt-auto border-t border-white/5">
+          <a
+            class="group flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-xl text-slate-400 hover:bg-red-500/10 hover:text-red-400 transition-all duration-200"
+            href="#"
+          >
+            <span
+              class="material-symbols-outlined text-[20px] transition-colors"
+              >logout</span
+            >
+            Logout
+          </a>
+        </div>
+      </aside>
+      <div class="flex-1 flex flex-col h-full min-w-0 bg-transparent">
+        <header
+          class="h-16 flex items-center justify-between px-6 py-3 border-b border-white/5 bg-slate-900/40 backdrop-blur-md sticky top-0 z-40"
+        >
+          <div class="flex items-center gap-4">
+            <button
+              class="md:hidden p-2 -ml-2 text-slate-400 hover:text-white transition-colors"
+            >
+              <span class="material-symbols-outlined">menu</span>
+            </button>
+            <div class="hidden sm:flex flex-col">
+              <span class="text-[10px] text-slate-400 uppercase tracking-wider"
+                >Overview</span
+              >
+              <h1 class="text-sm font-bold text-white">Dashboard</h1>
+            </div>
+          </div>
+          <div class="flex items-center gap-4 flex-1 justify-end">
+            <div
+              class="hidden sm:flex max-w-sm flex-1 items-center gap-2 rounded-full bg-slate-800/50 border border-white/10 px-4 py-1.5 focus-within:bg-slate-800 focus-within:border-primary/50 transition-all shadow-inner"
+            >
+              <span class="material-symbols-outlined text-slate-400 text-[18px]"
+                >search</span
+              >
+              <input
+                class="w-full border-none bg-transparent p-0 text-sm text-white placeholder-slate-500 focus:ring-0"
+                placeholder="Search datasets, models..."
+                type="text"
+              />
+            </div>
+            <button class="sm:hidden text-slate-400 hover:text-white">
+              <span class="material-symbols-outlined">search</span>
+            </button>
+            <button
+              class="relative rounded-full p-2 text-slate-400 hover:bg-white/10 hover:text-white transition-colors"
+            >
+              <span class="material-symbols-outlined">notifications</span>
+              <span
+                class="absolute top-2 right-2 h-2 w-2 rounded-full bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.6)]"
+              ></span>
+            </button>
+            <div
+              class="h-8 w-8 rounded-full ring-2 ring-white/10 overflow-hidden cursor-pointer hover:ring-primary/50 transition-all"
+            >
+              <img
+                alt="Profile"
+                class="h-full w-full object-cover"
+                src="https://lh3.googleusercontent.com/aida-public/AB6AXuC-gTsjan42l3my7G3dN86d6rfU-c2kW9NidATzboZP24DaFfSsYEoIFcJ9v_Aejq2Npoko6m7HnJykFSmYTI_l9G4BemCu7LGYg7YfExBXzLaQ1hc003wqFbgXPSXwfMNwyQP5vvTOW-orELpucmuWY3U5RcCkVseo_XEVX59Bjngi1LM_Ya96hg0dI9bd2W7z3PzqO3hksCI2F0BMnlaKchEP6xs5pe17FYaUI6qPvNXKfWHbxJePOQZFgPuGqoOuYOxLeVPwxMzw"
+              />
+            </div>
+          </div>
+        </header>
+        <main
+          class="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 space-y-8 custom-scrollbar"
+        >
+          <div
+            class="flex flex-col sm:flex-row sm:items-end justify-between gap-4"
+          >
+            <div>
+              <h2 class="text-3xl font-bold text-white tracking-tight">
+                Welcome back, Admin
+                <span class="animate-bounce inline-block">👋</span>
+              </h2>
+              <p class="text-slate-400 mt-1 font-light">
+                Your agency's performance metrics are updated.
+              </p>
+            </div>
+            <div class="flex gap-3">
+              <button
+                class="px-4 py-2 rounded-lg bg-white/5 border border-white/10 text-sm font-medium text-white hover:bg-white/10 transition-colors backdrop-blur-sm"
+              >
+                Download Report
+              </button>
+              <button
+                class="px-4 py-2 rounded-lg bg-primary hover:bg-blue-600 text-sm font-medium text-white shadow-[0_0_15px_rgba(59,130,246,0.5)] transition-all transform active:scale-95"
+              >
+                New Campaign
+              </button>
+            </div>
+          </div>
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div
+              class="glass-card rounded-2xl p-5 flex flex-col justify-between h-32 relative group transition-all duration-300"
+            >
+              <div
+                class="absolute right-0 top-0 p-4 opacity-50 group-hover:opacity-100 transition-opacity"
+              >
+                <div
+                  class="h-10 w-10 rounded-full bg-primary/20 flex items-center justify-center text-primary"
+                >
+                  <span class="material-symbols-outlined">payments</span>
+                </div>
+              </div>
+              <p class="text-sm font-medium text-slate-400">Total Spend</p>
+              <div>
+                <h3
+                  class="text-2xl font-bold text-white group-hover:text-glow transition-all"
+                >
+                  $12,450
+                </h3>
+                <div
+                  class="flex items-center mt-1 text-xs font-medium text-emerald-400"
+                >
+                  <span class="material-symbols-outlined text-[14px] mr-1"
+                    >trending_up</span
+                  >
+                  <span>+12.5%</span>
+                  <span class="text-slate-500 ml-1 font-normal"
+                    >vs last month</span
+                  >
+                </div>
+              </div>
+            </div>
+            <div
+              class="glass-card rounded-2xl p-5 flex flex-col justify-between h-32 relative group transition-all duration-300"
+            >
+              <div
+                class="absolute right-0 top-0 p-4 opacity-50 group-hover:opacity-100 transition-opacity"
+              >
+                <div
+                  class="h-10 w-10 rounded-full bg-accent/20 flex items-center justify-center text-accent"
+                >
+                  <span class="material-symbols-outlined">database</span>
+                </div>
+              </div>
+              <p class="text-sm font-medium text-slate-400">Active Datasets</p>
+              <div>
+                <h3
+                  class="text-2xl font-bold text-white group-hover:text-glow transition-all"
+                >
+                  24
+                </h3>
+                <div
+                  class="flex items-center mt-1 text-xs font-medium text-emerald-400"
+                >
+                  <span class="material-symbols-outlined text-[14px] mr-1"
+                    >add_circle</span
+                  >
+                  <span>2 New</span>
+                  <span class="text-slate-500 ml-1 font-normal">this week</span>
+                </div>
+              </div>
+            </div>
+            <div
+              class="glass-card rounded-2xl p-5 flex flex-col justify-between h-32 relative group transition-all duration-300"
+            >
+              <div
+                class="absolute right-0 top-0 p-4 opacity-50 group-hover:opacity-100 transition-opacity"
+              >
+                <div
+                  class="h-10 w-10 rounded-full bg-orange-500/20 flex items-center justify-center text-orange-500"
+                >
+                  <span class="material-symbols-outlined">api</span>
+                </div>
+              </div>
+              <p class="text-sm font-medium text-slate-400">API Usage</p>
+              <div class="w-full">
+                <div class="flex items-end justify-between mb-1">
+                  <h3
+                    class="text-2xl font-bold text-white group-hover:text-glow transition-all"
+                  >
+                    85.2%
+                  </h3>
+                </div>
+                <div
+                  class="w-full bg-slate-700/50 rounded-full h-1.5 overflow-hidden"
+                >
+                  <div
+                    class="bg-gradient-to-r from-orange-400 to-orange-600 h-1.5 rounded-full"
+                    style="width: 85%"
+                  ></div>
+                </div>
+              </div>
+            </div>
+            <div
+              class="glass-card rounded-2xl p-5 flex flex-col justify-between h-32 relative group transition-all duration-300"
+            >
+              <div
+                class="absolute right-0 top-0 p-4 opacity-50 group-hover:opacity-100 transition-opacity"
+              >
+                <div
+                  class="h-10 w-10 rounded-full bg-emerald-500/20 flex items-center justify-center text-emerald-500"
+                >
+                  <span class="material-symbols-outlined">bolt</span>
+                </div>
+              </div>
+              <p class="text-sm font-medium text-slate-400">Credits</p>
+              <div>
+                <h3
+                  class="text-2xl font-bold text-white group-hover:text-glow transition-all"
+                >
+                  4,200
+                </h3>
+                <button
+                  class="mt-1 text-xs font-medium text-primary hover:text-primary-glow flex items-center transition-colors"
+                >
+                  Top up balance
+                  <span class="material-symbols-outlined text-[12px] ml-1"
+                    >arrow_forward</span
+                  >
+                </button>
+              </div>
+            </div>
+          </div>
+          <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div class="lg:col-span-2 space-y-4">
+              <div class="flex items-center justify-between px-1">
+                <h3
+                  class="text-lg font-semibold text-white flex items-center gap-2"
+                >
+                  <span class="material-symbols-outlined text-primary"
+                    >trending_up</span
+                  >
+                  Trending Datasets
+                </h3>
+                <a
+                  class="text-sm text-slate-400 hover:text-white transition-colors"
+                  href="#"
+                  >View All</a
+                >
+              </div>
+              <div class="space-y-3">
+                <div
+                  class="glass-card rounded-xl p-4 flex flex-col sm:flex-row items-center gap-4 transition-all hover:border-primary/30 group"
+                >
+                  <div
+                    class="h-14 w-14 shrink-0 rounded-xl bg-gradient-to-br from-blue-600 to-indigo-700 flex items-center justify-center text-white shadow-lg shadow-blue-900/40 group-hover:scale-105 transition-transform"
+                  >
+                    <span class="material-symbols-outlined text-2xl"
+                      >psychology</span
+                    >
+                  </div>
+                  <div class="flex-1 text-center sm:text-left min-w-0">
+                    <h4 class="text-base font-semibold text-white truncate">
+                      Natural Language Corpus v2.0
+                    </h4>
+                    <div
+                      class="flex flex-wrap justify-center sm:justify-start gap-2 mt-1.5"
+                    >
+                      <span
+                        class="px-2 py-0.5 rounded-md bg-white/5 border border-white/5 text-[10px] font-medium text-slate-300"
+                        >NLP</span
+                      >
+                      <span
+                        class="px-2 py-0.5 rounded-md bg-white/5 border border-white/5 text-[10px] font-medium text-slate-300"
+                        >English</span
+                      >
+                      <span
+                        class="px-2 py-0.5 rounded-md bg-white/5 border border-white/5 text-[10px] font-medium text-slate-300"
+                        >1.2TB</span
+                      >
+                    </div>
+                  </div>
+                  <div class="flex items-center gap-4">
+                    <span class="text-lg font-bold text-white">$1,200</span>
+                    <button
+                      class="rounded-lg bg-white/5 hover:bg-primary border border-white/10 hover:border-primary/50 px-4 py-2 text-sm font-medium text-white transition-all shadow-sm"
+                    >
+                      View
+                    </button>
+                  </div>
+                </div>
+                <div
+                  class="glass-card rounded-xl p-4 flex flex-col sm:flex-row items-center gap-4 transition-all hover:border-primary/30 group"
+                >
+                  <div
+                    class="h-14 w-14 shrink-0 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center text-white shadow-lg shadow-emerald-900/40 group-hover:scale-105 transition-transform"
+                  >
+                    <span class="material-symbols-outlined text-2xl"
+                      >visibility</span
+                    >
+                  </div>
+                  <div class="flex-1 text-center sm:text-left min-w-0">
+                    <h4 class="text-base font-semibold text-white truncate">
+                      Urban Traffic Vision Set
+                    </h4>
+                    <div
+                      class="flex flex-wrap justify-center sm:justify-start gap-2 mt-1.5"
+                    >
+                      <span
+                        class="px-2 py-0.5 rounded-md bg-white/5 border border-white/5 text-[10px] font-medium text-slate-300"
+                        >Computer Vision</span
+                      >
+                      <span
+                        class="px-2 py-0.5 rounded-md bg-white/5 border border-white/5 text-[10px] font-medium text-slate-300"
+                        >Video</span
+                      >
+                    </div>
+                  </div>
+                  <div class="flex items-center gap-4">
+                    <span class="text-lg font-bold text-white">$850</span>
+                    <button
+                      class="rounded-lg bg-white/5 hover:bg-primary border border-white/10 hover:border-primary/50 px-4 py-2 text-sm font-medium text-white transition-all shadow-sm"
+                    >
+                      View
+                    </button>
+                  </div>
+                </div>
+                <div
+                  class="glass-card rounded-xl p-4 flex flex-col sm:flex-row items-center gap-4 transition-all hover:border-primary/30 group"
+                >
+                  <div
+                    class="h-14 w-14 shrink-0 rounded-xl bg-gradient-to-br from-purple-500 to-pink-600 flex items-center justify-center text-white shadow-lg shadow-purple-900/40 group-hover:scale-105 transition-transform"
+                  >
+                    <span class="material-symbols-outlined text-2xl"
+                      >graphic_eq</span
+                    >
+                  </div>
+                  <div class="flex-1 text-center sm:text-left min-w-0">
+                    <h4 class="text-base font-semibold text-white truncate">
+                      Multilingual Speech Data
+                    </h4>
+                    <div
+                      class="flex flex-wrap justify-center sm:justify-start gap-2 mt-1.5"
+                    >
+                      <span
+                        class="px-2 py-0.5 rounded-md bg-white/5 border border-white/5 text-[10px] font-medium text-slate-300"
+                        >Audio</span
+                      >
+                      <span
+                        class="px-2 py-0.5 rounded-md bg-white/5 border border-white/5 text-[10px] font-medium text-slate-300"
+                        >High-Fidelity</span
+                      >
+                    </div>
+                  </div>
+                  <div class="flex items-center gap-4">
+                    <span class="text-lg font-bold text-white">$2,100</span>
+                    <button
+                      class="rounded-lg bg-white/5 hover:bg-primary border border-white/10 hover:border-primary/50 px-4 py-2 text-sm font-medium text-white transition-all shadow-sm"
+                    >
+                      View
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="space-y-4">
+              <div class="flex items-center justify-between px-1">
+                <h3
+                  class="text-lg font-semibold text-white flex items-center gap-2"
+                >
+                  <span class="material-symbols-outlined text-accent"
+                    >history</span
+                  >
+                  Recent Activity
+                </h3>
+              </div>
+              <div class="glass-card rounded-xl p-5 h-fit">
+                <div
+                  class="relative border-l border-white/10 ml-2 space-y-8 py-2"
+                >
+                  <div class="ml-6 relative">
+                    <span
+                      class="absolute -left-[31px] flex h-4 w-4 items-center justify-center rounded-full bg-slate-900 border border-primary ring-4 ring-slate-900/50"
+                    >
+                      <span
+                        class="h-1.5 w-1.5 rounded-full bg-primary animate-pulse"
+                      ></span>
+                    </span>
+                    <h3 class="text-sm font-semibold text-white">
+                      Purchased Dataset
+                    </h3>
+                    <p class="text-xs text-slate-400 mt-1">
+                      "Medical Imaging Pack"
+                    </p>
+                    <time class="block text-[10px] text-slate-500 mt-1"
+                      >Just now</time
+                    >
+                  </div>
+                  <div class="ml-6 relative">
+                    <span
+                      class="absolute -left-[31px] flex h-4 w-4 items-center justify-center rounded-full bg-slate-900 border border-slate-600"
+                    >
+                    </span>
+                    <h3 class="text-sm font-semibold text-white">
+                      Download Completed
+                    </h3>
+                    <p class="text-xs text-slate-400 mt-1">
+                      "Financial Forecasting Q3"
+                    </p>
+                    <time class="block text-[10px] text-slate-500 mt-1"
+                      >2 hours ago</time
+                    >
+                  </div>
+                  <div class="ml-6 relative">
+                    <span
+                      class="absolute -left-[31px] flex h-4 w-4 items-center justify-center rounded-full bg-slate-900 border border-orange-500"
+                    >
+                    </span>
+                    <h3 class="text-sm font-semibold text-white">
+                      Credits Added
+                    </h3>
+                    <p class="text-xs text-slate-400 mt-1">
+                      Auto-renewal of monthly credits
+                    </p>
+                    <time class="block text-[10px] text-slate-500 mt-1"
+                      >1 day ago</time
+                    >
+                  </div>
+                  <div class="ml-6 relative">
+                    <span
+                      class="absolute -left-[31px] flex h-4 w-4 items-center justify-center rounded-full bg-slate-900 border border-slate-600"
+                    >
+                    </span>
+                    <h3 class="text-sm font-semibold text-white">
+                      Invoice Generated
+                    </h3>
+                    <p class="text-xs text-slate-400 mt-1">
+                      Inv-2023-001 available
+                    </p>
+                    <time class="block text-[10px] text-slate-500 mt-1"
+                      >3 days ago</time
+                    >
+                  </div>
+                </div>
+                <div class="mt-4 pt-4 border-t border-white/5">
+                  <button
+                    class="w-full py-2 text-xs font-medium text-slate-400 hover:text-white hover:bg-white/5 rounded-lg transition-colors"
+                  >
+                    View Full History
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </main>
+      </div>
+    </div>
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        const menuButtons = document.querySelectorAll("button");
+        const menuBtn = Array.from(menuButtons).find(
+          (btn) =>
+            btn.textContent.trim().includes("menu") ||
+            btn.querySelector("span")?.textContent.trim() === "menu"
+        );
+        const sidebar = document.querySelector("aside");
+
+        if (menuBtn && sidebar) {
+          menuBtn.addEventListener("click", () => {
+            sidebar.classList.toggle("hidden");
+            sidebar.classList.toggle("fixed");
+            sidebar.classList.toggle("inset-0");
+            sidebar.classList.toggle("z-40");
+            if (sidebar.classList.contains("fixed")) {
+              sidebar.classList.add("bg-[#0f172a]");
+            }
+          });
+
+          sidebar.addEventListener("click", (e) => {
+            // Close if clicking outside
+          });
+        }
+      });
+    </script>
+  </body>
+</html>

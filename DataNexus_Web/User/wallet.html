@@ -1,0 +1,612 @@
+<!DOCTYPE html>
+<html class="dark" lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Uploader Wallet</title>
+    <link href="https://fonts.googleapis.com" rel="preconnect" />
+    <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+      rel="stylesheet"
+    />
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              primary: "#3b82f6",
+              "primary-hover": "#2563eb",
+              "background-light": "#f0f4f8",
+              "background-dark": "#0f172a",
+              "surface-dark": "#1e293b",
+              "surface-light": "#ffffff",
+            },
+            fontFamily: {
+              display: ["Inter", "sans-serif"],
+            },
+            animation: {
+              "fade-in": "fadeIn 0.5s ease-out",
+              "slide-up": "slideUp 0.5s ease-out",
+            },
+            keyframes: {
+              fadeIn: {
+                "0%": { opacity: "0" },
+                "100%": { opacity: "1" },
+              },
+              slideUp: {
+                "0%": { transform: "translateY(20px)", opacity: "0" },
+                "100%": { transform: "translateY(0)", opacity: "1" },
+              },
+            },
+          },
+        },
+      };
+    </script>
+    <style>
+      .glass,
+      .glass-panel {
+        background: rgba(255, 255, 255, 0.7);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        border: 1px solid rgba(255, 255, 255, 0.5);
+      }
+      .dark .glass,
+      .dark .glass-panel {
+        background: rgba(30, 41, 59, 0.7);
+        border: 1px solid rgba(255, 255, 255, 0.05);
+      }
+      .glass-card {
+        background: rgba(255, 255, 255, 0.6);
+        backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
+        border: 1px solid rgba(255, 255, 255, 0.4);
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05),
+          0 2px 4px -1px rgba(0, 0, 0, 0.03);
+      }
+      .dark .glass-card {
+        background: rgba(30, 41, 59, 0.6);
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2),
+          0 2px 4px -1px rgba(0, 0, 0, 0.1);
+      }
+      .glass-button {
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(4px);
+      }
+      .no-scrollbar::-webkit-scrollbar {
+        display: none;
+      }
+      .no-scrollbar {
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+      }
+      body {
+        background-image: radial-gradient(
+            at 0% 0%,
+            rgba(59, 130, 246, 0.15) 0px,
+            transparent 50%
+          ),
+          radial-gradient(
+            at 100% 0%,
+            rgba(139, 92, 246, 0.15) 0px,
+            transparent 50%
+          ),
+          radial-gradient(
+            at 100% 100%,
+            rgba(236, 72, 153, 0.15) 0px,
+            transparent 50%
+          ),
+          radial-gradient(
+            at 0% 100%,
+            rgba(34, 197, 94, 0.15) 0px,
+            transparent 50%
+          );
+        background-attachment: fixed;
+      }
+      .dark body {
+        background-image: radial-gradient(
+            at 0% 0%,
+            rgba(59, 130, 246, 0.1) 0px,
+            transparent 50%
+          ),
+          radial-gradient(
+            at 100% 0%,
+            rgba(139, 92, 246, 0.1) 0px,
+            transparent 50%
+          ),
+          radial-gradient(
+            at 100% 100%,
+            rgba(236, 72, 153, 0.1) 0px,
+            transparent 50%
+          ),
+          radial-gradient(
+            at 0% 100%,
+            rgba(34, 197, 94, 0.1) 0px,
+            transparent 50%
+          );
+      }
+      ::-webkit-scrollbar {
+        width: 5px;
+        height: 5px;
+      }
+      ::-webkit-scrollbar-track {
+        background: transparent;
+      }
+      ::-webkit-scrollbar-thumb {
+        background: rgba(156, 163, 175, 0.2);
+        border-radius: 10px;
+      }
+      ::-webkit-scrollbar-thumb:hover {
+        background: rgba(156, 163, 175, 0.4);
+      }
+      .dark ::-webkit-scrollbar-thumb {
+        background: rgba(255, 255, 255, 0.1);
+      }
+      .dark ::-webkit-scrollbar-thumb:hover {
+        background: rgba(255, 255, 255, 0.2);
+      }
+    </style>
+    <style>
+      body {
+        min-height: max(884px, 100dvh);
+      }
+    </style>
+  </head>
+  <body
+    class="bg-background-light dark:bg-background-dark font-display antialiased text-slate-900 dark:text-white flex h-screen overflow-hidden selection:bg-primary/20 selection:text-primary"
+  >
+    <aside
+      class="hidden md:flex flex-col w-72 h-full glass border-r border-gray-200/50 dark:border-white/5 shrink-0 transition-all duration-300"
+    >
+      <div class="p-6 pb-8">
+        <div class="flex items-center gap-3">
+          <div
+            class="flex items-center justify-center w-10 h-10 rounded-xl bg-gradient-to-br from-primary-500 to-primary-600 text-white shadow-lg shadow-primary-500/20"
+          >
+            <span class="material-symbols-outlined text-[24px]"
+              >cloud_circle</span
+            >
+          </div>
+          <div class="flex flex-col">
+            <span
+              class="font-bold text-lg tracking-tight text-gray-900 dark:text-white leading-none"
+              >MData</span
+            >
+            <span
+              class="text-xs text-gray-500 dark:text-gray-400 font-medium mt-1"
+              >Uploader Portal</span
+            >
+          </div>
+        </div>
+      </div>
+      <div class="flex-1 px-4 sidebar-scroll overflow-y-auto">
+        <nav class="space-y-1.5 py-2">
+          <a
+            class="group flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-xl text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-white/5 hover:text-gray-900 dark:hover:text-white transition-all duration-200"
+            href="dashboard.html"
+          >
+            <span
+              class="material-symbols-outlined text-[20px] text-gray-400 group-hover:text-primary-500 transition-colors"
+              >dashboard</span
+            >
+            Dashboard
+          </a>
+          <a
+            class="group flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-xl text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-white/5 hover:text-gray-900 dark:hover:text-white transition-all duration-200"
+            href="upload_files.html"
+          >
+            <span
+              class="material-symbols-outlined text-[20px] text-gray-400 group-hover:text-primary-500 transition-colors"
+              >cloud_upload</span
+            >
+            Upload Files
+          </a>
+          <a
+            class="group flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-xl text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-white/5 hover:text-gray-900 dark:hover:text-white transition-all duration-200"
+            href="file_history.html"
+          >
+            <span
+              class="material-symbols-outlined text-[20px] text-gray-400 group-hover:text-primary-500 transition-colors"
+              >history</span
+            >
+            File History
+          </a>
+
+          <a
+            class="relative flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-xl bg-primary-50 dark:bg-primary-500/10 text-primary-600 dark:text-primary-400 transition-all duration-200 shadow-sm ring-1 ring-primary-500/20"
+            href="wallet.html"
+          >
+            <span
+              class="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-primary-500 rounded-r-full"
+            ></span>
+            <span class="material-symbols-outlined text-[20px] fill-1"
+              >account_balance_wallet</span
+            >
+            Earnings
+          </a>
+          <a
+            class="group flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-xl text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-white/5 hover:text-gray-900 dark:hover:text-white transition-all duration-200"
+            href="profile.html"
+          >
+            <span
+              class="material-symbols-outlined text-[20px] text-gray-400 group-hover:text-primary-500 transition-colors"
+              >settings</span
+            >
+            Settings
+          </a>
+        </nav>
+      </div>
+      <div class="p-4 mt-auto border-t border-gray-200/50 dark:border-white/5">
+        <div
+          class="flex items-center gap-3 p-2 rounded-xl hover:bg-gray-100 dark:hover:bg-white/5 transition-colors cursor-pointer group"
+        >
+          <img
+            alt="User"
+            class="w-10 h-10 rounded-full border-2 border-white dark:border-gray-700 shadow-sm"
+            src="https://lh3.googleusercontent.com/aida-public/AB6AXuBJJL6r2F2CGrlVRpg-2_8D8dEqSuXJLoYjAt2PNC9hnBJm7N9O1o67vYni1Io59mXrtu0nPpxIVZamGtum3jPPLDHX9jcGf9MWEhHX1Ii4et3kpOHrEZ_V4f4sCQEW1GWxQ1DqR6p3rY8W1MZ5mJ5N2dwzPwUN7M3aq8BXR1bxHWi2s2uU--uYaVkRPqczUfGNo1l5tMPLX0bfITQxRYbenBYQ6dA1pG5S4wp6wwwxCyX7w3IlTnDk6SU2gNO3U49RquJjVhYRRYlv"
+          />
+          <div class="flex-1 min-w-0">
+            <p
+              class="text-sm font-semibold text-gray-900 dark:text-white truncate"
+            >
+              John Smith
+            </p>
+            <p class="text-xs text-gray-500 dark:text-gray-400 truncate">
+              john@example.com
+            </p>
+          </div>
+          <span
+            class="material-symbols-outlined text-gray-400 group-hover:text-gray-600 dark:group-hover:text-gray-300"
+            >expand_more</span
+          >
+        </div>
+      </div>
+    </aside>
+    <div class="relative flex-1 flex flex-col h-full overflow-hidden">
+      <header
+        class="flex items-center justify-between px-6 py-4 glass-card border-b border-white/5 sticky top-0 z-20"
+      >
+        <div class="flex items-center gap-4">
+          <button
+            class="md:hidden p-2 -ml-2 text-gray-300 hover:text-white hover:bg-white/10 rounded-lg transition-colors"
+          >
+            <span class="material-symbols-outlined">menu</span>
+          </button>
+          <div>
+            <h2 class="text-lg font-semibold text-white/90">Wallet Overview</h2>
+            <p class="text-xs text-blue-400 md:hidden">Earnings Dashboard</p>
+          </div>
+        </div>
+        <div class="flex items-center gap-3">
+          <button
+            class="p-2 text-gray-400 hover:text-white hover:bg-white/10 rounded-full transition-colors relative"
+          >
+            <span class="material-symbols-outlined">notifications</span>
+            <span
+              class="absolute top-2.5 right-2.5 w-2 h-2 bg-red-500 rounded-full ring-2 ring-[#0B0E14]"
+            ></span>
+          </button>
+          <button
+            class="md:hidden flex items-center justify-center w-9 h-9 rounded-full bg-white/10 text-white hover:bg-white/20 transition-colors border border-white/10"
+          >
+            <span class="material-symbols-outlined text-[20px]"
+              >account_circle</span
+            >
+          </button>
+        </div>
+      </header>
+      <main class="flex-1 overflow-y-auto p-4 md:p-8 scroll-smooth">
+        <div class="max-w-6xl mx-auto flex flex-col gap-6 pb-24 md:pb-8">
+          <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 animate-fade-in-up">
+            <section
+              class="lg:col-span-2 relative overflow-hidden rounded-2xl glass-card p-6 md:p-8 flex flex-col justify-between group"
+            >
+              <div
+                class="absolute -right-20 -top-20 w-64 h-64 bg-blue-500/10 rounded-full blur-3xl group-hover:bg-blue-500/20 transition-colors duration-500"
+              ></div>
+              <div class="relative z-10">
+                <div class="flex items-center justify-between mb-2">
+                  <p
+                    class="text-gray-400 text-sm font-medium flex items-center gap-2"
+                  >
+                    <span
+                      class="material-symbols-outlined text-[18px] text-blue-400"
+                      >account_balance</span
+                    >
+                    Total Balance
+                  </p>
+                  <span
+                    class="bg-green-500/20 text-green-400 text-xs px-2 py-1 rounded-full font-medium border border-green-500/20 flex items-center"
+                  >
+                    <span class="material-symbols-outlined text-[14px] mr-1"
+                      >arrow_upward</span
+                    >
+                    +2.4%
+                  </span>
+                </div>
+                <h1
+                  class="text-4xl md:text-5xl font-bold tracking-tight text-white drop-shadow-sm"
+                >
+                  $1,240.50
+                </h1>
+              </div>
+              <div
+                class="grid grid-cols-2 gap-4 mt-8 pt-6 border-t border-white/10 relative z-10"
+              >
+                <div class="flex flex-col gap-1">
+                  <span
+                    class="text-xs text-gray-500 uppercase tracking-wider font-semibold"
+                    >Pending</span
+                  >
+                  <span class="text-xl font-medium text-white/90">$120.00</span>
+                </div>
+                <div class="flex flex-col gap-1 border-l border-white/10 pl-6">
+                  <span
+                    class="text-xs text-gray-500 uppercase tracking-wider font-semibold"
+                    >Lifetime</span
+                  >
+                  <span class="text-xl font-medium text-white/90"
+                    >$5,300.00</span
+                  >
+                </div>
+              </div>
+            </section>
+            <div class="flex flex-col gap-4">
+              <button
+                class="flex-1 flex items-center justify-center gap-3 bg-blue-600 hover:bg-blue-500 text-white font-semibold py-4 px-6 rounded-2xl transition-all shadow-lg shadow-blue-600/20 hover:shadow-blue-600/30 group border border-blue-400/20"
+              >
+                <div
+                  class="p-2 bg-white/20 rounded-lg group-hover:scale-110 transition-transform"
+                >
+                  <span class="material-symbols-outlined text-[24px]"
+                    >payments</span
+                  >
+                </div>
+                <span class="text-lg">Withdraw Funds</span>
+              </button>
+              <button
+                class="flex-1 flex items-center justify-center gap-3 glass-button hover:bg-white/10 text-white font-semibold py-4 px-6 rounded-2xl transition-all group"
+              >
+                <div
+                  class="p-2 bg-white/5 rounded-lg border border-white/10 group-hover:scale-110 transition-transform"
+                >
+                  <span class="material-symbols-outlined text-[24px]"
+                    >credit_card</span
+                  >
+                </div>
+                <span class="text-lg">Add Method</span>
+              </button>
+            </div>
+          </div>
+          <div
+            class="rounded-2xl glass-card p-6 md:p-8 animate-fade-in-up"
+            style="animation-delay: 0.1s"
+          >
+            <div
+              class="flex flex-col sm:flex-row justify-between items-start sm:items-end mb-6 gap-4"
+            >
+              <div>
+                <h3 class="text-lg font-semibold text-white">
+                  Revenue Analytics
+                </h3>
+                <p class="text-sm text-gray-400 mt-1">
+                  Daily earnings over the last 30 days
+                </p>
+              </div>
+              <div
+                class="bg-black/20 rounded-lg p-1 flex border border-white/5 backdrop-blur-md"
+              >
+                <button
+                  class="px-4 py-1.5 text-xs font-medium rounded-md bg-white/10 text-white shadow-sm border border-white/10"
+                >
+                  30 Days
+                </button>
+                <button
+                  class="px-4 py-1.5 text-xs font-medium rounded-md text-gray-400 hover:text-white transition-colors"
+                >
+                  7 Days
+                </button>
+                <button
+                  class="px-4 py-1.5 text-xs font-medium rounded-md text-gray-400 hover:text-white transition-colors"
+                >
+                  24h
+                </button>
+              </div>
+            </div>
+            <div class="relative h-48 md:h-64 w-full overflow-hidden">
+              <svg
+                class="drop-shadow-lg"
+                fill="none"
+                height="100%"
+                preserveAspectRatio="none"
+                viewBox="0 0 478 150"
+                width="100%"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <defs>
+                  <linearGradient
+                    gradientUnits="userSpaceOnUse"
+                    id="paint0_linear"
+                    x1="239"
+                    x2="239"
+                    y1="0"
+                    y2="150"
+                  >
+                    <stop stop-color="#3b82f6" stop-opacity="0.5"></stop>
+                    <stop
+                      offset="1"
+                      stop-color="#3b82f6"
+                      stop-opacity="0"
+                    ></stop>
+                  </linearGradient>
+                </defs>
+                <path
+                  class="opacity-30"
+                  d="M0 109C18.1538 109 18.1538 21 36.3077 21C54.4615 21 54.4615 41 72.6154 41C90.7692 41 90.7692 93 108.923 93C127.077 93 127.077 33 145.231 33C163.385 33 163.385 101 181.538 101C199.692 101 199.692 61 217.846 61C236 61 236 45 254.154 45C272.308 45 272.308 121 290.462 121C308.615 121 308.615 149 326.769 149C344.923 149 344.923 1 363.077 1C381.231 1 381.231 81 399.385 81C417.538 81 417.538 129 435.692 129C453.846 129 453.846 25 472 25V149H326.769H0V109Z"
+                  fill="url(#paint0_linear)"
+                ></path>
+                <path
+                  d="M0 109C18.1538 109 18.1538 21 36.3077 21C54.4615 21 54.4615 41 72.6154 41C90.7692 41 90.7692 93 108.923 93C127.077 93 127.077 33 145.231 33C163.385 33 163.385 101 181.538 101C199.692 101 199.692 61 217.846 61C236 61 236 45 254.154 45C272.308 45 272.308 121 290.462 121C308.615 121 308.615 149 326.769 149C344.923 149 344.923 1 363.077 1C381.231 1 381.231 81 399.385 81C417.538 81 417.538 129 435.692 129C453.846 129 453.846 25 472 25"
+                  filter="drop-shadow(0px 4px 6px rgba(59, 130, 246, 0.5))"
+                  stroke="#60a5fa"
+                  stroke-linecap="round"
+                  stroke-width="3"
+                ></path>
+              </svg>
+            </div>
+          </div>
+          <div
+            class="flex flex-col gap-5 animate-fade-in-up"
+            style="animation-delay: 0.2s"
+          >
+            <div class="flex items-center justify-between px-2">
+              <h3 class="text-lg font-bold text-white">Recent Transactions</h3>
+              <button
+                class="text-blue-400 text-sm font-medium hover:text-blue-300 flex items-center gap-1 transition-colors"
+              >
+                View History
+                <span class="material-symbols-outlined text-[16px]"
+                  >arrow_forward</span
+                >
+              </button>
+            </div>
+            <div class="flex flex-col gap-3">
+              <div
+                class="flex items-center justify-between p-4 rounded-xl glass-card hover:bg-white/5 transition-colors group cursor-pointer"
+              >
+                <div class="flex items-center gap-4">
+                  <div
+                    class="h-12 w-12 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-gray-400 group-hover:text-white group-hover:bg-white/10 transition-all"
+                  >
+                    <span class="material-symbols-outlined"
+                      >account_balance</span
+                    >
+                  </div>
+                  <div class="flex flex-col">
+                    <span
+                      class="font-medium text-white group-hover:text-blue-200 transition-colors"
+                      >Withdrawal to PayPal</span
+                    >
+                    <span class="text-xs text-gray-500"
+                      >Oct 24, 2023 • Completed</span
+                    >
+                  </div>
+                </div>
+                <span
+                  class="font-semibold text-white group-hover:text-red-300 transition-colors"
+                  >-$500.00</span
+                >
+              </div>
+              <div
+                class="flex items-center justify-between p-4 rounded-xl glass-card hover:bg-white/5 transition-colors group cursor-pointer"
+              >
+                <div class="flex items-center gap-4">
+                  <div
+                    class="h-12 w-12 rounded-full bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-blue-400 group-hover:text-blue-300 group-hover:bg-blue-500/20 transition-all"
+                  >
+                    <span class="material-symbols-outlined">cloud_upload</span>
+                  </div>
+                  <div class="flex flex-col">
+                    <span
+                      class="font-medium text-white group-hover:text-blue-200 transition-colors"
+                      >Sale: Medical Dataset</span
+                    >
+                    <span class="text-xs text-gray-500"
+                      >Oct 22, 2023 • Processed</span
+                    >
+                  </div>
+                </div>
+                <span class="font-semibold text-green-400">+$45.00</span>
+              </div>
+              <div
+                class="flex items-center justify-between p-4 rounded-xl glass-card hover:bg-white/5 transition-colors group cursor-pointer"
+              >
+                <div class="flex items-center gap-4">
+                  <div
+                    class="h-12 w-12 rounded-full bg-purple-500/10 border border-purple-500/20 flex items-center justify-center text-purple-400 group-hover:text-purple-300 group-hover:bg-purple-500/20 transition-all"
+                  >
+                    <span class="material-symbols-outlined">mic</span>
+                  </div>
+                  <div class="flex flex-col">
+                    <span
+                      class="font-medium text-white group-hover:text-blue-200 transition-colors"
+                      >Sale: Audio Samples</span
+                    >
+                    <span class="text-xs text-gray-500"
+                      >Oct 20, 2023 • Processed</span
+                    >
+                  </div>
+                </div>
+                <span class="font-semibold text-green-400">+$12.50</span>
+              </div>
+              <div
+                class="flex items-center justify-between p-4 rounded-xl glass-card hover:bg-white/5 transition-colors group cursor-pointer"
+              >
+                <div class="flex items-center gap-4">
+                  <div
+                    class="h-12 w-12 rounded-full bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400 group-hover:text-emerald-300 group-hover:bg-emerald-500/20 transition-all"
+                  >
+                    <span class="material-symbols-outlined">description</span>
+                  </div>
+                  <div class="flex flex-col">
+                    <span
+                      class="font-medium text-white group-hover:text-blue-200 transition-colors"
+                      >Sale: Text Corpus</span
+                    >
+                    <span class="text-xs text-gray-500"
+                      >Oct 18, 2023 • Processed</span
+                    >
+                  </div>
+                </div>
+                <span class="font-semibold text-green-400">+$28.00</span>
+              </div>
+            </div>
+          </div>
+          <div
+            class="flex items-center justify-center gap-2 py-6 opacity-40 hover:opacity-80 transition-opacity"
+          >
+            <span class="material-symbols-outlined text-[16px] text-gray-400"
+              >lock</span
+            >
+            <p class="text-xs text-gray-400">Secured by Stripe &amp; PayPal</p>
+          </div>
+        </div>
+      </main>
+    </div>
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        const menuButtons = document.querySelectorAll("button");
+        const menuBtn = Array.from(menuButtons).find(
+          (btn) =>
+            btn.textContent.trim().includes("menu") ||
+            btn.querySelector("span")?.textContent.trim() === "menu"
+        );
+        const sidebar = document.querySelector("aside");
+
+        if (menuBtn && sidebar) {
+          menuBtn.addEventListener("click", () => {
+            sidebar.classList.toggle("hidden");
+            sidebar.classList.toggle("fixed");
+            sidebar.classList.toggle("inset-0");
+            sidebar.classList.toggle("z-40");
+            if (sidebar.classList.contains("fixed")) {
+              sidebar.classList.add("bg-white", "dark:bg-[#0B0F19]");
+            }
+          });
+
+          sidebar.addEventListener("click", (e) => {
+            // Close if clicking outside
+          });
+        }
+      });
+    </script>
+  </body>
+</html>

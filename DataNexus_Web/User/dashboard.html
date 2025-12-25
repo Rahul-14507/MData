@@ -1,0 +1,724 @@
+<!DOCTYPE html>
+<html class="dark" lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Uploader Dashboard</title>
+    <link href="https://fonts.googleapis.com" rel="preconnect" />
+    <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+      rel="stylesheet"
+    />
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              primary: "#3b82f6",
+              "primary-hover": "#2563eb",
+              "background-light": "#f0f4f8",
+              "background-dark": "#0f172a",
+              "surface-dark": "#1e293b",
+              "surface-light": "#ffffff",
+            },
+            fontFamily: {
+              display: ["Inter", "sans-serif"],
+            },
+            animation: {
+              "fade-in": "fadeIn 0.5s ease-out",
+              "slide-up": "slideUp 0.5s ease-out",
+            },
+            keyframes: {
+              fadeIn: {
+                "0%": { opacity: "0" },
+                "100%": { opacity: "1" },
+              },
+              slideUp: {
+                "0%": { transform: "translateY(20px)", opacity: "0" },
+                "100%": { transform: "translateY(0)", opacity: "1" },
+              },
+            },
+          },
+        },
+      };
+    </script>
+    <style>
+      .glass,
+      .glass-panel {
+        background: rgba(255, 255, 255, 0.7);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        border: 1px solid rgba(255, 255, 255, 0.5);
+      }
+      .dark .glass,
+      .dark .glass-panel {
+        background: rgba(30, 41, 59, 0.7);
+        border: 1px solid rgba(255, 255, 255, 0.05);
+      }
+      .glass-card {
+        background: rgba(255, 255, 255, 0.6);
+        backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
+        border: 1px solid rgba(255, 255, 255, 0.4);
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05),
+          0 2px 4px -1px rgba(0, 0, 0, 0.03);
+      }
+      .dark .glass-card {
+        background: rgba(30, 41, 59, 0.6);
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2),
+          0 2px 4px -1px rgba(0, 0, 0, 0.1);
+      }
+      .no-scrollbar::-webkit-scrollbar {
+        display: none;
+      }
+      .no-scrollbar {
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+      }
+      body {
+        background-image: radial-gradient(
+            at 0% 0%,
+            rgba(59, 130, 246, 0.15) 0px,
+            transparent 50%
+          ),
+          radial-gradient(
+            at 100% 0%,
+            rgba(139, 92, 246, 0.15) 0px,
+            transparent 50%
+          ),
+          radial-gradient(
+            at 100% 100%,
+            rgba(236, 72, 153, 0.15) 0px,
+            transparent 50%
+          ),
+          radial-gradient(
+            at 0% 100%,
+            rgba(34, 197, 94, 0.15) 0px,
+            transparent 50%
+          );
+        background-attachment: fixed;
+      }
+      .dark body {
+        background-image: radial-gradient(
+            at 0% 0%,
+            rgba(59, 130, 246, 0.1) 0px,
+            transparent 50%
+          ),
+          radial-gradient(
+            at 100% 0%,
+            rgba(139, 92, 246, 0.1) 0px,
+            transparent 50%
+          ),
+          radial-gradient(
+            at 100% 100%,
+            rgba(236, 72, 153, 0.1) 0px,
+            transparent 50%
+          ),
+          radial-gradient(
+            at 0% 100%,
+            rgba(34, 197, 94, 0.1) 0px,
+            transparent 50%
+          );
+      }
+      ::-webkit-scrollbar {
+        width: 5px;
+        height: 5px;
+      }
+      ::-webkit-scrollbar-track {
+        background: transparent;
+      }
+      ::-webkit-scrollbar-thumb {
+        background: rgba(156, 163, 175, 0.2);
+        border-radius: 10px;
+      }
+      ::-webkit-scrollbar-thumb:hover {
+        background: rgba(156, 163, 175, 0.4);
+      }
+      .dark ::-webkit-scrollbar-thumb {
+        background: rgba(255, 255, 255, 0.1);
+      }
+      .dark ::-webkit-scrollbar-thumb:hover {
+        background: rgba(255, 255, 255, 0.2);
+      }
+    </style>
+    <style>
+      body {
+        min-height: max(884px, 100dvh);
+      }
+    </style>
+  </head>
+  <body
+    class="bg-background-light dark:bg-background-dark font-display antialiased text-slate-900 dark:text-white flex h-screen overflow-hidden selection:bg-primary/20 selection:text-primary"
+  >
+    <aside
+      class="hidden md:flex flex-col w-72 h-full glass border-r border-gray-200/50 dark:border-white/5 shrink-0 transition-all duration-300"
+    >
+      <div class="p-6 pb-8">
+        <div class="flex items-center gap-3">
+          <div
+            class="flex items-center justify-center w-10 h-10 rounded-xl bg-gradient-to-br from-primary-500 to-primary-600 text-white shadow-lg shadow-primary-500/20"
+          >
+            <span class="material-symbols-outlined text-[24px]"
+              >cloud_circle</span
+            >
+          </div>
+          <div class="flex flex-col">
+            <span
+              class="font-bold text-lg tracking-tight text-gray-900 dark:text-white leading-none"
+              >MData</span
+            >
+            <span
+              class="text-xs text-gray-500 dark:text-gray-400 font-medium mt-1"
+              >Uploader Portal</span
+            >
+          </div>
+        </div>
+      </div>
+      <div class="flex-1 px-4 sidebar-scroll overflow-y-auto">
+        <nav class="space-y-1.5 py-2">
+          <a
+            class="relative flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-xl bg-primary-50 dark:bg-primary-500/10 text-primary-600 dark:text-primary-400 transition-all duration-200 shadow-sm ring-1 ring-primary-500/20"
+            href="dashboard.html"
+          >
+            <span
+              class="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-primary-500 rounded-r-full"
+            ></span>
+            <span class="material-symbols-outlined text-[20px] fill-1"
+              >dashboard</span
+            >
+            Dashboard
+          </a>
+          <a
+            class="group flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-xl text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-white/5 hover:text-gray-900 dark:hover:text-white transition-all duration-200"
+            href="upload_files.html"
+          >
+            <span
+              class="material-symbols-outlined text-[20px] text-gray-400 group-hover:text-primary-500 transition-colors"
+              >cloud_upload</span
+            >
+            Upload Files
+          </a>
+          <a
+            class="group flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-xl text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-white/5 hover:text-gray-900 dark:hover:text-white transition-all duration-200"
+            href="file_history.html"
+          >
+            <span
+              class="material-symbols-outlined text-[20px] text-gray-400 group-hover:text-primary-500 transition-colors"
+              >history</span
+            >
+            File History
+          </a>
+
+          <a
+            class="group flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-xl text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-white/5 hover:text-gray-900 dark:hover:text-white transition-all duration-200"
+            href="wallet.html"
+          >
+            <span
+              class="material-symbols-outlined text-[20px] text-gray-400 group-hover:text-primary-500 transition-colors"
+              >account_balance_wallet</span
+            >
+            Earnings
+          </a>
+          <a
+            class="group flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-xl text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-white/5 hover:text-gray-900 dark:hover:text-white transition-all duration-200"
+            href="profile.html"
+          >
+            <span
+              class="material-symbols-outlined text-[20px] text-gray-400 group-hover:text-primary-500 transition-colors"
+              >settings</span
+            >
+            Settings
+          </a>
+        </nav>
+      </div>
+      <div class="p-4 mt-auto border-t border-gray-200/50 dark:border-white/5">
+        <div
+          class="flex items-center gap-3 p-2 rounded-xl hover:bg-gray-100 dark:hover:bg-white/5 transition-colors cursor-pointer group"
+        >
+          <img
+            alt="User"
+            class="w-10 h-10 rounded-full border-2 border-white dark:border-gray-700 shadow-sm"
+            src="https://lh3.googleusercontent.com/aida-public/AB6AXuBJJL6r2F2CGrlVRpg-2_8D8dEqSuXJLoYjAt2PNC9hnBJm7N9O1o67vYni1Io59mXrtu0nPpxIVZamGtum3jPPLDHX9jcGf9MWEhHX1Ii4et3kpOHrEZ_V4f4sCQEW1GWxQ1DqR6p3rY8W1MZ5mJ5N2dwzPwUN7M3aq8BXR1bxHWi2s2uU--uYaVkRPqczUfGNo1l5tMPLX0bfITQxRYbenBYQ6dA1pG5S4wp6wwwxCyX7w3IlTnDk6SU2gNO3U49RquJjVhYRRYlv"
+          />
+          <div class="flex-1 min-w-0">
+            <p
+              class="text-sm font-semibold text-gray-900 dark:text-white truncate"
+            >
+              John Smith
+            </p>
+            <p class="text-xs text-gray-500 dark:text-gray-400 truncate">
+              john@example.com
+            </p>
+          </div>
+          <span
+            class="material-symbols-outlined text-gray-400 group-hover:text-gray-600 dark:group-hover:text-gray-300"
+            >expand_more</span
+          >
+        </div>
+      </div>
+    </aside>
+    <div class="flex-1 flex flex-col h-screen overflow-hidden">
+      <header
+        class="lg:hidden sticky top-0 z-30 glass border-b border-white/5 transition-colors duration-300"
+      >
+        <div class="flex items-center p-4 justify-between w-full">
+          <div class="flex items-center gap-3">
+            <button class="p-1 -ml-1 text-slate-600 dark:text-white">
+              <span class="material-symbols-outlined">menu</span>
+            </button>
+            <h2 class="text-lg font-bold">Dashboard</h2>
+          </div>
+          <div class="relative shrink-0">
+            <div
+              class="bg-center bg-no-repeat bg-cover rounded-full size-8 ring-1 ring-gray-700"
+              style="
+                background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuBHSDta1V1TdMsYpt3KI1p0q4kvJCMbjJH0kOgh4Cg6KH6lfwOf-SjcSgy6qhH3M5L4nC_nhUvOAPTg6F_A3fBg5OewF5SbB5dI2_MArtwRij5TMVD7L3Ni0wyE-q4PVS0Baeu48U3JR1hj84XXr2D7dXMT3VG0rv6XX5qSj3lndYxJiWTYc1X6HeK1_cqr0qCKDbU2-MhrDf8DILQuLDlFf6QcUvEjF0c8NXolvx8CjnjAk6fE5S6t4H8k7EGJMzHNV7aEI4w0-_l4');
+              "
+            ></div>
+          </div>
+        </div>
+      </header>
+      <header
+        class="hidden lg:flex items-center justify-between px-8 py-5 border-b border-white/5 shrink-0"
+      >
+        <div>
+          <h2 class="text-2xl font-bold tracking-tight">Overview</h2>
+          <p class="text-sm text-secondary-text">
+            Welcome back, here's what's happening with your files.
+          </p>
+        </div>
+        <div class="flex items-center gap-4">
+          <button
+            class="flex items-center justify-center size-10 rounded-full bg-white/10 hover:bg-white/20 transition-colors text-slate-600 dark:text-white relative border border-white/10 backdrop-blur-md"
+          >
+            <span class="material-symbols-outlined text-[20px]"
+              >notifications</span
+            >
+            <span
+              class="absolute top-2.5 right-3 size-2 bg-red-500 rounded-full animate-pulse border-2 border-slate-900"
+            ></span>
+          </button>
+        </div>
+      </header>
+      <main class="flex-1 overflow-y-auto w-full p-4 lg:p-8 pb-24 lg:pb-8">
+        <div class="max-w-7xl mx-auto flex flex-col gap-8">
+          <section class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div
+              class="bg-gradient-to-br from-primary to-blue-700 rounded-2xl p-6 flex flex-col justify-between h-44 shadow-lg shadow-primary/20 relative overflow-hidden group transition-transform hover:-translate-y-1 duration-300"
+            >
+              <div
+                class="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-10 -mt-10 blur-2xl"
+              ></div>
+              <div class="relative z-10 flex justify-between items-start">
+                <div class="p-2.5 bg-white/20 rounded-xl backdrop-blur-sm">
+                  <span class="material-symbols-outlined text-white text-[24px]"
+                    >attach_money</span
+                  >
+                </div>
+                <span
+                  class="text-xs font-semibold text-white/90 bg-black/20 px-2.5 py-1 rounded-full backdrop-blur-md"
+                  >+12.5%</span
+                >
+              </div>
+              <div class="relative z-10">
+                <p class="text-white/80 text-sm font-medium mb-1">
+                  Total Earnings
+                </p>
+                <p class="text-white text-4xl font-bold tracking-tight">
+                  $1,240.50
+                </p>
+              </div>
+            </div>
+            <div
+              class="glass-card rounded-2xl p-6 flex flex-col justify-between h-44 relative overflow-hidden transition-transform hover:-translate-y-1 duration-300"
+            >
+              <div
+                class="absolute inset-0 bg-cover bg-center opacity-30 mix-blend-overlay"
+                data-alt="Abstract digital network pattern background"
+                style="
+                  background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuDPRL6zuhKdICfHkhleJg1ZhIpeIBy6iO2lFpvLTI1MOg8zq4R7QV6p-aAYqgCs0B3bnL1jloz6rp2qbP6cDWd4eq-f_AA9vurZvBLwbvb1ySj5o3yTqnTEGD2fO4gRECUN6dEQH2NxyVm-_NfqchzSu3RBhJycS54h-1jXujxksSW96N_AuTSsM-8ANs18NeRqYN-_ck93dAQbyYMekn4M30Hif1X2TgCnNfAsaLTc1QEFKBUyhS1e5ioYduxe0Do3YZCzTX9EfZKz');
+                "
+              ></div>
+              <div class="relative z-10 flex justify-between items-start">
+                <div
+                  class="p-2.5 bg-purple-500/10 border border-purple-500/20 rounded-xl"
+                >
+                  <span
+                    class="material-symbols-outlined text-purple-400 text-[24px]"
+                    >cloud_upload</span
+                  >
+                </div>
+              </div>
+              <div class="relative z-10">
+                <p class="text-secondary-text text-sm font-medium mb-1">
+                  Active Files
+                </p>
+                <p class="text-white text-4xl font-bold tracking-tight">
+                  45
+                  <span class="text-lg text-secondary-text font-normal"
+                    >files</span
+                  >
+                </p>
+              </div>
+            </div>
+            <div
+              class="glass-card rounded-2xl p-6 flex flex-col justify-between h-44 relative overflow-hidden transition-transform hover:-translate-y-1 duration-300"
+            >
+              <div class="flex justify-between items-start">
+                <div
+                  class="p-2.5 bg-orange-500/10 border border-orange-500/20 rounded-xl"
+                >
+                  <span
+                    class="material-symbols-outlined text-orange-400 text-[24px]"
+                    >pending</span
+                  >
+                </div>
+              </div>
+              <div>
+                <p class="text-secondary-text text-sm font-medium mb-1">
+                  Pending Payouts
+                </p>
+                <p class="text-white text-4xl font-bold tracking-tight">
+                  $120.00
+                </p>
+              </div>
+            </div>
+          </section>
+          <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
+            <section class="lg:col-span-2 flex flex-col gap-4">
+              <div class="flex items-center justify-between">
+                <h3 class="text-lg font-bold tracking-tight">Revenue Trends</h3>
+                <div class="relative">
+                  <select
+                    class="appearance-none bg-white/5 hover:bg-white/10 text-sm font-medium text-slate-500 dark:text-slate-400 border border-white/10 rounded-lg pl-3 pr-8 py-1.5 focus:ring-primary focus:border-primary cursor-pointer transition-colors"
+                  >
+                    <option>Last 30 Days</option>
+                    <option>Last 7 Days</option>
+                  </select>
+                  <span
+                    class="material-symbols-outlined absolute right-2 top-1/2 -translate-y-1/2 text-slate-500 pointer-events-none text-[18px]"
+                    >expand_more</span
+                  >
+                </div>
+              </div>
+              <div
+                class="glass-card rounded-2xl p-6 h-full min-h-[340px] flex flex-col relative overflow-hidden group"
+              >
+                <!-- Background Glow -->
+                <div
+                  class="absolute top-0 right-0 w-64 h-64 bg-primary/5 rounded-full blur-3xl -mr-16 -mt-16 pointer-events-none"
+                ></div>
+
+                <!-- Stats Row -->
+                <div
+                  class="flex items-center justify-between mb-8 relative z-10"
+                >
+                  <div class="flex items-center gap-4">
+                    <h2
+                      class="text-4xl font-bold text-slate-900 dark:text-white tracking-tight"
+                    >
+                      $458.20
+                    </h2>
+                    <span
+                      class="bg-emerald-500/10 text-emerald-500 text-sm font-semibold px-2.5 py-1 rounded-lg border border-emerald-500/20 flex items-center gap-1"
+                    >
+                      <span class="material-symbols-outlined text-[16px]"
+                        >trending_up</span
+                      >
+                      8.2%
+                    </span>
+                  </div>
+                  <span
+                    class="text-sm font-medium text-slate-500 dark:text-slate-400"
+                    >vs prev. period</span
+                  >
+                </div>
+
+                <!-- Chart -->
+                <div class="flex-1 w-full relative">
+                  <svg
+                    class="w-full h-full overflow-visible"
+                    preserveAspectRatio="none"
+                    viewBox="0 0 800 300"
+                  >
+                    <defs>
+                      <linearGradient
+                        id="chartGradient"
+                        x1="0"
+                        y1="0"
+                        x2="0"
+                        y2="1"
+                      >
+                        <stop
+                          offset="0%"
+                          stop-color="#3b82f6"
+                          stop-opacity="0.25"
+                        />
+                        <stop
+                          offset="100%"
+                          stop-color="#3b82f6"
+                          stop-opacity="0"
+                        />
+                      </linearGradient>
+                      <filter
+                        id="glow"
+                        x="-20%"
+                        y="-20%"
+                        width="140%"
+                        height="140%"
+                      >
+                        <feGaussianBlur stdDeviation="4" result="coloredBlur" />
+                        <feMerge>
+                          <feMergeNode in="coloredBlur" />
+                          <feMergeNode in="SourceGraphic" />
+                        </feMerge>
+                      </filter>
+                    </defs>
+
+                    <!-- Grid Lines (Horizontal) -->
+                    <line
+                      x1="0"
+                      y1="75"
+                      x2="800"
+                      y2="75"
+                      stroke="currentColor"
+                      class="text-slate-200 dark:text-white/5"
+                      stroke-dasharray="6 6"
+                    />
+                    <line
+                      x1="0"
+                      y1="150"
+                      x2="800"
+                      y2="150"
+                      stroke="currentColor"
+                      class="text-slate-200 dark:text-white/5"
+                      stroke-dasharray="6 6"
+                    />
+                    <line
+                      x1="0"
+                      y1="225"
+                      x2="800"
+                      y2="225"
+                      stroke="currentColor"
+                      class="text-slate-200 dark:text-white/5"
+                      stroke-dasharray="6 6"
+                    />
+
+                    <!-- Area Fill -->
+                    <path
+                      d="M0,250 C100,230 200,150 300,160 S500,200 600,150 S700,50 800,60 V300 H0 Z"
+                      fill="url(#chartGradient)"
+                    />
+
+                    <!-- Line -->
+                    <path
+                      d="M0,250 C100,230 200,150 300,160 S500,200 600,150 S700,50 800,60"
+                      fill="none"
+                      stroke="#3b82f6"
+                      stroke-width="5"
+                      stroke-linecap="round"
+                      filter="url(#glow)"
+                    />
+
+                    <!-- Data Point -->
+                    <g transform="translate(600, 150)">
+                      <circle r="8" fill="#3b82f6" />
+                      <circle
+                        r="14"
+                        fill="none"
+                        stroke="white"
+                        stroke-width="3"
+                        class="dark:stroke-[#1e293b]"
+                      />
+                      <circle r="4" fill="white" />
+                    </g>
+                  </svg>
+                  <div
+                    class="absolute bottom-0 w-full flex justify-between text-xs font-semibold text-slate-400 uppercase tracking-wider mt-4"
+                  >
+                    <span>Mon</span>
+                    <span>Tue</span>
+                    <span>Wed</span>
+                    <span>Thu</span>
+                    <span>Fri</span>
+                    <span>Sat</span>
+                    <span>Sun</span>
+                  </div>
+                </div>
+              </div>
+            </section>
+            <div class="flex flex-col gap-8">
+              <div class="">
+                <h3 class="text-lg font-bold tracking-tight mb-4">
+                  Quick Actions
+                </h3>
+                <button
+                  class="w-full relative overflow-hidden group bg-primary hover:bg-blue-600 active:scale-[0.98] transition-all duration-200 rounded-xl p-5 flex items-center justify-center gap-3 shadow-lg shadow-blue-900/20"
+                >
+                  <div
+                    class="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700"
+                  ></div>
+                  <span class="material-symbols-outlined text-white"
+                    >add_circle</span
+                  >
+                  <span class="text-white font-bold text-lg tracking-wide"
+                    >Upload New File</span
+                  >
+                </button>
+              </div>
+              <section class="flex flex-col gap-4 flex-1">
+                <div class="flex items-center justify-between">
+                  <h3 class="text-lg font-bold tracking-tight">
+                    Recent Activity
+                  </h3>
+                  <a
+                    class="text-sm font-semibold text-primary hover:text-blue-400 hover:underline"
+                    href="#"
+                    >See All</a
+                  >
+                </div>
+                <div class="flex flex-col gap-3">
+                  <div
+                    class="glass-card rounded-xl p-3 flex items-center gap-4 hover:bg-white/5 transition-all cursor-pointer group"
+                  >
+                    <div
+                      class="size-10 rounded-lg bg-blue-500/10 flex items-center justify-center shrink-0 text-blue-400 group-hover:bg-blue-500/20 transition-colors"
+                    >
+                      <span class="material-symbols-outlined text-[20px]"
+                        >graphic_eq</span
+                      >
+                    </div>
+                    <div class="flex-1 min-w-0">
+                      <div class="flex justify-between items-start">
+                        <h4
+                          class="text-sm font-semibold text-white truncate pr-2"
+                        >
+                          dataset_voice_01.wav
+                        </h4>
+                        <span class="text-sm font-bold text-emerald-400"
+                          >+$5.00</span
+                        >
+                      </div>
+                      <div class="flex justify-between items-center mt-0.5">
+                        <span
+                          class="inline-flex items-center gap-1 text-[10px] uppercase font-bold tracking-wider text-emerald-400 bg-emerald-500/10 px-1.5 py-0.5 rounded-full border border-emerald-500/20"
+                        >
+                          Sold
+                        </span>
+                        <span class="text-xs text-secondary-text"
+                          >2 hrs ago</span
+                        >
+                      </div>
+                    </div>
+                  </div>
+                  <div
+                    class="glass-card rounded-xl p-3 flex items-center gap-4 hover:bg-white/5 transition-all cursor-pointer group"
+                  >
+                    <div
+                      class="size-10 rounded-lg bg-purple-500/10 flex items-center justify-center shrink-0 text-purple-400 group-hover:bg-purple-500/20 transition-colors"
+                    >
+                      <span class="material-symbols-outlined text-[20px]"
+                        >folder_zip</span
+                      >
+                    </div>
+                    <div class="flex-1 min-w-0">
+                      <div class="flex justify-between items-start">
+                        <h4
+                          class="text-sm font-semibold text-white truncate pr-2"
+                        >
+                          image_set_nature.zip
+                        </h4>
+                        <span class="text-sm font-bold text-secondary-text"
+                          >--</span
+                        >
+                      </div>
+                      <div class="flex justify-between items-center mt-0.5">
+                        <span
+                          class="inline-flex items-center gap-1 text-[10px] uppercase font-bold tracking-wider text-yellow-400 bg-yellow-500/10 px-1.5 py-0.5 rounded-full border border-yellow-500/20"
+                        >
+                          Processing
+                        </span>
+                        <span class="text-xs text-secondary-text"
+                          >5 hrs ago</span
+                        >
+                      </div>
+                    </div>
+                  </div>
+                  <div
+                    class="glass-card rounded-xl p-3 flex items-center gap-4 hover:bg-white/5 transition-all cursor-pointer group"
+                  >
+                    <div
+                      class="size-10 rounded-lg bg-orange-500/10 flex items-center justify-center shrink-0 text-orange-400 group-hover:bg-orange-500/20 transition-colors"
+                    >
+                      <span class="material-symbols-outlined text-[20px]"
+                        >view_in_ar</span
+                      >
+                    </div>
+                    <div class="flex-1 min-w-0">
+                      <div class="flex justify-between items-start">
+                        <h4
+                          class="text-sm font-semibold text-white truncate pr-2"
+                        >
+                          3d_model_car_v2.obj
+                        </h4>
+                        <span class="text-sm font-bold text-secondary-text"
+                          >--</span
+                        >
+                      </div>
+                      <div class="flex justify-between items-center mt-0.5">
+                        <span
+                          class="inline-flex items-center gap-1 text-[10px] uppercase font-bold tracking-wider text-red-400 bg-red-500/10 px-1.5 py-0.5 rounded-full border border-red-500/20"
+                        >
+                          Rejected
+                        </span>
+                        <span class="text-xs text-secondary-text"
+                          >Yesterday</span
+                        >
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </section>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        const menuButtons = document.querySelectorAll("button");
+        const menuBtn = Array.from(menuButtons).find(
+          (btn) =>
+            btn.textContent.trim().includes("menu") ||
+            btn.querySelector("span")?.textContent.trim() === "menu"
+        );
+        const sidebar = document.querySelector("aside");
+
+        if (menuBtn && sidebar) {
+          menuBtn.addEventListener("click", () => {
+            sidebar.classList.toggle("hidden");
+            sidebar.classList.toggle("fixed");
+            sidebar.classList.toggle("inset-0");
+            sidebar.classList.toggle("z-40");
+            // Ensure background is sufficient
+            if (sidebar.classList.contains("fixed")) {
+              sidebar.classList.add("bg-white", "dark:bg-[#0B0F19]");
+            }
+          });
+
+          sidebar.addEventListener("click", (e) => {
+            // Close if clicking outside nav content (optional, but good UX)
+          });
+        }
+      });
+    </script>
+  </body>
+</html>

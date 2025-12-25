@@ -1,0 +1,664 @@
+<!DOCTYPE html>
+<html class="dark" lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Uploader - Profile Page</title>
+    <link href="https://fonts.googleapis.com" rel="preconnect" />
+    <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+      rel="stylesheet"
+    />
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              primary: "#3b82f6",
+              "primary-hover": "#2563eb",
+              "background-light": "#f0f4f8",
+              "background-dark": "#0f172a",
+              "surface-dark": "#1e293b",
+              "surface-light": "#ffffff",
+            },
+            fontFamily: {
+              display: ["Inter", "sans-serif"],
+            },
+            animation: {
+              "fade-in": "fadeIn 0.5s ease-out",
+              "slide-up": "slideUp 0.5s ease-out",
+            },
+            keyframes: {
+              fadeIn: {
+                "0%": { opacity: "0" },
+                "100%": { opacity: "1" },
+              },
+              slideUp: {
+                "0%": { transform: "translateY(20px)", opacity: "0" },
+                "100%": { transform: "translateY(0)", opacity: "1" },
+              },
+            },
+          },
+        },
+      };
+    </script>
+    <style>
+      .glass,
+      .glass-panel {
+        background: rgba(255, 255, 255, 0.7);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        border: 1px solid rgba(255, 255, 255, 0.5);
+      }
+      .dark .glass,
+      .dark .glass-panel {
+        background: rgba(30, 41, 59, 0.7);
+        border: 1px solid rgba(255, 255, 255, 0.05);
+      }
+      .glass-card {
+        background: rgba(255, 255, 255, 0.6);
+        backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
+        border: 1px solid rgba(255, 255, 255, 0.4);
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05),
+          0 2px 4px -1px rgba(0, 0, 0, 0.03);
+      }
+      .dark .glass-card {
+        background: rgba(30, 41, 59, 0.6);
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2),
+          0 2px 4px -1px rgba(0, 0, 0, 0.1);
+      }
+      .no-scrollbar::-webkit-scrollbar {
+        display: none;
+      }
+      .no-scrollbar {
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+      }
+      body {
+        background-image: radial-gradient(
+            at 0% 0%,
+            rgba(59, 130, 246, 0.15) 0px,
+            transparent 50%
+          ),
+          radial-gradient(
+            at 100% 0%,
+            rgba(139, 92, 246, 0.15) 0px,
+            transparent 50%
+          ),
+          radial-gradient(
+            at 100% 100%,
+            rgba(236, 72, 153, 0.15) 0px,
+            transparent 50%
+          ),
+          radial-gradient(
+            at 0% 100%,
+            rgba(34, 197, 94, 0.15) 0px,
+            transparent 50%
+          );
+        background-attachment: fixed;
+      }
+      .dark body {
+        background-image: radial-gradient(
+            at 0% 0%,
+            rgba(59, 130, 246, 0.1) 0px,
+            transparent 50%
+          ),
+          radial-gradient(
+            at 100% 0%,
+            rgba(139, 92, 246, 0.1) 0px,
+            transparent 50%
+          ),
+          radial-gradient(
+            at 100% 100%,
+            rgba(236, 72, 153, 0.1) 0px,
+            transparent 50%
+          ),
+          radial-gradient(
+            at 0% 100%,
+            rgba(34, 197, 94, 0.1) 0px,
+            transparent 50%
+          );
+      }
+      ::-webkit-scrollbar {
+        width: 5px;
+        height: 5px;
+      }
+      ::-webkit-scrollbar-track {
+        background: transparent;
+      }
+      ::-webkit-scrollbar-thumb {
+        background: rgba(156, 163, 175, 0.2);
+        border-radius: 10px;
+      }
+      ::-webkit-scrollbar-thumb:hover {
+        background: rgba(156, 163, 175, 0.4);
+      }
+      .dark ::-webkit-scrollbar-thumb {
+        background: rgba(255, 255, 255, 0.1);
+      }
+      .dark ::-webkit-scrollbar-thumb:hover {
+        background: rgba(255, 255, 255, 0.2);
+      }
+    </style>
+    <style>
+      body {
+        min-height: max(884px, 100dvh);
+      }
+    </style>
+  </head>
+  <body
+    class="bg-background-light dark:bg-background-dark font-display antialiased text-slate-900 dark:text-white flex h-screen overflow-hidden selection:bg-primary/20 selection:text-primary"
+  >
+    <aside
+      class="hidden md:flex flex-col w-72 h-full glass border-r border-gray-200/50 dark:border-white/5 shrink-0 transition-all duration-300"
+    >
+      <div class="p-6 pb-8">
+        <div class="flex items-center gap-3">
+          <div
+            class="flex items-center justify-center w-10 h-10 rounded-xl bg-gradient-to-br from-primary-500 to-primary-600 text-white shadow-lg shadow-primary-500/20"
+          >
+            <span class="material-symbols-outlined text-[24px]"
+              >cloud_circle</span
+            >
+          </div>
+          <div class="flex flex-col">
+            <span
+              class="font-bold text-lg tracking-tight text-gray-900 dark:text-white leading-none"
+              >MData</span
+            >
+            <span
+              class="text-xs text-gray-500 dark:text-gray-400 font-medium mt-1"
+              >Uploader Portal</span
+            >
+          </div>
+        </div>
+      </div>
+      <div class="flex-1 px-4 sidebar-scroll overflow-y-auto">
+        <nav class="space-y-1.5 py-2">
+          <a
+            class="group flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-xl text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-white/5 hover:text-gray-900 dark:hover:text-white transition-all duration-200"
+            href="dashboard.html"
+          >
+            <span
+              class="material-symbols-outlined text-[20px] text-gray-400 group-hover:text-primary-500 transition-colors"
+              >dashboard</span
+            >
+            Dashboard
+          </a>
+          <a
+            class="group flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-xl text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-white/5 hover:text-gray-900 dark:hover:text-white transition-all duration-200"
+            href="upload_files.html"
+          >
+            <span
+              class="material-symbols-outlined text-[20px] text-gray-400 group-hover:text-primary-500 transition-colors"
+              >cloud_upload</span
+            >
+            Upload Files
+          </a>
+          <a
+            class="group flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-xl text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-white/5 hover:text-gray-900 dark:hover:text-white transition-all duration-200"
+            href="file_history.html"
+          >
+            <span
+              class="material-symbols-outlined text-[20px] text-gray-400 group-hover:text-primary-500 transition-colors"
+              >history</span
+            >
+            File History
+          </a>
+
+          <a
+            class="group flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-xl text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-white/5 hover:text-gray-900 dark:hover:text-white transition-all duration-200"
+            href="wallet.html"
+          >
+            <span
+              class="material-symbols-outlined text-[20px] text-gray-400 group-hover:text-primary-500 transition-colors"
+              >account_balance_wallet</span
+            >
+            Earnings
+          </a>
+          <a
+            class="relative flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-xl bg-primary-50 dark:bg-primary-500/10 text-primary-600 dark:text-primary-400 transition-all duration-200 shadow-sm ring-1 ring-primary-500/20"
+            href="profile.html"
+          >
+            <span
+              class="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-primary-500 rounded-r-full"
+            ></span>
+            <span class="material-symbols-outlined text-[20px] fill-1"
+              >settings</span
+            >
+            Settings
+          </a>
+        </nav>
+      </div>
+      <div class="p-4 mt-auto border-t border-gray-200/50 dark:border-white/5">
+        <div
+          class="flex items-center gap-3 p-2 rounded-xl hover:bg-gray-100 dark:hover:bg-white/5 transition-colors cursor-pointer group"
+        >
+          <img
+            alt="User"
+            class="w-10 h-10 rounded-full border-2 border-white dark:border-gray-700 shadow-sm"
+            src="https://lh3.googleusercontent.com/aida-public/AB6AXuBJJL6r2F2CGrlVRpg-2_8D8dEqSuXJLoYjAt2PNC9hnBJm7N9O1o67vYni1Io59mXrtu0nPpxIVZamGtum3jPPLDHX9jcGf9MWEhHX1Ii4et3kpOHrEZ_V4f4sCQEW1GWxQ1DqR6p3rY8W1MZ5mJ5N2dwzPwUN7M3aq8BXR1bxHWi2s2uU--uYaVkRPqczUfGNo1l5tMPLX0bfITQxRYbenBYQ6dA1pG5S4wp6wwwxCyX7w3IlTnDk6SU2gNO3U49RquJjVhYRRYlv"
+          />
+          <div class="flex-1 min-w-0">
+            <p
+              class="text-sm font-semibold text-gray-900 dark:text-white truncate"
+            >
+              John Smith
+            </p>
+            <p class="text-xs text-gray-500 dark:text-gray-400 truncate">
+              john@example.com
+            </p>
+          </div>
+          <span
+            class="material-symbols-outlined text-gray-400 group-hover:text-gray-600 dark:group-hover:text-gray-300"
+            >expand_more</span
+          >
+        </div>
+      </div>
+    </aside>
+    <main class="flex-1 h-full overflow-y-auto relative w-full scroll-smooth">
+      <div class="md:hidden sticky top-0 z-50 glass border-b border-white/5">
+        <div class="flex items-center p-4 justify-between h-16">
+          <div class="flex items-center gap-3">
+            <button
+              class="md:hidden p-1 text-slate-500 dark:text-slate-400 hover:text-primary dark:hover:text-white transition-colors"
+            >
+              <span class="material-symbols-outlined">menu</span>
+            </button>
+            <div
+              class="bg-primary h-8 w-8 rounded-lg flex items-center justify-center text-white"
+            >
+              <span class="material-symbols-outlined text-[20px]"
+                >cloud_upload</span
+              >
+            </div>
+          </div>
+          <h2
+            class="text-base font-semibold leading-tight tracking-tight flex-1 text-center"
+          >
+            My Profile
+          </h2>
+          <button
+            class="p-2 -mr-2 text-slate-500 dark:text-slate-400 hover:text-primary dark:hover:text-white transition-colors relative"
+          >
+            <span
+              class="absolute top-2 right-2.5 h-2 w-2 bg-red-500 rounded-full ring-2 ring-white dark:ring-slate-900"
+            ></span>
+            <span class="material-symbols-outlined">notifications</span>
+          </button>
+        </div>
+      </div>
+      <div class="max-w-4xl mx-auto md:py-10 pb-28 md:pb-12 px-4 md:px-8">
+        <div class="hidden md:flex items-center justify-between mb-8">
+          <div>
+            <h1
+              class="text-3xl font-bold text-slate-900 dark:text-white tracking-tight"
+            >
+              Profile Settings
+            </h1>
+            <p class="text-slate-500 dark:text-slate-400 mt-1">
+              Manage your account and view your performance.
+            </p>
+          </div>
+          <div class="flex gap-3">
+            <button
+              class="p-2 text-slate-500 dark:text-slate-400 hover:text-primary dark:hover:text-white transition-colors bg-white dark:bg-surface-dark rounded-lg border border-slate-200 dark:border-slate-700 shadow-sm relative group"
+            >
+              <span
+                class="absolute top-1.5 right-2 h-2 w-2 bg-red-500 rounded-full ring-2 ring-white dark:ring-surface-dark animate-pulse"
+              ></span>
+              <span
+                class="material-symbols-outlined group-hover:scale-105 transition-transform"
+                >notifications</span
+              >
+            </button>
+          </div>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div class="space-y-6 md:col-span-1">
+            <div
+              class="glass-panel rounded-2xl p-6 shadow-sm border border-white/50 dark:border-slate-700/50 flex flex-col items-center text-center relative overflow-hidden group"
+            >
+              <div
+                class="absolute inset-0 bg-gradient-to-b from-primary/5 to-transparent dark:from-primary/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500"
+              ></div>
+              <div class="relative mb-4">
+                <div
+                  class="absolute -inset-1 bg-gradient-to-r from-primary to-purple-500 rounded-full opacity-70 blur-md group-hover:opacity-100 group-hover:blur-lg transition-all duration-500"
+                ></div>
+                <div
+                  class="relative h-24 w-24 rounded-full border-[3px] border-white dark:border-slate-800 overflow-hidden shadow-xl"
+                >
+                  <img
+                    alt="Profile picture"
+                    class="h-full w-full object-cover transform group-hover:scale-110 transition-transform duration-700"
+                    src="https://lh3.googleusercontent.com/aida-public/AB6AXuBpveL4lwMeSPnUUNpPDEdQPYw-fI9LgCbF-At-fzZnDs2BnoZ6ZWTGbHZafVfqDwA1kuTXh_S29nyHP_HOjyv6z4Q_urO0yXVui-eTXkx-VVk49KI05kZhXU6zvFZTAHFESv7YnGi0qw1ZdrvDRnY8B879Dk7lImlVA1vLxv8aSRZJRFB9ijw3eNdFxOrOOOrSLMv1bthaaFVcc58cp5QHyuMzI2fYiZX8cBFFs0Y72ohLZ11m8YGQAY5-xjj2b6hrhKf7uPDo0tmX"
+                  />
+                </div>
+                <div
+                  class="absolute bottom-0 right-0 bg-blue-500 text-white rounded-full p-1 border-[3px] border-white dark:border-slate-800 flex items-center justify-center"
+                >
+                  <span class="material-symbols-outlined text-[14px]"
+                    >verified</span
+                  >
+                </div>
+              </div>
+              <h2
+                class="text-xl font-bold tracking-tight text-slate-900 dark:text-white"
+              >
+                Alex Contributor
+              </h2>
+              <p class="text-sm text-slate-500 dark:text-slate-400 mb-3">
+                alex@example.com
+              </p>
+              <div class="flex items-center gap-2 mb-4">
+                <span
+                  class="bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 px-3 py-1 rounded-full text-xs font-semibold border border-blue-200 dark:border-blue-800/50"
+                  >Level 2</span
+                >
+                <span class="text-slate-300 dark:text-slate-600">•</span>
+                <span class="text-xs text-slate-500 dark:text-slate-400"
+                  >Since 2023</span
+                >
+              </div>
+              <div
+                class="w-full grid grid-cols-2 gap-2 mt-2 pt-4 border-t border-slate-200/50 dark:border-slate-700/50"
+              >
+                <div class="text-center">
+                  <span
+                    class="block text-lg font-bold text-slate-900 dark:text-white"
+                    >124</span
+                  >
+                  <span
+                    class="text-[10px] text-slate-500 uppercase tracking-wider font-medium"
+                    >Uploads</span
+                  >
+                </div>
+                <div class="text-center">
+                  <span
+                    class="block text-lg font-bold text-slate-900 dark:text-white"
+                    >4.9</span
+                  >
+                  <span
+                    class="text-[10px] text-slate-500 uppercase tracking-wider font-medium"
+                    >Rating</span
+                  >
+                </div>
+              </div>
+            </div>
+            <div
+              class="glass-panel rounded-2xl overflow-hidden shadow-sm border border-white/50 dark:border-slate-700/50"
+            >
+              <div
+                class="px-5 py-3 border-b border-slate-100 dark:border-slate-700/50 bg-slate-50/50 dark:bg-slate-800/20"
+              >
+                <h3
+                  class="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider"
+                >
+                  File Management
+                </h3>
+              </div>
+              <a
+                class="flex items-center justify-between p-4 hover:bg-white dark:hover:bg-slate-700/30 transition-colors group"
+                href="#"
+              >
+                <div class="flex items-center gap-3">
+                  <div
+                    class="h-9 w-9 rounded-lg bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400 flex items-center justify-center group-hover:scale-110 transition-transform"
+                  >
+                    <span class="material-symbols-outlined text-[20px]"
+                      >folder_open</span
+                    >
+                  </div>
+                  <span class="text-sm font-medium">My Files</span>
+                </div>
+                <span
+                  class="material-symbols-outlined text-slate-400 text-[20px] group-hover:translate-x-1 transition-transform"
+                  >chevron_right</span
+                >
+              </a>
+              <a
+                class="flex items-center justify-between p-4 hover:bg-white dark:hover:bg-slate-700/30 transition-colors border-t border-slate-100 dark:border-slate-700/50 group"
+                href="#"
+              >
+                <div class="flex items-center gap-3">
+                  <div
+                    class="h-9 w-9 rounded-lg bg-teal-100 dark:bg-teal-900/30 text-teal-600 dark:text-teal-400 flex items-center justify-center group-hover:scale-110 transition-transform"
+                  >
+                    <span class="material-symbols-outlined text-[20px]"
+                      >history</span
+                    >
+                  </div>
+                  <span class="text-sm font-medium">Submission History</span>
+                </div>
+                <span
+                  class="material-symbols-outlined text-slate-400 text-[20px] group-hover:translate-x-1 transition-transform"
+                  >chevron_right</span
+                >
+              </a>
+            </div>
+          </div>
+          <div class="space-y-6 md:col-span-2">
+            <div
+              class="glass-card rounded-2xl p-6 shadow-lg shadow-slate-900/10 border border-white/50 dark:border-slate-700/50 relative overflow-hidden"
+            >
+              <div
+                class="absolute top-0 right-0 w-64 h-64 bg-primary/20 rounded-full blur-[80px] -mr-16 -mt-16 pointer-events-none"
+              ></div>
+              <div class="flex items-center justify-between mb-6 relative z-10">
+                <div class="flex items-center gap-2">
+                  <div class="p-1.5 bg-white/10 rounded-lg backdrop-blur-sm">
+                    <span class="material-symbols-outlined text-[20px]"
+                      >account_balance_wallet</span
+                    >
+                  </div>
+                  <h3
+                    class="text-sm font-medium text-slate-500 dark:text-slate-400"
+                  >
+                    Earnings Overview
+                  </h3>
+                </div>
+                <button
+                  class="text-xs text-blue-300 font-medium hover:text-white transition-colors flex items-center gap-1"
+                >
+                  View History
+                  <span class="material-symbols-outlined text-[14px]"
+                    >arrow_forward</span
+                  >
+                </button>
+              </div>
+              <div class="grid grid-cols-2 gap-8 relative z-10">
+                <div>
+                  <p class="text-xs text-slate-400 mb-1">Available Funds</p>
+                  <p
+                    class="text-3xl font-bold tracking-tight text-slate-900 dark:text-white"
+                  >
+                    $450.00
+                  </p>
+                </div>
+                <div class="border-l border-white/10 pl-8">
+                  <p class="text-xs text-slate-400 mb-1">Lifetime Earnings</p>
+                  <p
+                    class="text-3xl font-bold tracking-tight text-slate-500 dark:text-gray-400"
+                  >
+                    $1,200.00
+                  </p>
+                </div>
+              </div>
+              <div
+                class="mt-8 pt-4 border-t border-white/10 flex gap-4 relative z-10"
+              >
+                <button
+                  class="flex-1 py-2.5 bg-primary hover:bg-primary-hover text-white rounded-xl font-medium text-sm transition-all shadow-lg shadow-blue-500/30 flex items-center justify-center gap-2 transform hover:-translate-y-0.5"
+                >
+                  <span class="material-symbols-outlined text-[18px]"
+                    >payments</span
+                  >
+                  Withdraw Funds
+                </button>
+                <button
+                  class="px-4 py-2.5 bg-white/5 hover:bg-white/10 text-white rounded-xl font-medium text-sm transition-colors border border-white/10"
+                >
+                  Statements
+                </button>
+              </div>
+            </div>
+            <div
+              class="glass-panel rounded-2xl overflow-hidden shadow-sm border border-white/50 dark:border-slate-700/50"
+            >
+              <div
+                class="px-5 py-3 border-b border-slate-100 dark:border-slate-700/50 bg-slate-50/50 dark:bg-slate-800/20"
+              >
+                <h3
+                  class="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider"
+                >
+                  Account Settings
+                </h3>
+              </div>
+              <a
+                class="flex items-center justify-between p-5 hover:bg-white dark:hover:bg-slate-700/30 transition-colors border-b border-slate-100 dark:border-slate-700/50 group"
+                href="#"
+              >
+                <div class="flex items-center gap-4">
+                  <div
+                    class="h-10 w-10 rounded-xl bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 flex items-center justify-center shadow-sm group-hover:scale-110 transition-transform"
+                  >
+                    <span class="material-symbols-outlined text-[22px]"
+                      >person</span
+                    >
+                  </div>
+                  <div>
+                    <span
+                      class="block text-sm font-semibold text-slate-900 dark:text-white"
+                      >Personal Information</span
+                    >
+                    <span class="text-xs text-slate-500 dark:text-slate-400"
+                      >Name, email, and bio</span
+                    >
+                  </div>
+                </div>
+                <span
+                  class="material-symbols-outlined text-slate-400 text-[20px] group-hover:translate-x-1 transition-transform"
+                  >chevron_right</span
+                >
+              </a>
+              <a
+                class="flex items-center justify-between p-5 hover:bg-white dark:hover:bg-slate-700/30 transition-colors border-b border-slate-100 dark:border-slate-700/50 group"
+                href="#"
+              >
+                <div class="flex items-center gap-4">
+                  <div
+                    class="h-10 w-10 rounded-xl bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 flex items-center justify-center shadow-sm group-hover:scale-110 transition-transform"
+                  >
+                    <span class="material-symbols-outlined text-[22px]"
+                      >credit_card</span
+                    >
+                  </div>
+                  <div>
+                    <span
+                      class="block text-sm font-semibold text-slate-900 dark:text-white"
+                      >Payment Methods</span
+                    >
+                    <span class="text-xs text-slate-500 dark:text-slate-400"
+                      >Cards and payout details</span
+                    >
+                  </div>
+                </div>
+                <span
+                  class="material-symbols-outlined text-slate-400 text-[20px] group-hover:translate-x-1 transition-transform"
+                  >chevron_right</span
+                >
+              </a>
+              <a
+                class="flex items-center justify-between p-5 hover:bg-white dark:hover:bg-slate-700/30 transition-colors group"
+                href="#"
+              >
+                <div class="flex items-center gap-4">
+                  <div
+                    class="h-10 w-10 rounded-xl bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 flex items-center justify-center shadow-sm group-hover:scale-110 transition-transform"
+                  >
+                    <span class="material-symbols-outlined text-[22px]"
+                      >receipt_long</span
+                    >
+                  </div>
+                  <div>
+                    <span
+                      class="block text-sm font-semibold text-slate-900 dark:text-white"
+                      >Tax Information</span
+                    >
+                    <span class="text-xs text-slate-500 dark:text-slate-400"
+                      >Documents and tax status</span
+                    >
+                  </div>
+                </div>
+                <span
+                  class="material-symbols-outlined text-slate-400 text-[20px] group-hover:translate-x-1 transition-transform"
+                  >chevron_right</span
+                >
+              </a>
+            </div>
+            <div
+              class="glass-panel rounded-2xl overflow-hidden shadow-sm border border-white/50 dark:border-slate-700/50 p-1"
+            >
+              <button
+                class="w-full flex items-center justify-between p-4 hover:bg-red-50 dark:hover:bg-red-900/10 transition-colors rounded-xl group text-red-500 dark:text-red-400"
+              >
+                <div class="flex items-center gap-3">
+                  <div
+                    class="h-9 w-9 rounded-lg bg-red-50 dark:bg-red-900/20 flex items-center justify-center group-hover:scale-110 transition-transform"
+                  >
+                    <span class="material-symbols-outlined text-[20px]"
+                      >logout</span
+                    >
+                  </div>
+                  <span class="text-sm font-medium">Log Out</span>
+                </div>
+              </button>
+            </div>
+          </div>
+        </div>
+        <div class="mt-8 text-center">
+          <p class="text-xs text-slate-400 dark:text-slate-600">
+            App Version 1.0.2 • © 2024 AI Agency Inc.
+          </p>
+        </div>
+      </div>
+    </main>
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        const menuButtons = document.querySelectorAll("button");
+        const menuBtn = Array.from(menuButtons).find(
+          (btn) =>
+            btn.textContent.trim().includes("menu") ||
+            btn.querySelector("span")?.textContent.trim() === "menu"
+        );
+        const sidebar = document.querySelector("aside");
+
+        if (menuBtn && sidebar) {
+          menuBtn.addEventListener("click", () => {
+            sidebar.classList.toggle("hidden");
+            sidebar.classList.toggle("fixed");
+            sidebar.classList.toggle("inset-0");
+            sidebar.classList.toggle("z-40");
+            if (sidebar.classList.contains("fixed")) {
+              sidebar.classList.add("bg-white", "dark:bg-[#0B0F19]");
+            }
+          });
+
+          sidebar.addEventListener("click", (e) => {
+            // Close if clicking outside
+          });
+        }
+      });
+    </script>
+  </body>
+</html>

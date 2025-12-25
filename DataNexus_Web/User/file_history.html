@@ -1,0 +1,1061 @@
+<!DOCTYPE html>
+<html class="dark" lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Uploader - File History</title>
+    <link href="https://fonts.googleapis.com" rel="preconnect" />
+    <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+      rel="stylesheet"
+    />
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              primary: "#3b82f6",
+              "primary-hover": "#2563eb",
+              "background-light": "#f0f4f8",
+              "background-dark": "#0f172a",
+              "surface-dark": "#1e293b",
+              "surface-light": "#ffffff",
+            },
+            fontFamily: {
+              display: ["Inter", "sans-serif"],
+            },
+            animation: {
+              "fade-in": "fadeIn 0.5s ease-out",
+              "slide-up": "slideUp 0.5s ease-out",
+            },
+            keyframes: {
+              fadeIn: {
+                "0%": { opacity: "0" },
+                "100%": { opacity: "1" },
+              },
+              slideUp: {
+                "0%": { transform: "translateY(20px)", opacity: "0" },
+                "100%": { transform: "translateY(0)", opacity: "1" },
+              },
+            },
+          },
+        },
+      };
+    </script>
+    <style>
+      .glass,
+      .glass-panel {
+        background: rgba(255, 255, 255, 0.7);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        border: 1px solid rgba(255, 255, 255, 0.5);
+      }
+      .dark .glass,
+      .dark .glass-panel {
+        background: rgba(30, 41, 59, 0.7);
+        border: 1px solid rgba(255, 255, 255, 0.05);
+      }
+      .glass-card {
+        background: rgba(255, 255, 255, 0.6);
+        backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
+        border: 1px solid rgba(255, 255, 255, 0.4);
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05),
+          0 2px 4px -1px rgba(0, 0, 0, 0.03);
+      }
+      .dark .glass-card {
+        background: rgba(30, 41, 59, 0.6);
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2),
+          0 2px 4px -1px rgba(0, 0, 0, 0.1);
+      }
+      .no-scrollbar::-webkit-scrollbar {
+        display: none;
+      }
+      .no-scrollbar {
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+      }
+      body {
+        background-image: radial-gradient(
+            at 0% 0%,
+            rgba(59, 130, 246, 0.15) 0px,
+            transparent 50%
+          ),
+          radial-gradient(
+            at 100% 0%,
+            rgba(139, 92, 246, 0.15) 0px,
+            transparent 50%
+          ),
+          radial-gradient(
+            at 100% 100%,
+            rgba(236, 72, 153, 0.15) 0px,
+            transparent 50%
+          ),
+          radial-gradient(
+            at 0% 100%,
+            rgba(34, 197, 94, 0.15) 0px,
+            transparent 50%
+          );
+        background-attachment: fixed;
+      }
+      .dark body {
+        background-image: radial-gradient(
+            at 0% 0%,
+            rgba(59, 130, 246, 0.1) 0px,
+            transparent 50%
+          ),
+          radial-gradient(
+            at 100% 0%,
+            rgba(139, 92, 246, 0.1) 0px,
+            transparent 50%
+          ),
+          radial-gradient(
+            at 100% 100%,
+            rgba(236, 72, 153, 0.1) 0px,
+            transparent 50%
+          ),
+          radial-gradient(
+            at 0% 100%,
+            rgba(34, 197, 94, 0.1) 0px,
+            transparent 50%
+          );
+      }
+      ::-webkit-scrollbar {
+        width: 5px;
+        height: 5px;
+      }
+      ::-webkit-scrollbar-track {
+        background: transparent;
+      }
+      ::-webkit-scrollbar-thumb {
+        background: rgba(156, 163, 175, 0.2);
+        border-radius: 10px;
+      }
+      ::-webkit-scrollbar-thumb:hover {
+        background: rgba(156, 163, 175, 0.4);
+      }
+      .dark ::-webkit-scrollbar-thumb {
+        background: rgba(255, 255, 255, 0.1);
+      }
+      .dark ::-webkit-scrollbar-thumb:hover {
+        background: rgba(255, 255, 255, 0.2);
+      }
+    </style>
+    <style>
+      body {
+        min-height: max(884px, 100dvh);
+      }
+    </style>
+  </head>
+  <body
+    class="bg-background-light dark:bg-background-dark font-display antialiased text-slate-900 dark:text-white flex h-screen overflow-hidden selection:bg-primary/20 selection:text-primary"
+  >
+    <aside
+      class="hidden md:flex flex-col w-72 h-full glass border-r border-gray-200/50 dark:border-white/5 shrink-0 transition-all duration-300"
+    >
+      <div class="p-6 pb-8">
+        <div class="flex items-center gap-3">
+          <div
+            class="flex items-center justify-center w-10 h-10 rounded-xl bg-gradient-to-br from-primary-500 to-primary-600 text-white shadow-lg shadow-primary-500/20"
+          >
+            <span class="material-symbols-outlined text-[24px]"
+              >cloud_circle</span
+            >
+          </div>
+          <div class="flex flex-col">
+            <span
+              class="font-bold text-lg tracking-tight text-gray-900 dark:text-white leading-none"
+              >MData</span
+            >
+            <span
+              class="text-xs text-gray-500 dark:text-gray-400 font-medium mt-1"
+              >Uploader Portal</span
+            >
+          </div>
+        </div>
+      </div>
+      <div class="flex-1 px-4 sidebar-scroll overflow-y-auto">
+        <nav class="space-y-1.5 py-2">
+          <a
+            class="group flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-xl text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-white/5 hover:text-gray-900 dark:hover:text-white transition-all duration-200"
+            href="dashboard.html"
+          >
+            <span
+              class="material-symbols-outlined text-[20px] text-gray-400 group-hover:text-primary-500 transition-colors"
+              >dashboard</span
+            >
+            Dashboard
+          </a>
+          <a
+            class="group flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-xl text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-white/5 hover:text-gray-900 dark:hover:text-white transition-all duration-200"
+            href="upload_files.html"
+          >
+            <span
+              class="material-symbols-outlined text-[20px] text-gray-400 group-hover:text-primary-500 transition-colors"
+              >cloud_upload</span
+            >
+            Upload Files
+          </a>
+          <a
+            class="relative flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-xl bg-primary-50 dark:bg-primary-500/10 text-primary-600 dark:text-primary-400 transition-all duration-200 shadow-sm ring-1 ring-primary-500/20"
+            href="file_history.html"
+          >
+            <span
+              class="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-primary-500 rounded-r-full"
+            ></span>
+            <span class="material-symbols-outlined text-[20px] fill-1"
+              >history</span
+            >
+            File History
+          </a>
+
+          <a
+            class="group flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-xl text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-white/5 hover:text-gray-900 dark:hover:text-white transition-all duration-200"
+            href="wallet.html"
+          >
+            <span
+              class="material-symbols-outlined text-[20px] text-gray-400 group-hover:text-primary-500 transition-colors"
+              >account_balance_wallet</span
+            >
+            Earnings
+          </a>
+          <a
+            class="group flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-xl text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-white/5 hover:text-gray-900 dark:hover:text-white transition-all duration-200"
+            href="profile.html"
+          >
+            <span
+              class="material-symbols-outlined text-[20px] text-gray-400 group-hover:text-primary-500 transition-colors"
+              >settings</span
+            >
+            Settings
+          </a>
+        </nav>
+      </div>
+      <div class="p-4 mt-auto border-t border-gray-200/50 dark:border-white/5">
+        <div
+          class="flex items-center gap-3 p-2 rounded-xl hover:bg-gray-100 dark:hover:bg-white/5 transition-colors cursor-pointer group"
+        >
+          <img
+            alt="User"
+            class="w-10 h-10 rounded-full border-2 border-white dark:border-gray-700 shadow-sm"
+            src="https://lh3.googleusercontent.com/aida-public/AB6AXuBJJL6r2F2CGrlVRpg-2_8D8dEqSuXJLoYjAt2PNC9hnBJm7N9O1o67vYni1Io59mXrtu0nPpxIVZamGtum3jPPLDHX9jcGf9MWEhHX1Ii4et3kpOHrEZ_V4f4sCQEW1GWxQ1DqR6p3rY8W1MZ5mJ5N2dwzPwUN7M3aq8BXR1bxHWi2s2uU--uYaVkRPqczUfGNo1l5tMPLX0bfITQxRYbenBYQ6dA1pG5S4wp6wwwxCyX7w3IlTnDk6SU2gNO3U49RquJjVhYRRYlv"
+          />
+          <div class="flex-1 min-w-0">
+            <p
+              class="text-sm font-semibold text-gray-900 dark:text-white truncate"
+            >
+              John Smith
+            </p>
+            <p class="text-xs text-gray-500 dark:text-gray-400 truncate">
+              john@example.com
+            </p>
+          </div>
+          <span
+            class="material-symbols-outlined text-gray-400 group-hover:text-gray-600 dark:group-hover:text-gray-300"
+            >expand_more</span
+          >
+        </div>
+      </div>
+    </aside>
+    <div class="flex-1 flex flex-col h-screen overflow-hidden relative z-10">
+      <header
+        class="lg:hidden sticky top-0 z-30 glass border-b border-white/5 transition-colors duration-300"
+      >
+        <div class="flex items-center p-4 justify-between w-full">
+          <div class="flex items-center gap-3">
+            <button class="p-1 -ml-1 text-slate-600 dark:text-white">
+              <span class="material-symbols-outlined">menu</span>
+            </button>
+            <h2 class="text-lg font-bold">File History</h2>
+          </div>
+          <div class="relative shrink-0">
+            <div
+              class="bg-center bg-no-repeat bg-cover rounded-full size-8 ring-1 ring-gray-700"
+              style="
+                background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuBHSDta1V1TdMsYpt3KI1p0q4kvJCMbjJH0kOgh4Cg6KH6lfwOf-SjcSgy6qhH3M5L4nC_nhUvOAPTg6F_A3fBg5OewF5SbB5dI2_MArtwRij5TMVD7L3Ni0wyE-q4PVS0Baeu48U3JR1hj84XXr2D7dXMT3VG0rv6XX5qSj3lndYxJiWTYc1X6HeK1_cqr0qCKDbU2-MhrDf8DILQuLDlFf6QcUvEjF0c8NXolvx8CjnjAk6fE5S6t4H8k7EGJMzHNV7aEI4w0-_l4');
+              "
+            ></div>
+          </div>
+        </div>
+      </header>
+
+      <header
+        class="hidden lg:flex items-center justify-between px-8 py-5 border-b border-white/5 shrink-0 glass-panel sticky top-0 z-20"
+      >
+        <div>
+          <h2 class="text-2xl font-bold tracking-tight">File History</h2>
+          <p class="text-sm text-slate-500 dark:text-slate-400 hidden sm:block">
+            Manage your uploaded assets and track performance
+          </p>
+        </div>
+        <div class="flex items-center gap-4">
+          <div class="relative hidden lg:block group">
+            <span
+              class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 transition-colors group-focus-within:text-primary"
+              >search</span
+            >
+            <input
+              class="pl-10 pr-4 py-2.5 rounded-xl bg-white/50 dark:bg-black/20 border border-transparent focus:border-primary/50 focus:bg-white dark:focus:bg-black/40 text-sm focus:ring-4 focus:ring-primary/10 w-64 placeholder-slate-500 dark:text-white transition-all shadow-sm"
+              placeholder="Search files, tags..."
+              type="text"
+            />
+          </div>
+          <button
+            class="bg-primary hover:bg-primary-hover text-white px-5 py-2.5 rounded-xl text-sm font-semibold transition-all shadow-lg shadow-blue-500/30 flex items-center gap-2 hover:-translate-y-0.5 active:translate-y-0"
+          >
+            <span class="material-symbols-outlined text-[20px]"
+              >cloud_upload</span
+            >
+            Upload New
+          </button>
+          <button
+            class="md:hidden p-2 text-slate-600 dark:text-slate-300 bg-white/50 dark:bg-white/5 rounded-lg"
+          >
+            <span class="material-symbols-outlined">menu</span>
+          </button>
+        </div>
+      </header>
+      <div class="flex-1 overflow-y-auto p-4 md:p-8 scroll-smooth">
+        <div class="max-w-[1600px] mx-auto space-y-8 animate-fade-in">
+          <section class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div
+              class="glass-card rounded-2xl p-6 relative overflow-hidden group transition-all duration-300 hover:-translate-y-1"
+            >
+              <div
+                class="absolute -right-6 -top-6 w-32 h-32 bg-green-500/10 rounded-full blur-2xl group-hover:bg-green-500/20 transition-all"
+              ></div>
+              <div class="flex items-start justify-between relative">
+                <div>
+                  <p
+                    class="text-sm font-medium text-slate-500 dark:text-slate-400 mb-1"
+                  >
+                    Total Earnings
+                  </p>
+                  <h3
+                    class="text-3xl font-bold text-slate-900 dark:text-white tracking-tight"
+                  >
+                    $1,240.50
+                  </h3>
+                </div>
+                <div
+                  class="p-3 rounded-xl bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400"
+                >
+                  <span class="material-symbols-outlined">payments</span>
+                </div>
+              </div>
+              <div class="mt-4 flex items-center gap-2">
+                <span
+                  class="text-xs font-bold text-green-600 bg-green-100 dark:bg-green-900/30 px-2 py-1 rounded-lg flex items-center gap-1"
+                >
+                  <span class="material-symbols-outlined text-[14px]"
+                    >trending_up</span
+                  >
+                  12%
+                </span>
+                <span class="text-xs text-slate-500">vs last month</span>
+              </div>
+            </div>
+            <div
+              class="glass-card rounded-2xl p-6 relative overflow-hidden group transition-all duration-300 hover:-translate-y-1"
+            >
+              <div
+                class="absolute -right-6 -top-6 w-32 h-32 bg-blue-500/10 rounded-full blur-2xl group-hover:bg-blue-500/20 transition-all"
+              ></div>
+              <div class="flex items-start justify-between relative">
+                <div>
+                  <p
+                    class="text-sm font-medium text-slate-500 dark:text-slate-400 mb-1"
+                  >
+                    Files Sold
+                  </p>
+                  <h3
+                    class="text-3xl font-bold text-slate-900 dark:text-white tracking-tight"
+                  >
+                    45
+                  </h3>
+                </div>
+                <div
+                  class="p-3 rounded-xl bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400"
+                >
+                  <span class="material-symbols-outlined">inventory_2</span>
+                </div>
+              </div>
+              <div class="mt-4 flex items-center gap-2">
+                <div class="flex -space-x-2">
+                  <div
+                    class="w-6 h-6 rounded-full bg-blue-100 border-2 border-white dark:border-slate-800 flex items-center justify-center text-[10px]"
+                  >
+                    🎨
+                  </div>
+                  <div
+                    class="w-6 h-6 rounded-full bg-purple-100 border-2 border-white dark:border-slate-800 flex items-center justify-center text-[10px]"
+                  >
+                    🎵
+                  </div>
+                  <div
+                    class="w-6 h-6 rounded-full bg-orange-100 border-2 border-white dark:border-slate-800 flex items-center justify-center text-[10px]"
+                  >
+                    🧊
+                  </div>
+                </div>
+                <span class="text-xs text-slate-500 pl-1"
+                  >Across 8 categories</span
+                >
+              </div>
+            </div>
+            <div
+              class="glass-card rounded-2xl p-6 relative overflow-hidden group transition-all duration-300 hover:-translate-y-1"
+            >
+              <div
+                class="absolute -right-6 -top-6 w-32 h-32 bg-purple-500/10 rounded-full blur-2xl group-hover:bg-purple-500/20 transition-all"
+              ></div>
+              <div class="flex items-start justify-between relative">
+                <div>
+                  <p
+                    class="text-sm font-medium text-slate-500 dark:text-slate-400 mb-1"
+                  >
+                    Avg Quality Score
+                  </p>
+                  <h3
+                    class="text-3xl font-bold text-slate-900 dark:text-white tracking-tight"
+                  >
+                    9.1<span
+                      class="text-lg text-slate-400 dark:text-slate-600 font-normal ml-1"
+                      >/10</span
+                    >
+                  </h3>
+                </div>
+                <div
+                  class="p-3 rounded-xl bg-purple-50 dark:bg-purple-900/20 text-purple-600 dark:text-purple-400"
+                >
+                  <span class="material-symbols-outlined">star</span>
+                </div>
+              </div>
+              <div
+                class="mt-4 w-full bg-gray-100 dark:bg-gray-700 rounded-full h-2 overflow-hidden"
+              >
+                <div
+                  class="bg-gradient-to-r from-purple-500 to-indigo-500 h-2 rounded-full"
+                  style="width: 91%"
+                ></div>
+              </div>
+              <p class="text-xs text-slate-500 mt-2 text-right">
+                Top 5% contributor
+              </p>
+            </div>
+          </section>
+          <section
+            class="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 glass-panel p-2 rounded-2xl sticky top-2 z-10 transition-all"
+          >
+            <div
+              class="flex overflow-x-auto pb-2 lg:pb-0 gap-1 w-full lg:w-auto no-scrollbar"
+            >
+              <label class="cursor-pointer flex-shrink-0">
+                <input
+                  checked=""
+                  class="peer sr-only"
+                  name="status"
+                  type="radio"
+                  value="all"
+                />
+                <div
+                  class="px-4 py-2 text-sm font-medium rounded-xl text-slate-600 dark:text-slate-400 hover:bg-white/50 dark:hover:bg-white/5 peer-checked:bg-white dark:peer-checked:bg-slate-700 peer-checked:text-slate-900 dark:peer-checked:text-white peer-checked:shadow-sm transition-all duration-200"
+                >
+                  All Files
+                </div>
+              </label>
+              <label class="cursor-pointer flex-shrink-0">
+                <input
+                  class="peer sr-only"
+                  name="status"
+                  type="radio"
+                  value="purchased"
+                />
+                <div
+                  class="px-4 py-2 text-sm font-medium rounded-xl text-slate-600 dark:text-slate-400 hover:bg-white/50 dark:hover:bg-white/5 peer-checked:bg-white dark:peer-checked:bg-slate-700 peer-checked:text-green-600 dark:peer-checked:text-green-400 peer-checked:shadow-sm transition-all duration-200"
+                >
+                  Sold
+                </div>
+              </label>
+              <label class="cursor-pointer flex-shrink-0">
+                <input
+                  class="peer sr-only"
+                  name="status"
+                  type="radio"
+                  value="pending"
+                />
+                <div
+                  class="px-4 py-2 text-sm font-medium rounded-xl text-slate-600 dark:text-slate-400 hover:bg-white/50 dark:hover:bg-white/5 peer-checked:bg-white dark:peer-checked:bg-slate-700 peer-checked:text-yellow-600 dark:peer-checked:text-yellow-400 peer-checked:shadow-sm transition-all duration-200"
+                >
+                  Pending
+                </div>
+              </label>
+              <label class="cursor-pointer flex-shrink-0">
+                <input
+                  class="peer sr-only"
+                  name="status"
+                  type="radio"
+                  value="rejected"
+                />
+                <div
+                  class="px-4 py-2 text-sm font-medium rounded-xl text-slate-600 dark:text-slate-400 hover:bg-white/50 dark:hover:bg-white/5 peer-checked:bg-white dark:peer-checked:bg-slate-700 peer-checked:text-red-600 dark:peer-checked:text-red-400 peer-checked:shadow-sm transition-all duration-200"
+                >
+                  Rejected
+                </div>
+              </label>
+            </div>
+            <div class="flex items-center gap-3 w-full lg:w-auto">
+              <div class="relative w-full lg:w-48 group">
+                <select
+                  class="w-full appearance-none bg-white/50 dark:bg-black/20 border border-transparent rounded-xl py-2 pl-3 pr-10 text-sm focus:ring-2 focus:ring-primary/20 focus:bg-white dark:focus:bg-black/40 transition-all cursor-pointer"
+                >
+                  <option>Newest First</option>
+                  <option>Oldest First</option>
+                  <option>Highest Earnings</option>
+                  <option>Quality Score</option>
+                </select>
+                <span
+                  class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none text-[20px]"
+                  >sort</span
+                >
+              </div>
+              <button
+                class="p-2 text-slate-500 hover:text-slate-800 dark:hover:text-white bg-white/50 dark:bg-white/5 rounded-xl transition-colors lg:hidden"
+              >
+                <span class="material-symbols-outlined">filter_list</span>
+              </button>
+              <div
+                class="hidden lg:flex bg-white/50 dark:bg-white/5 rounded-xl p-1 gap-1"
+              >
+                <button
+                  class="p-1.5 rounded-lg bg-white dark:bg-slate-700 shadow-sm text-primary"
+                >
+                  <span class="material-symbols-outlined text-[20px]"
+                    >grid_view</span
+                  >
+                </button>
+                <button
+                  class="p-1.5 rounded-lg hover:bg-white/50 dark:hover:bg-slate-800 text-slate-400 transition-colors"
+                >
+                  <span class="material-symbols-outlined text-[20px]"
+                    >view_list</span
+                  >
+                </button>
+              </div>
+            </div>
+          </section>
+          <div
+            class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 pb-20"
+          >
+            <div
+              class="glass-card rounded-2xl overflow-hidden group flex flex-col hover:scale-[1.01] hover:shadow-xl transition-all duration-300 animate-slide-up"
+              style="animation-delay: 0.1s"
+            >
+              <div
+                class="relative h-48 bg-gray-100 dark:bg-gray-800 overflow-hidden"
+              >
+                <div
+                  class="absolute inset-0 bg-cover bg-center transform group-hover:scale-110 transition-transform duration-700"
+                  style="
+                    background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuCwSeIOjc0nFAI2gg7Fu1xxeyJ2Tkq5c_4WqQvES_sPkPZtES0MoV0v2yDz45COrYSyoggTp5ERDk8bV50yHvqlSnRZv0ER0_JHwzPQ0UF6zDnk_UgDJptOE5BeXZAbZA8ao1J-7c_uq3CXDpiQHgEuueGUukql9xjdv9VTA0dRhkjBbmMXBxf3G8MSYwMIZ6inv6ArSKdoM9Iyi_u5fHegAy7_lFGpPPE4NbTRKQMHokapLdWWu4uSU5vBU7WKdYwOigR0YqdMuWMi');
+                  "
+                ></div>
+                <div
+                  class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-60"
+                ></div>
+                <div class="absolute top-3 left-3">
+                  <span
+                    class="bg-blue-500/90 backdrop-blur-md text-white text-xs font-bold px-2.5 py-1 rounded-lg shadow-sm flex items-center gap-1"
+                  >
+                    <span class="material-symbols-outlined text-[14px]"
+                      >csv</span
+                    >
+                    CSV
+                  </span>
+                </div>
+                <div class="absolute top-3 right-3">
+                  <span
+                    class="bg-green-500 text-white text-xs font-bold px-2.5 py-1 rounded-lg shadow-sm"
+                    >Purchased</span
+                  >
+                </div>
+                <div
+                  class="absolute bottom-3 left-3 right-3 flex justify-between items-end text-white"
+                >
+                  <div>
+                    <div class="text-xs opacity-80 mb-0.5">Healthcare</div>
+                    <div class="font-semibold text-sm truncate">
+                      Dataset_Healthcare_01.csv
+                    </div>
+                  </div>
+                  <div class="text-xs opacity-75">14 MB</div>
+                </div>
+              </div>
+              <div class="p-5 flex-1 flex flex-col">
+                <div class="flex justify-between items-start mb-4">
+                  <div>
+                    <div
+                      class="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wider font-semibold mb-1"
+                    >
+                      Earnings
+                    </div>
+                    <div
+                      class="text-xl font-bold text-green-600 dark:text-green-400"
+                    >
+                      +$150.00
+                    </div>
+                  </div>
+                  <div class="text-right">
+                    <div
+                      class="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wider font-semibold mb-1"
+                    >
+                      Quality
+                    </div>
+                    <div class="flex items-center gap-1 justify-end">
+                      <span
+                        class="text-lg font-bold text-slate-800 dark:text-white"
+                        >9.2</span
+                      >
+                      <span class="text-xs text-slate-400">/10</span>
+                    </div>
+                  </div>
+                </div>
+                <div
+                  class="w-full h-1.5 bg-gray-100 dark:bg-gray-700 rounded-full mb-5 overflow-hidden"
+                >
+                  <div
+                    class="h-full bg-gradient-to-r from-green-400 to-green-600"
+                    style="width: 92%"
+                  ></div>
+                </div>
+                <div
+                  class="mt-auto flex items-center gap-3 pt-4 border-t border-gray-100 dark:border-gray-700/50"
+                >
+                  <div class="text-xs text-slate-400">Uploaded Oct 24</div>
+                  <div class="flex-1"></div>
+                  <button
+                    class="p-2 text-slate-400 hover:text-primary hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors"
+                    title="Analytics"
+                  >
+                    <span class="material-symbols-outlined text-[20px]"
+                      >analytics</span
+                    >
+                  </button>
+                  <button
+                    class="p-2 text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+                    title="More"
+                  >
+                    <span class="material-symbols-outlined text-[20px]"
+                      >more_vert</span
+                    >
+                  </button>
+                </div>
+              </div>
+            </div>
+            <div
+              class="glass-card rounded-2xl overflow-hidden group flex flex-col hover:scale-[1.01] hover:shadow-xl transition-all duration-300 animate-slide-up"
+              style="animation-delay: 0.2s"
+            >
+              <div
+                class="relative h-48 bg-gray-100 dark:bg-gray-800 overflow-hidden flex items-center justify-center"
+              >
+                <div
+                  class="absolute inset-0 bg-gradient-to-tr from-purple-600 to-blue-600 opacity-90 group-hover:scale-110 transition-transform duration-700"
+                ></div>
+                <span
+                  class="material-symbols-outlined text-white text-6xl relative z-10 opacity-80"
+                  >graphic_eq</span
+                >
+                <div class="absolute top-3 left-3 z-20">
+                  <span
+                    class="bg-purple-500/90 backdrop-blur-md text-white text-xs font-bold px-2.5 py-1 rounded-lg shadow-sm flex items-center gap-1"
+                  >
+                    <span class="material-symbols-outlined text-[14px]"
+                      >audio_file</span
+                    >
+                    WAV
+                  </span>
+                </div>
+                <div class="absolute top-3 right-3 z-20">
+                  <span
+                    class="bg-yellow-500 text-white text-xs font-bold px-2.5 py-1 rounded-lg shadow-sm animate-pulse"
+                    >Pending</span
+                  >
+                </div>
+                <div
+                  class="absolute bottom-0 left-0 right-0 p-3 bg-gradient-to-t from-black/80 to-transparent z-20 text-white flex justify-between items-end"
+                >
+                  <div>
+                    <div class="text-xs opacity-80 mb-0.5">Audio Sample</div>
+                    <div class="font-semibold text-sm truncate">
+                      Voice_Sample_B3.wav
+                    </div>
+                  </div>
+                  <div class="text-xs opacity-75">4 MB</div>
+                </div>
+              </div>
+              <div class="p-5 flex-1 flex flex-col">
+                <div
+                  class="flex-1 flex flex-col justify-center items-center py-4 text-center"
+                >
+                  <div
+                    class="w-12 h-12 rounded-full bg-yellow-50 dark:bg-yellow-900/20 text-yellow-500 flex items-center justify-center mb-2"
+                  >
+                    <span class="material-symbols-outlined animate-spin"
+                      >progress_activity</span
+                    >
+                  </div>
+                  <h4 class="font-semibold text-slate-700 dark:text-slate-200">
+                    Analysis in progress
+                  </h4>
+                  <p class="text-xs text-slate-500 mt-1 max-w-[200px]">
+                    Our AI is currently verifying the quality of this asset.
+                  </p>
+                </div>
+                <div
+                  class="mt-auto flex items-center gap-2 pt-4 border-t border-gray-100 dark:border-gray-700/50"
+                >
+                  <button
+                    class="flex-1 py-2 px-3 text-xs font-semibold text-slate-700 dark:text-slate-300 bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg border border-gray-200 dark:border-gray-700 transition-colors flex items-center justify-center gap-2"
+                  >
+                    <span class="material-symbols-outlined text-[16px]"
+                      >edit</span
+                    >
+                    Edit Details
+                  </button>
+                  <button
+                    class="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
+                  >
+                    <span class="material-symbols-outlined text-[20px]"
+                      >delete</span
+                    >
+                  </button>
+                </div>
+              </div>
+            </div>
+            <div
+              class="glass-card rounded-2xl overflow-hidden group flex flex-col hover:scale-[1.01] hover:shadow-xl transition-all duration-300 animate-slide-up"
+              style="animation-delay: 0.3s"
+            >
+              <div
+                class="relative h-48 bg-gray-100 dark:bg-gray-800 overflow-hidden"
+              >
+                <div
+                  class="absolute inset-0 bg-cover bg-center transform group-hover:scale-110 transition-transform duration-700"
+                  style="
+                    background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuBC3MVlY3XYlJz18yn1Nm3R3csCEXAqvK8BWca5K1fKLgcWkDEiDZsxdotaiUu85YuzNKmoJt_n1jad7KFqE1pLlj22uh76DO-Y9QYroU02TG-mlkYS29R6YpzCtmvJcYCHgIfYAPiWoXKVh41zzxAwuovXsxHBRY7nAw0_rZ_MRcNXhb5PXQVBbi3YXha5IEfxM0NnNi81oGYJcLkSf9yJe-mX1TmT3mNSujRk-diickTFPMIUuZy1u_stWZwG1BjNCM0Ct31KNc1d');
+                  "
+                ></div>
+                <div
+                  class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-60"
+                ></div>
+                <div class="absolute top-3 left-3">
+                  <span
+                    class="bg-orange-500/90 backdrop-blur-md text-white text-xs font-bold px-2.5 py-1 rounded-lg shadow-sm flex items-center gap-1"
+                  >
+                    <span class="material-symbols-outlined text-[14px]"
+                      >view_in_ar</span
+                    >
+                    OBJ
+                  </span>
+                </div>
+                <div class="absolute top-3 right-3">
+                  <span
+                    class="bg-green-500 text-white text-xs font-bold px-2.5 py-1 rounded-lg shadow-sm"
+                    >Purchased</span
+                  >
+                </div>
+                <div
+                  class="absolute bottom-3 left-3 right-3 flex justify-between items-end text-white"
+                >
+                  <div>
+                    <div class="text-xs opacity-80 mb-0.5">3D Models</div>
+                    <div class="font-semibold text-sm truncate">
+                      3D_Asset_Cyberpunk_Car.obj
+                    </div>
+                  </div>
+                  <div class="text-xs opacity-75">128 MB</div>
+                </div>
+              </div>
+              <div class="p-5 flex-1 flex flex-col">
+                <div class="flex justify-between items-start mb-4">
+                  <div>
+                    <div
+                      class="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wider font-semibold mb-1"
+                    >
+                      Earnings
+                    </div>
+                    <div
+                      class="text-xl font-bold text-green-600 dark:text-green-400"
+                    >
+                      +$240.00
+                    </div>
+                  </div>
+                  <div class="text-right">
+                    <div
+                      class="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wider font-semibold mb-1"
+                    >
+                      Quality
+                    </div>
+                    <div class="flex items-center gap-1 justify-end">
+                      <span
+                        class="text-lg font-bold text-slate-800 dark:text-white"
+                        >8.8</span
+                      >
+                      <span class="text-xs text-slate-400">/10</span>
+                    </div>
+                  </div>
+                </div>
+                <div
+                  class="w-full h-1.5 bg-gray-100 dark:bg-gray-700 rounded-full mb-5 overflow-hidden"
+                >
+                  <div
+                    class="h-full bg-gradient-to-r from-green-400 to-green-600"
+                    style="width: 88%"
+                  ></div>
+                </div>
+                <div
+                  class="mt-auto flex items-center gap-3 pt-4 border-t border-gray-100 dark:border-gray-700/50"
+                >
+                  <div class="text-xs text-slate-400">Uploaded Oct 20</div>
+                  <div class="flex-1"></div>
+                  <button
+                    class="p-2 text-slate-400 hover:text-primary hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors"
+                    title="Analytics"
+                  >
+                    <span class="material-symbols-outlined text-[20px]"
+                      >analytics</span
+                    >
+                  </button>
+                  <button
+                    class="p-2 text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+                    title="More"
+                  >
+                    <span class="material-symbols-outlined text-[20px]"
+                      >more_vert</span
+                    >
+                  </button>
+                </div>
+              </div>
+            </div>
+            <div
+              class="glass-card rounded-2xl overflow-hidden group flex flex-col hover:scale-[1.01] hover:shadow-xl transition-all duration-300 animate-slide-up opacity-80 hover:opacity-100"
+              style="animation-delay: 0.4s"
+            >
+              <div
+                class="relative h-48 bg-gray-100 dark:bg-gray-800 overflow-hidden grayscale group-hover:grayscale-0 transition-all duration-500"
+              >
+                <div
+                  class="absolute inset-0 bg-cover bg-center"
+                  style="
+                    background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuD96qIbyS4Dr8XUcRHh9P_JniF2P9cIxTYJM-_cy-kiX599TzPqck8hvcbM7W7IvKKgHyjvclieOAiKLpTxf0EwYfDaOB1SOeGKNPktippwArZODL_kxH4H_9d1NbZiH3QLfKTb_YkzkGaqVxQT5cIHfpCG6OTLujxjkCb9TPeX-g9W1QaA6qMLBiYUvokZ5-K4EZAEcOkXCKZDMgRXrxCIiGKHQ2i0vgh3O4_tC3uJ5JANuKwK9d2OIr3SE9HTwnjP44USKnLKfC2v');
+                  "
+                ></div>
+                <div
+                  class="absolute inset-0 bg-black/50 flex items-center justify-center"
+                >
+                  <div
+                    class="bg-black/40 backdrop-blur-sm p-3 rounded-full border border-white/20"
+                  >
+                    <span class="material-symbols-outlined text-white text-3xl"
+                      >block</span
+                    >
+                  </div>
+                </div>
+                <div class="absolute top-3 right-3">
+                  <span
+                    class="bg-red-500 text-white text-xs font-bold px-2.5 py-1 rounded-lg shadow-sm"
+                    >Rejected</span
+                  >
+                </div>
+                <div class="absolute bottom-3 left-3 right-3 text-white">
+                  <div
+                    class="font-semibold text-sm truncate line-through opacity-70"
+                  >
+                    Urban_Noise_Raw.wav
+                  </div>
+                </div>
+              </div>
+              <div
+                class="p-5 flex-1 flex flex-col bg-red-50/50 dark:bg-red-900/10"
+              >
+                <div class="flex items-start gap-3 mb-4">
+                  <span class="material-symbols-outlined text-red-500 mt-0.5"
+                    >error</span
+                  >
+                  <div>
+                    <h4
+                      class="text-sm font-bold text-red-700 dark:text-red-400"
+                    >
+                      Quality Issues
+                    </h4>
+                    <p
+                      class="text-xs text-red-600 dark:text-red-300 mt-1 leading-relaxed"
+                    >
+                      Audio contains too much background noise. Please clean up
+                      the track and re-upload.
+                    </p>
+                  </div>
+                </div>
+                <div
+                  class="mt-auto pt-4 border-t border-red-100 dark:border-red-900/30"
+                >
+                  <button
+                    class="w-full py-2 px-3 text-xs font-semibold text-red-600 dark:text-red-400 bg-red-100 dark:bg-red-900/30 hover:bg-red-200 dark:hover:bg-red-900/50 rounded-lg border border-red-200 dark:border-red-900/30 transition-colors flex items-center justify-center gap-2"
+                  >
+                    <span class="material-symbols-outlined text-[16px]"
+                      >delete</span
+                    >
+                    Remove File
+                  </button>
+                </div>
+              </div>
+            </div>
+            <div
+              class="glass-card rounded-2xl overflow-hidden group flex flex-col hover:scale-[1.01] hover:shadow-xl transition-all duration-300 animate-slide-up"
+              style="animation-delay: 0.5s"
+            >
+              <div
+                class="relative h-48 bg-gray-100 dark:bg-gray-800 overflow-hidden"
+              >
+                <div
+                  class="absolute inset-0 bg-cover bg-center transform group-hover:scale-110 transition-transform duration-700"
+                  style="
+                    background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuApjupT2ulbjEdsOQpbf65tMrgbQtKtpGlJJV0UV4H859QkNmuKL3_Bw_VNZRV5B8wsgsrDI3BwwsuiIhLUOB0nN-5jh1wwXhDpFyx3olpffxVLhLZ8bV8Nq4fnuLvBTN0Oivze3g1Gsg23_H2ZaR3KXBMoEPq1WDy4X6w1DSjuxNkKo_e_CVkmBNhnakJPCW7zdeJXHr7NiHVk_FLy15_5ylIrXRSlPsgHjRHLKRdf5461zw_O2FO14faN8A-SRmHFnVWIKl5RlYHp');
+                  "
+                ></div>
+                <div
+                  class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-60"
+                ></div>
+                <div class="absolute top-3 left-3">
+                  <span
+                    class="bg-amber-600/90 backdrop-blur-md text-white text-xs font-bold px-2.5 py-1 rounded-lg shadow-sm flex items-center gap-1"
+                  >
+                    <span class="material-symbols-outlined text-[14px]"
+                      >texture</span
+                    >
+                    ZIP
+                  </span>
+                </div>
+                <div class="absolute top-3 right-3">
+                  <span
+                    class="bg-green-500 text-white text-xs font-bold px-2.5 py-1 rounded-lg shadow-sm"
+                    >Purchased</span
+                  >
+                </div>
+                <div
+                  class="absolute bottom-3 left-3 right-3 flex justify-between items-end text-white"
+                >
+                  <div>
+                    <div class="text-xs opacity-80 mb-0.5">Textures</div>
+                    <div class="font-semibold text-sm truncate">
+                      Texture_Pack_Wood_04.zip
+                    </div>
+                  </div>
+                  <div class="text-xs opacity-75">200 MB</div>
+                </div>
+              </div>
+              <div class="p-5 flex-1 flex flex-col">
+                <div class="flex justify-between items-start mb-4">
+                  <div>
+                    <div
+                      class="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wider font-semibold mb-1"
+                    >
+                      Earnings
+                    </div>
+                    <div
+                      class="text-xl font-bold text-green-600 dark:text-green-400"
+                    >
+                      +$85.00
+                    </div>
+                  </div>
+                  <div class="text-right">
+                    <div
+                      class="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wider font-semibold mb-1"
+                    >
+                      Quality
+                    </div>
+                    <div class="flex items-center gap-1 justify-end">
+                      <span
+                        class="text-lg font-bold text-slate-800 dark:text-white"
+                        >9.5</span
+                      >
+                      <span class="text-xs text-slate-400">/10</span>
+                    </div>
+                  </div>
+                </div>
+                <div
+                  class="w-full h-1.5 bg-gray-100 dark:bg-gray-700 rounded-full mb-5 overflow-hidden"
+                >
+                  <div
+                    class="h-full bg-gradient-to-r from-green-400 to-green-600"
+                    style="width: 95%"
+                  ></div>
+                </div>
+                <div
+                  class="mt-auto flex items-center gap-3 pt-4 border-t border-gray-100 dark:border-gray-700/50"
+                >
+                  <div class="text-xs text-slate-400">Uploaded Oct 10</div>
+                  <div class="flex-1"></div>
+                  <button
+                    class="p-2 text-slate-400 hover:text-primary hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors"
+                    title="Analytics"
+                  >
+                    <span class="material-symbols-outlined text-[20px]"
+                      >analytics</span
+                    >
+                  </button>
+                  <button
+                    class="p-2 text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+                    title="More"
+                  >
+                    <span class="material-symbols-outlined text-[20px]"
+                      >more_vert</span
+                    >
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        const menuButtons = document.querySelectorAll("button");
+        const menuBtn = Array.from(menuButtons).find(
+          (btn) =>
+            btn.textContent.trim().includes("menu") ||
+            btn.querySelector("span")?.textContent.trim() === "menu"
+        );
+        const sidebar = document.querySelector("aside");
+
+        if (menuBtn && sidebar) {
+          menuBtn.addEventListener("click", () => {
+            sidebar.classList.toggle("hidden");
+            sidebar.classList.toggle("fixed");
+            sidebar.classList.toggle("inset-0");
+            sidebar.classList.toggle("z-40");
+            if (sidebar.classList.contains("fixed")) {
+              sidebar.classList.add("bg-white", "dark:bg-[#0B0F19]");
+            }
+          });
+
+          sidebar.addEventListener("click", (e) => {
+            // Close if clicking outside nav content
+          });
+        }
+      });
+    </script>
+      </div>
+    </div>
+  </body>
+</html>

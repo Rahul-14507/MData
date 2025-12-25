@@ -1,7 +1,9 @@
 import 'dart:convert';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:data_nexus/core/api_config.dart';
 
 class User {
   final String id;
@@ -36,8 +38,8 @@ class AuthNotifier extends StateNotifier<User?> {
     _loadUser();
   }
 
-  // Replace with actual URL if different
-  static const String _authUrl = 'http://localhost:7071/api/auth';
+  // Use centralized API Config
+  String get _authUrl => '${ApiConfig.baseUrl}/api/auth';
 
   Future<void> _loadUser() async {
     final prefs = await SharedPreferences.getInstance();

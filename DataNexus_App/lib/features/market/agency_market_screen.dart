@@ -4,15 +4,20 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:data_nexus/features/auth/auth_provider.dart';
 
+import 'package:flutter/foundation.dart';
+import 'package:data_nexus/core/api_config.dart';
+
 final marketSummaryProvider = FutureProvider((ref) async {
-  const url = 'http://localhost:7071/api/market/summaries';
+  final baseUrl = ApiConfig.baseUrl;
+  final url = '$baseUrl/api/market/summaries';
   final res = await http.get(Uri.parse(url));
-  if (res.statusCode != 200) throw Exception('Failed to load market data');
+  if (res.statusCode != 200) throw Exception('Failed to load market data: ${res.body}');
   return json.decode(res.body) as List<dynamic>;
 });
 
 final agencyPurchasesProvider = FutureProvider.family<List<dynamic>, String>((ref, agencyId) async {
-  final url = 'http://localhost:7071/api/agency/purchases?agencyId=$agencyId';
+  final baseUrl = ApiConfig.baseUrl;
+  final url = '$baseUrl/api/agency/purchases?agencyId=$agencyId';
   final res = await http.get(Uri.parse(url));
   if (res.statusCode != 200) throw Exception('Failed to load purchases');
   return json.decode(res.body) as List<dynamic>;
@@ -165,8 +170,9 @@ class _AgencyMarketScreenState extends ConsumerState<AgencyMarketScreen> {
 
     setState(() => _isCreatingCampaign = true);
     try {
+      final baseUrl = ApiConfig.baseUrl;
       final res = await http.post(
-        Uri.parse('http://localhost:7071/api/agency/campaign/create'),
+        Uri.parse('$baseUrl/api/agency/campaign/create'),
         body: json.encode({
           'agencyId': user?.id ?? 'Agency_Demo_User',
           'title': title,
@@ -210,8 +216,9 @@ class _AgencyMarketScreenState extends ConsumerState<AgencyMarketScreen> {
       if (!context.mounted) return;
       
       try {
+        final baseUrl = ApiConfig.baseUrl;
         final res = await http.post(
-          Uri.parse('http://localhost:7071/api/market/purchase'),
+          Uri.parse('$baseUrl/api/market/purchase'),
           body: json.encode({'category': category, 'agencyId': 'Agency_Demo_User'}),
         );
         
