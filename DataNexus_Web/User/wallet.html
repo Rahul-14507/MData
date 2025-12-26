@@ -262,12 +262,16 @@
           />
           <div class="flex-1 min-w-0">
             <p
+              id="user-name"
               class="text-sm font-semibold text-gray-900 dark:text-white truncate"
             >
-              John Smith
+              Loading...
             </p>
-            <p class="text-xs text-gray-500 dark:text-gray-400 truncate">
-              john@example.com
+            <p
+              id="user-email"
+              class="text-xs text-gray-500 dark:text-gray-400 truncate"
+            >
+              loading...
             </p>
           </div>
           <span
@@ -347,9 +351,10 @@
                   </span>
                 </div>
                 <h1
+                  id="wallet-balance"
                   class="text-4xl md:text-5xl font-bold tracking-tight text-white drop-shadow-sm"
                 >
-                  $1,240.50
+                  $0.00
                 </h1>
               </div>
               <div
@@ -360,15 +365,21 @@
                     class="text-xs text-gray-500 uppercase tracking-wider font-semibold"
                     >Pending</span
                   >
-                  <span class="text-xl font-medium text-white/90">$120.00</span>
+                  <span
+                    id="wallet-pending"
+                    class="text-xl font-medium text-white/90"
+                    >$0.00</span
+                  >
                 </div>
                 <div class="flex flex-col gap-1 border-l border-white/10 pl-6">
                   <span
                     class="text-xs text-gray-500 uppercase tracking-wider font-semibold"
                     >Lifetime</span
                   >
-                  <span class="text-xl font-medium text-white/90"
-                    >$5,300.00</span
+                  <span
+                    id="wallet-lifetime"
+                    class="text-xl font-medium text-white/90"
+                    >$0.00</span
                   >
                 </div>
               </div>
@@ -483,105 +494,18 @@
           >
             <div class="flex items-center justify-between px-2">
               <h3 class="text-lg font-bold text-white">Recent Transactions</h3>
-              <button
+              <a
+                href="file_history.html"
                 class="text-blue-400 text-sm font-medium hover:text-blue-300 flex items-center gap-1 transition-colors"
               >
                 View History
                 <span class="material-symbols-outlined text-[16px]"
                   >arrow_forward</span
                 >
-              </button>
+              </a>
             </div>
-            <div class="flex flex-col gap-3">
-              <div
-                class="flex items-center justify-between p-4 rounded-xl glass-card hover:bg-white/5 transition-colors group cursor-pointer"
-              >
-                <div class="flex items-center gap-4">
-                  <div
-                    class="h-12 w-12 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-gray-400 group-hover:text-white group-hover:bg-white/10 transition-all"
-                  >
-                    <span class="material-symbols-outlined"
-                      >account_balance</span
-                    >
-                  </div>
-                  <div class="flex flex-col">
-                    <span
-                      class="font-medium text-white group-hover:text-blue-200 transition-colors"
-                      >Withdrawal to PayPal</span
-                    >
-                    <span class="text-xs text-gray-500"
-                      >Oct 24, 2023 • Completed</span
-                    >
-                  </div>
-                </div>
-                <span
-                  class="font-semibold text-white group-hover:text-red-300 transition-colors"
-                  >-$500.00</span
-                >
-              </div>
-              <div
-                class="flex items-center justify-between p-4 rounded-xl glass-card hover:bg-white/5 transition-colors group cursor-pointer"
-              >
-                <div class="flex items-center gap-4">
-                  <div
-                    class="h-12 w-12 rounded-full bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-blue-400 group-hover:text-blue-300 group-hover:bg-blue-500/20 transition-all"
-                  >
-                    <span class="material-symbols-outlined">cloud_upload</span>
-                  </div>
-                  <div class="flex flex-col">
-                    <span
-                      class="font-medium text-white group-hover:text-blue-200 transition-colors"
-                      >Sale: Medical Dataset</span
-                    >
-                    <span class="text-xs text-gray-500"
-                      >Oct 22, 2023 • Processed</span
-                    >
-                  </div>
-                </div>
-                <span class="font-semibold text-green-400">+$45.00</span>
-              </div>
-              <div
-                class="flex items-center justify-between p-4 rounded-xl glass-card hover:bg-white/5 transition-colors group cursor-pointer"
-              >
-                <div class="flex items-center gap-4">
-                  <div
-                    class="h-12 w-12 rounded-full bg-purple-500/10 border border-purple-500/20 flex items-center justify-center text-purple-400 group-hover:text-purple-300 group-hover:bg-purple-500/20 transition-all"
-                  >
-                    <span class="material-symbols-outlined">mic</span>
-                  </div>
-                  <div class="flex flex-col">
-                    <span
-                      class="font-medium text-white group-hover:text-blue-200 transition-colors"
-                      >Sale: Audio Samples</span
-                    >
-                    <span class="text-xs text-gray-500"
-                      >Oct 20, 2023 • Processed</span
-                    >
-                  </div>
-                </div>
-                <span class="font-semibold text-green-400">+$12.50</span>
-              </div>
-              <div
-                class="flex items-center justify-between p-4 rounded-xl glass-card hover:bg-white/5 transition-colors group cursor-pointer"
-              >
-                <div class="flex items-center gap-4">
-                  <div
-                    class="h-12 w-12 rounded-full bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400 group-hover:text-emerald-300 group-hover:bg-emerald-500/20 transition-all"
-                  >
-                    <span class="material-symbols-outlined">description</span>
-                  </div>
-                  <div class="flex flex-col">
-                    <span
-                      class="font-medium text-white group-hover:text-blue-200 transition-colors"
-                      >Sale: Text Corpus</span
-                    >
-                    <span class="text-xs text-gray-500"
-                      >Oct 18, 2023 • Processed</span
-                    >
-                  </div>
-                </div>
-                <span class="font-semibold text-green-400">+$28.00</span>
-              </div>
+            <div id="transaction-list" class="flex flex-col gap-3">
+              <!-- Dynamic Content -->
             </div>
           </div>
           <div
@@ -605,13 +529,89 @@
         overlay.classList.toggle("hidden");
       }
 
-      toggleButtons.forEach((btn) =>
+      // Hover to open sidebar
+      toggleButtons.forEach((btn) => {
         btn.addEventListener("click", (e) => {
           e.stopPropagation();
           toggleSidebar();
-        })
-      );
+        });
+        btn.addEventListener("mouseenter", () => {
+          if (sidebar && sidebar.classList.contains("-translate-x-full")) {
+            toggleSidebar();
+          }
+        });
+      });
       overlay.addEventListener("click", toggleSidebar);
+
+      // --- Real Data Logic ---
+      document.addEventListener("DOMContentLoaded", async () => {
+        const userStr = localStorage.getItem("user");
+        if (!userStr) {
+          window.location.href = "../Landingpage.html";
+          return;
+        }
+        const user = JSON.parse(userStr);
+        document.getElementById("user-name").textContent = user.name;
+        document.getElementById("user-email").textContent = user.email;
+        // (Optional) Update name in sidebar if elements exist there, though mostly standardized.
+
+        const balanceEl = document.getElementById("wallet-balance");
+        const lifetimeEl = document.getElementById("wallet-lifetime");
+        const pendingEl = document.getElementById("wallet-pending");
+        const txList = document.getElementById("transaction-list");
+
+        try {
+          const res = await fetch(`/api/stats?userId=${user.id}`);
+          const stats = await res.json();
+
+          // In a real app we'd have a separate 'balance' vs 'lifetime earnings'.
+          // For now, let's assume Balance = Lifetime Earnings (no withdrawals yet).
+          balanceEl.textContent = stats.earnings;
+          lifetimeEl.textContent = stats.earnings;
+
+          // Calculate pending from history? Or just 0 for now if API doesn't return it.
+          // If we had a list of 'pending' files with values, we could sum them.
+          // For now, set to $0.00 or some mock logic based on recent files.
+          pendingEl.textContent = "$0.00";
+
+          // Transactions
+          txList.innerHTML = "";
+          if (stats.history && stats.history.length > 0) {
+            stats.history.forEach((item) => {
+              // Only show items with earnings? Or all?
+              // Let's show all as transactions.
+              let icon = "description";
+              let bgClass =
+                "bg-emerald-500/10 border-emerald-500/20 text-emerald-400";
+              if (item.status === "Purchased") {
+                bgClass = "bg-blue-500/10 border-blue-500/20 text-blue-400";
+                icon = "cloud_upload";
+              }
+
+              const html = `
+                      <div class="flex items-center justify-between p-4 rounded-xl glass-card hover:bg-white/5 transition-colors group cursor-pointer">
+                        <div class="flex items-center gap-4">
+                          <div class="h-12 w-12 rounded-full ${bgClass} border flex items-center justify-center group-hover:bg-white/10 transition-all">
+                            <span class="material-symbols-outlined">${icon}</span>
+                          </div>
+                          <div class="flex flex-col">
+                            <span class="font-medium text-white group-hover:text-blue-200 transition-colors">${item.name}</span>
+                            <span class="text-xs text-gray-500">${item.date} • ${item.status}</span>
+                          </div>
+                        </div>
+                        <span class="font-semibold text-green-400">${item.earnings}</span>
+                      </div>
+                     `;
+              txList.insertAdjacentHTML("beforeend", html);
+            });
+          } else {
+            txList.innerHTML = `<div class="p-4 text-center text-gray-500">No transactions yet.</div>`;
+          }
+        } catch (e) {
+          console.error("Wallet error:", e);
+        }
+      });
     </script>
   </body>
 </html>
+```

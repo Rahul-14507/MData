@@ -227,8 +227,8 @@
           >
           Cart
           <span
-            class="ml-auto bg-blue-500/20 text-blue-400 text-xs py-0.5 px-2 rounded-full border border-blue-500/20"
-            >2</span
+            class="ml-auto bg-blue-500/20 text-blue-400 text-xs py-0.5 px-2 rounded-full border border-blue-500/20 cart-badge hidden"
+            >0</span
           >
         </a>
         <div class="pt-4 mt-4 border-t border-white/5">
@@ -583,441 +583,19 @@
                   </div>
                 </div>
               </div>
-              <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-                <div
-                  class="glass-card rounded-xl overflow-hidden group flex flex-col h-full"
-                >
-                  <div class="relative h-48 overflow-hidden">
-                    <div
-                      class="absolute inset-0 bg-gradient-to-t from-slate-900 via-transparent to-transparent z-10 opacity-60"
-                    ></div>
-                    <img
-                      class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 ease-in-out"
-                      data-alt="Abstract data visualization"
-                      src="https://lh3.googleusercontent.com/aida-public/AB6AXuB69bfhSpLeLLUfmgSczul8SYj56wUXtKIiFseeRMs7_FN6C5I-96Rj66O3nHzfRvsQuSGToupiAWxcZIKBc1IJk8SvSWktxbwktvyaog03YLiX3gUxXtB7pU4bLJMkN9l4Gxp5rxAve1Vmm9_1rW9nMsvl6V-NHi6AuVyItXazE10Lh6iYTUOZQtsAuBMyMBR_Whd6E-hH_VwDEv2q-CvR10zDy9IVnmj1zR_Cl5H1iKHilL2o9lg54zX0u8ogRP--XHKlcAMVtwAk"
-                    />
-                    <div class="absolute top-3 right-3 z-20">
-                      <span
-                        class="bg-black/40 backdrop-blur-md border border-white/10 text-white text-[10px] font-bold px-2 py-1 rounded shadow-sm flex items-center gap-1"
-                      >
-                        <span
-                          class="material-symbols-outlined text-xs text-yellow-400"
-                          >trending_up</span
-                        >
-                        POPULAR
-                      </span>
-                    </div>
-                    <div class="absolute bottom-3 left-3 z-20 flex gap-2">
-                      <span
-                        class="bg-blue-600/90 backdrop-blur text-white text-[10px] font-bold px-2 py-0.5 rounded shadow-lg shadow-blue-900/50"
-                        >VISION</span
-                      >
-                      <span
-                        class="bg-slate-700/80 backdrop-blur text-white text-[10px] font-bold px-2 py-0.5 rounded border border-white/10"
-                        >COCO</span
-                      >
-                    </div>
-                  </div>
-                  <div class="p-5 flex-1 flex flex-col">
-                    <div class="flex justify-between items-start mb-2">
-                      <h3
-                        class="text-lg font-bold text-white leading-tight group-hover:text-blue-400 transition-colors"
-                      >
-                        Retail Object Detection
-                      </h3>
-                      <div
-                        class="flex items-center gap-1 bg-yellow-500/10 px-1.5 py-0.5 rounded border border-yellow-500/20"
-                      >
-                        <span
-                          class="material-symbols-outlined text-xs text-yellow-400 fill-current"
-                          >star</span
-                        >
-                        <span class="text-xs font-bold text-yellow-200"
-                          >4.9</span
-                        >
-                      </div>
-                    </div>
-                    <p
-                      class="text-slate-400 text-sm line-clamp-2 mb-4 leading-relaxed"
-                    >
-                      50,000 annotated images of retail shelf products for
-                      object detection models. Includes bounding boxes.
-                    </p>
-                    <div
-                      class="mt-auto pt-4 border-t border-white/5 flex items-center justify-between"
-                    >
-                      <div>
-                        <span class="text-xs text-slate-500 block mb-0.5"
-                          >Price</span
-                        >
-                        <span class="text-lg font-bold text-white">$250</span>
-                      </div>
-                      <button
-                        class="bg-white/5 hover:bg-primary hover:shadow-lg hover:shadow-primary/25 border border-white/10 hover:border-transparent text-white p-2.5 rounded-lg transition-all group/btn"
-                      >
-                        <span
-                          class="material-symbols-outlined group-hover/btn:scale-110 transition-transform"
-                          >add_shopping_cart</span
-                        >
-                      </button>
-                    </div>
-                  </div>
-                </div>
-                <div
-                  class="glass-card rounded-xl overflow-hidden group flex flex-col h-full"
-                >
-                  <div
-                    class="relative h-48 overflow-hidden bg-gradient-to-br from-purple-900 to-slate-900 flex items-center justify-center"
+              <div
+                id="dataset-grid"
+                class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6"
+              >
+                <!-- Dynamic Content -->
+                <div class="col-span-full text-center py-20 text-slate-500">
+                  <span class="material-symbols-outlined text-4xl mb-2"
+                    >hourglass_empty</span
                   >
-                    <div
-                      class="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20"
-                    ></div>
-                    <span
-                      class="material-symbols-outlined text-7xl text-white/10 group-hover:text-white/20 transition-colors duration-500"
-                      >forum</span
-                    >
-                    <div class="absolute bottom-3 left-3 z-20 flex gap-2">
-                      <span
-                        class="bg-purple-600/90 backdrop-blur text-white text-[10px] font-bold px-2 py-0.5 rounded shadow-lg shadow-purple-900/50"
-                        >NLP</span
-                      >
-                      <span
-                        class="bg-slate-700/80 backdrop-blur text-white text-[10px] font-bold px-2 py-0.5 rounded border border-white/10"
-                        >CSV</span
-                      >
-                    </div>
-                  </div>
-                  <div class="p-5 flex-1 flex flex-col">
-                    <div class="flex justify-between items-start mb-2">
-                      <h3
-                        class="text-lg font-bold text-white leading-tight group-hover:text-purple-400 transition-colors"
-                      >
-                        Finance Sentiment
-                      </h3>
-                      <div
-                        class="flex items-center gap-1 bg-yellow-500/10 px-1.5 py-0.5 rounded border border-yellow-500/20"
-                      >
-                        <span
-                          class="material-symbols-outlined text-xs text-yellow-400 fill-current"
-                          >star</span
-                        >
-                        <span class="text-xs font-bold text-yellow-200"
-                          >4.5</span
-                        >
-                      </div>
-                    </div>
-                    <p
-                      class="text-slate-400 text-sm line-clamp-2 mb-4 leading-relaxed"
-                    >
-                      Over 1 million rows of financial news headlines labeled
-                      with sentiment scores (positive, negative, neutral).
-                    </p>
-                    <div
-                      class="mt-auto pt-4 border-t border-white/5 flex items-center justify-between"
-                    >
-                      <div>
-                        <span class="text-xs text-slate-500 block mb-0.5"
-                          >Price</span
-                        >
-                        <span class="text-lg font-bold text-white">$45</span>
-                      </div>
-                      <button
-                        class="bg-white/5 hover:bg-primary hover:shadow-lg hover:shadow-primary/25 border border-white/10 hover:border-transparent text-white p-2.5 rounded-lg transition-all group/btn"
-                      >
-                        <span
-                          class="material-symbols-outlined group-hover/btn:scale-110 transition-transform"
-                          >add_shopping_cart</span
-                        >
-                      </button>
-                    </div>
-                  </div>
-                </div>
-                <div
-                  class="glass-card rounded-xl overflow-hidden group flex flex-col h-full border-blue-500/20 shadow-[0_0_20px_rgba(59,130,246,0.05)]"
-                >
-                  <div class="relative h-48 overflow-hidden">
-                    <div
-                      class="absolute inset-0 bg-gradient-to-t from-slate-900 via-transparent to-transparent z-10 opacity-60"
-                    ></div>
-                    <img
-                      class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 ease-in-out"
-                      data-alt="MRI Scan"
-                      src="https://lh3.googleusercontent.com/aida-public/AB6AXuAPiTGvQj8uSJu3aCpAkZ92Ct9sOG6BMIqCe7oT0LxGVP84BvdM8jDaWtB6jY95tUMAiYX_AbaUxlidv1TP17DUJ0HMzrLx2wMGM1Sq4CMDYy0w_akdbcFbOru8gMRznun26t1R4V-hOIjbbZXGZyWQM3Ztr2eTYQC8TY4JSRuYUGyFupmNHJcn4SFcVdIjv8iEEQ57PkE_bkietbBGCcVKNvwQ8aKRa4mA8ViK3nQXaIJi0zmS8gjfP7bKsGlgmrG74PtGOkiGbknB"
-                    />
-                    <div class="absolute top-3 right-3 z-20">
-                      <span
-                        class="bg-gradient-to-r from-blue-600 to-indigo-600 text-white text-[10px] font-bold px-2 py-1 rounded shadow-lg border border-white/20 flex items-center gap-1"
-                      >
-                        <span class="material-symbols-outlined text-xs"
-                          >verified</span
-                        >
-                        VERIFIED
-                      </span>
-                    </div>
-                    <div class="absolute bottom-3 left-3 z-20 flex gap-2">
-                      <span
-                        class="bg-cyan-600/90 backdrop-blur text-white text-[10px] font-bold px-2 py-0.5 rounded shadow-lg"
-                        >MEDICAL</span
-                      >
-                      <span
-                        class="bg-slate-700/80 backdrop-blur text-white text-[10px] font-bold px-2 py-0.5 rounded border border-white/10"
-                        >DICOM</span
-                      >
-                    </div>
-                  </div>
-                  <div class="p-5 flex-1 flex flex-col">
-                    <div class="flex justify-between items-start mb-2">
-                      <h3
-                        class="text-lg font-bold text-white leading-tight group-hover:text-cyan-400 transition-colors"
-                      >
-                        Medical MRI Scans v2
-                      </h3>
-                      <div
-                        class="flex items-center gap-1 bg-yellow-500/10 px-1.5 py-0.5 rounded border border-yellow-500/20"
-                      >
-                        <span
-                          class="material-symbols-outlined text-xs text-yellow-400 fill-current"
-                          >star</span
-                        >
-                        <span class="text-xs font-bold text-yellow-200"
-                          >5.0</span
-                        >
-                      </div>
-                    </div>
-                    <p
-                      class="text-slate-400 text-sm line-clamp-2 mb-4 leading-relaxed"
-                    >
-                      High-resolution MRI scans of brain and spine. Anonymized,
-                      annotated, and verified by certified radiologists.
-                    </p>
-                    <div
-                      class="mt-auto pt-4 border-t border-white/5 flex items-center justify-between"
-                    >
-                      <div>
-                        <span class="text-xs text-slate-500 block mb-0.5"
-                          >Price</span
-                        >
-                        <span class="text-lg font-bold text-white">$1,200</span>
-                      </div>
-                      <button
-                        class="bg-white/5 hover:bg-primary hover:shadow-lg hover:shadow-primary/25 border border-white/10 hover:border-transparent text-white p-2.5 rounded-lg transition-all group/btn"
-                      >
-                        <span
-                          class="material-symbols-outlined group-hover/btn:scale-110 transition-transform"
-                          >add_shopping_cart</span
-                        >
-                      </button>
-                    </div>
-                  </div>
-                </div>
-                <div
-                  class="glass-card rounded-xl overflow-hidden group flex flex-col h-full"
-                >
-                  <div
-                    class="relative h-48 overflow-hidden bg-gradient-to-tr from-emerald-900 to-slate-900 flex items-center justify-center"
-                  >
-                    <div
-                      class="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20"
-                    ></div>
-                    <span
-                      class="material-symbols-outlined text-7xl text-white/10 group-hover:text-white/20 transition-colors duration-500"
-                      >graphic_eq</span
-                    >
-                    <div class="absolute bottom-3 left-3 z-20 flex gap-2">
-                      <span
-                        class="bg-emerald-600/90 backdrop-blur text-white text-[10px] font-bold px-2 py-0.5 rounded shadow-lg shadow-emerald-900/50"
-                        >AUDIO</span
-                      >
-                      <span
-                        class="bg-slate-700/80 backdrop-blur text-white text-[10px] font-bold px-2 py-0.5 rounded border border-white/10"
-                        >WAV</span
-                      >
-                    </div>
-                  </div>
-                  <div class="p-5 flex-1 flex flex-col">
-                    <div class="flex justify-between items-start mb-2">
-                      <h3
-                        class="text-lg font-bold text-white leading-tight group-hover:text-emerald-400 transition-colors"
-                      >
-                        Urban Soundscape
-                      </h3>
-                      <div
-                        class="flex items-center gap-1 bg-slate-700/50 px-1.5 py-0.5 rounded border border-slate-600/50"
-                      >
-                        <span
-                          class="material-symbols-outlined text-xs text-slate-400"
-                          >star</span
-                        >
-                        <span class="text-xs font-bold text-slate-300">--</span>
-                      </div>
-                    </div>
-                    <p
-                      class="text-slate-400 text-sm line-clamp-2 mb-4 leading-relaxed"
-                    >
-                      Recordings of urban environments for noise cancellation
-                      training. Includes traffic, construction, and crowd noise.
-                    </p>
-                    <div
-                      class="mt-auto pt-4 border-t border-white/5 flex items-center justify-between"
-                    >
-                      <div>
-                        <span class="text-xs text-slate-500 block mb-0.5"
-                          >Price</span
-                        >
-                        <span class="text-lg font-bold text-emerald-400"
-                          >Free</span
-                        >
-                      </div>
-                      <button
-                        class="bg-white/5 hover:bg-emerald-600 hover:shadow-lg hover:shadow-emerald-600/25 border border-white/10 hover:border-transparent text-white p-2.5 rounded-lg transition-all group/btn"
-                      >
-                        <span
-                          class="material-symbols-outlined group-hover/btn:scale-110 transition-transform"
-                          >download</span
-                        >
-                      </button>
-                    </div>
-                  </div>
-                </div>
-                <div
-                  class="glass-card rounded-xl overflow-hidden group flex flex-col h-full"
-                >
-                  <div
-                    class="relative h-48 overflow-hidden bg-gradient-to-bl from-orange-900 to-slate-900 flex items-center justify-center"
-                  >
-                    <div
-                      class="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20"
-                    ></div>
-                    <span
-                      class="material-symbols-outlined text-7xl text-white/10 group-hover:text-white/20 transition-colors duration-500"
-                      >smart_toy</span
-                    >
-                    <div class="absolute bottom-3 left-3 z-20 flex gap-2">
-                      <span
-                        class="bg-orange-600/90 backdrop-blur text-white text-[10px] font-bold px-2 py-0.5 rounded shadow-lg shadow-orange-900/50"
-                        >ROBOTICS</span
-                      >
-                      <span
-                        class="bg-slate-700/80 backdrop-blur text-white text-[10px] font-bold px-2 py-0.5 rounded border border-white/10"
-                        >SIM</span
-                      >
-                    </div>
-                  </div>
-                  <div class="p-5 flex-1 flex flex-col">
-                    <div class="flex justify-between items-start mb-2">
-                      <h3
-                        class="text-lg font-bold text-white leading-tight group-hover:text-orange-400 transition-colors"
-                      >
-                        Robotic Manipulation
-                      </h3>
-                      <div
-                        class="flex items-center gap-1 bg-yellow-500/10 px-1.5 py-0.5 rounded border border-yellow-500/20"
-                      >
-                        <span
-                          class="material-symbols-outlined text-xs text-yellow-400 fill-current"
-                          >star</span
-                        >
-                        <span class="text-xs font-bold text-yellow-200"
-                          >4.2</span
-                        >
-                      </div>
-                    </div>
-                    <p
-                      class="text-slate-400 text-sm line-clamp-2 mb-4 leading-relaxed"
-                    >
-                      Simulation data for robotic arm grasping tasks. Includes
-                      physics metadata and joint angles.
-                    </p>
-                    <div
-                      class="mt-auto pt-4 border-t border-white/5 flex items-center justify-between"
-                    >
-                      <div>
-                        <span class="text-xs text-slate-500 block mb-0.5"
-                          >Price</span
-                        >
-                        <span class="text-lg font-bold text-white">$150</span>
-                      </div>
-                      <button
-                        class="bg-white/5 hover:bg-primary hover:shadow-lg hover:shadow-primary/25 border border-white/10 hover:border-transparent text-white p-2.5 rounded-lg transition-all group/btn"
-                      >
-                        <span
-                          class="material-symbols-outlined group-hover/btn:scale-110 transition-transform"
-                          >add_shopping_cart</span
-                        >
-                      </button>
-                    </div>
-                  </div>
-                </div>
-                <div
-                  class="glass-card rounded-xl overflow-hidden group flex flex-col h-full"
-                >
-                  <div class="relative h-48 overflow-hidden">
-                    <div
-                      class="absolute inset-0 bg-gradient-to-t from-slate-900 via-transparent to-transparent z-10 opacity-60"
-                    ></div>
-                    <img
-                      class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 ease-in-out"
-                      data-alt="Dashboard Analytics"
-                      src="https://lh3.googleusercontent.com/aida-public/AB6AXuAzezCnfEoQf4pgJIJxsRhhkQ_HMmfdksldzlHX7WQPjXnBpCTxfSZWs4sEl0rBg_5lzS4eMhn4ULgU_EiBAOCjT-R7c_aUM4NpMV93CRVHCOsTnZJBcTuD5pGE-QUq-D76yJoy0tTtTGIH5kTARjel_Xnoi9rd5ehgQu4GIHhMSYwhgPzCFzWcdMgVn9bnL9KLFP6NZGNs9fWgD2rNrp59VDCFmEfqkkOMaFGj_Wy9SaL_HibjJZ0RW6VPu1QKdkS1zhR8juIVhvJE"
-                    />
-                    <div class="absolute bottom-3 left-3 z-20 flex gap-2">
-                      <span
-                        class="bg-blue-500/90 backdrop-blur text-white text-[10px] font-bold px-2 py-0.5 rounded shadow-lg"
-                        >BI</span
-                      >
-                      <span
-                        class="bg-slate-700/80 backdrop-blur text-white text-[10px] font-bold px-2 py-0.5 rounded border border-white/10"
-                        >XLSX</span
-                      >
-                    </div>
-                  </div>
-                  <div class="p-5 flex-1 flex flex-col">
-                    <div class="flex justify-between items-start mb-2">
-                      <h3
-                        class="text-lg font-bold text-white leading-tight group-hover:text-blue-400 transition-colors"
-                      >
-                        E-commerce Sales Logs
-                      </h3>
-                      <div
-                        class="flex items-center gap-1 bg-yellow-500/10 px-1.5 py-0.5 rounded border border-yellow-500/20"
-                      >
-                        <span
-                          class="material-symbols-outlined text-xs text-yellow-400 fill-current"
-                          >star</span
-                        >
-                        <span class="text-xs font-bold text-yellow-200"
-                          >4.8</span
-                        >
-                      </div>
-                    </div>
-                    <p
-                      class="text-slate-400 text-sm line-clamp-2 mb-4 leading-relaxed"
-                    >
-                      Detailed transaction logs from a major electronics
-                      retailer. Great for predictive sales modeling and
-                      forecasting.
-                    </p>
-                    <div
-                      class="mt-auto pt-4 border-t border-white/5 flex items-center justify-between"
-                    >
-                      <div>
-                        <span class="text-xs text-slate-500 block mb-0.5"
-                          >Price</span
-                        >
-                        <span class="text-lg font-bold text-white">$89</span>
-                      </div>
-                      <button
-                        class="bg-white/5 hover:bg-primary hover:shadow-lg hover:shadow-primary/25 border border-white/10 hover:border-transparent text-white p-2.5 rounded-lg transition-all group/btn"
-                      >
-                        <span
-                          class="material-symbols-outlined group-hover/btn:scale-110 transition-transform"
-                          >add_shopping_cart</span
-                        >
-                      </button>
-                    </div>
-                  </div>
+                  <p>Loading market data...</p>
                 </div>
               </div>
+              <!-- Static content removed -->
               <div class="flex items-center justify-center mt-12 gap-2">
                 <button
                   class="size-10 flex items-center justify-center rounded-lg border border-white/10 text-slate-400 hover:text-white hover:bg-white/5 disabled:opacity-50 transition-colors"
@@ -1052,22 +630,175 @@
       </main>
     </div>
     <script>
+      // Sidebar Logic
       const sidebar = document.getElementById("sidebar");
       const overlay = document.getElementById("sidebar-overlay");
       const toggleButtons = document.querySelectorAll(".sidebar-toggle");
 
-      function toggleSidebar() {
-        sidebar.classList.toggle("-translate-x-full");
-        overlay.classList.toggle("hidden");
+      function openSidebar() {
+        sidebar.classList.remove("-translate-x-full");
+        overlay.classList.remove("hidden");
       }
 
-      toggleButtons.forEach((btn) =>
+      function closeSidebar() {
+        sidebar.classList.add("-translate-x-full");
+        overlay.classList.add("hidden");
+      }
+
+      function toggleSidebar() {
+        if (sidebar.classList.contains("-translate-x-full")) {
+          openSidebar();
+        } else {
+          closeSidebar();
+        }
+      }
+
+      toggleButtons.forEach((btn) => {
         btn.addEventListener("click", (e) => {
           e.stopPropagation();
           toggleSidebar();
-        })
-      );
-      overlay.addEventListener("click", toggleSidebar);
+        });
+        // Reveal on hover
+        btn.addEventListener("mouseenter", openSidebar);
+      });
+
+      // Close when mouse leaves the sidebar area (optional but good for UX if opened by hover)
+      sidebar.addEventListener("mouseleave", closeSidebar);
+
+      overlay.addEventListener("click", closeSidebar);
+
+      // --- Real Data Logic ---
+      document.addEventListener("DOMContentLoaded", async () => {
+        const userStr = localStorage.getItem("user");
+        const user = userStr
+          ? JSON.parse(userStr)
+          : {
+              id: "Agency_Demo_User",
+              name: "Demo Agency",
+              email: "demo@agency.com",
+              role: "agency",
+            };
+
+        if (user.role !== "agency") {
+          // console.warn("Not logged in as agency");
+        }
+
+        const grid = document.getElementById("dataset-grid");
+
+        try {
+          const res = await fetch("/api/market/summaries");
+          const categories = await res.json();
+
+          grid.innerHTML = "";
+
+          if (categories.length === 0) {
+            grid.innerHTML = `<div class="col-span-full text-center py-20 text-slate-500">No datasets available.</div>`;
+            return;
+          }
+
+          categories.forEach((cat) => {
+            // Generate reliable mock images/prices based on category data
+            const price = (cat.total_files * 25).toLocaleString();
+            const image = getCategoryImage(cat.market_category);
+
+            const card = `
+                    <div class="glass-card rounded-xl overflow-hidden group flex flex-col h-full hover:border-primary/50 transition-all">
+                      <div class="relative h-48 overflow-hidden">
+                        <div class="absolute inset-0 bg-gradient-to-t from-slate-900 via-transparent to-transparent z-10 opacity-60"></div>
+                        <img class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 ease-in-out" src="${image}" />
+                        <div class="absolute top-3 right-3 z-20">
+                           <span class="bg-black/40 backdrop-blur-md border border-white/10 text-white text-[10px] font-bold px-2 py-1 rounded shadow-sm flex items-center gap-1">
+                             <span class="material-symbols-outlined text-xs text-yellow-400">verified</span> VERIFIED
+                           </span>
+                        </div>
+                        <div class="absolute bottom-3 left-3 z-20 flex gap-2">
+                           <span class="bg-blue-600/90 backdrop-blur text-white text-[10px] font-bold px-2 py-0.5 rounded shadow-lg uppercase">${cat.market_category}</span>
+                           <span class="bg-slate-700/80 backdrop-blur text-white text-[10px] font-bold px-2 py-0.5 rounded border border-white/10">${cat.total_files} Files</span>
+                        </div>
+                      </div>
+                      <div class="p-5 flex-1 flex flex-col">
+                        <div class="flex justify-between items-start mb-2">
+                           <h3 class="text-lg font-bold text-white leading-tight group-hover:text-blue-400 transition-colors">${cat.market_category} Bundle</h3>
+                           <div class="flex items-center gap-1 bg-yellow-500/10 px-1.5 py-0.5 rounded border border-yellow-500/20">
+                              <span class="material-symbols-outlined text-xs text-yellow-400 fill-current">star</span>
+                              <span class="text-xs font-bold text-yellow-200">${cat.avg_quality}</span>
+                           </div>
+                        </div>
+                        <p class="text-slate-400 text-sm line-clamp-2 mb-4 leading-relaxed">
+                           Complete collection of ${cat.total_files} verified datasets in ${cat.market_category}. High quality scores guaranteed.
+                        </p>
+                        <div class="mt-auto pt-4 border-t border-white/5 flex items-center justify-between">
+                           <div>
+                              <span class="text-xs text-slate-500 block mb-0.5">Total Value</span>
+                              <span class="text-lg font-bold text-white">$${price}</span>
+                           </div>
+                           <button onclick="addToCart('${cat.market_category}', '${price}', '${cat.total_files}', '${cat.avg_quality}')" class="bg-white/5 hover:bg-primary hover:shadow-lg hover:shadow-primary/25 border border-white/10 hover:border-transparent text-white p-2.5 rounded-lg transition-all group/btn">
+                              <span class="material-symbols-outlined group-hover/btn:scale-110 transition-transform">add_shopping_cart</span>
+                           </button>
+                        </div>
+                      </div>
+                    </div>
+                  `;
+            grid.insertAdjacentHTML("beforeend", card);
+          });
+        } catch (e) {
+          console.error(e);
+          grid.innerHTML = `<div class="col-span-full text-center text-red-400">Error loading market data.</div>`;
+        }
+      });
+
+      function getCategoryImage(category) {
+        const map = {
+          "Autonomous Driving":
+            "https://images.unsplash.com/photo-1449965408869-eaa3f722e40d?auto=format&fit=crop&q=80",
+          "Medical Imaging":
+            "https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?auto=format&fit=crop&q=80",
+          "Developer Tools":
+            "https://images.unsplash.com/photo-1555066931-4365d14bab8c?auto=format&fit=crop&q=80",
+          "Computer Vision":
+            "https://images.unsplash.com/photo-1550751827-4bd374c3f58b?auto=format&fit=crop&q=80",
+        };
+        return (
+          map[category] ||
+          "https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&q=80"
+        );
+      }
+
+      function addToCart(category, price, files, quality) {
+        const cart = JSON.parse(localStorage.getItem("cart") || "[]");
+
+        // Check if already in cart
+        const existing = cart.find((item) => item.category === category);
+        if (existing) {
+          alert(`${category} Bundle is already in your cart.`);
+          return;
+        }
+
+        cart.push({
+          category: category,
+          price: parseFloat(price.replace(/,/g, "")), // parse formatted price
+          files: files,
+          quality: quality,
+          image: getCategoryImage(category),
+        });
+
+        localStorage.setItem("cart", JSON.stringify(cart));
+        updateCartCount();
+        alert(`Added ${category} Bundle to cart!`);
+      }
+
+      function updateCartCount() {
+        const cart = JSON.parse(localStorage.getItem("cart") || "[]");
+        const badges = document.querySelectorAll(".cart-badge");
+        badges.forEach((b) => {
+          b.textContent = cart.length;
+          b.classList.remove("hidden");
+          if (cart.length === 0) b.classList.add("hidden");
+        });
+      }
+
+      // Init count on load
+      updateCartCount();
     </script>
   </body>
 </html>

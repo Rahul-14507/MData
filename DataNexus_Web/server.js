@@ -22,11 +22,12 @@ const databaseId = "mdatadb";
 const containerId = "Users";
 
 let container;
+let database;
 
 async function initCosmos() {
   try {
     const client = new CosmosClient({ endpoint, key });
-    const database = client.database(databaseId);
+    database = client.database(databaseId); // Global assignment
     container = database.container(containerId);
     console.log(`Connected to Azure Cosmos DB: ${databaseId} > ${containerId}`);
   } catch (err) {
@@ -35,6 +36,32 @@ async function initCosmos() {
 }
 
 initCosmos();
+
+// Azure Storage Configuration
+const {
+  BlobServiceClient,
+  StorageSharedKeyCredential,
+  generateBlobSASQueryParameters,
+  ContainerSASPermissions,
+} = require("@azure/storage-blob");
+
+const storageConnectionString = process.env.AZURE_STORAGE_CONNECTION_STRING;
+let blobServiceClient;
+let containerClient;
+
+try {
+  if (storageConnectionString) {
+    blobServiceClient = BlobServiceClient.fromConnectionString(
+      storageConnectionString
+    );
+    containerClient = blobServiceClient.getContainerClient("uploads");
+    console.log("Connected to Azure Blob Storage.");
+  } else {
+    console.warn("AZURE_STORAGE_CONNECTION_STRING not found in .env");
+  }
+} catch (error) {
+  console.error("Error connecting to Azure Blob Storage:", error.message);
+}
 
 // Helper: SHA256 Hash
 function hashPassword(password, salt) {
@@ -46,6 +73,346 @@ function hashPassword(password, salt) {
 // Routes
 app.get("/", (req, res) => {
   res.sendFile(path.join(__dirname, "landingpage.html"));
+});
+
+// API: Generate SAS Token
+app.get("/api/storage/sas", async (req, res) => {
+  try {
+    if (!blobServiceClient || !containerClient) {
+      return res.status(500).json({ error: "Storage not configured" });
+    }
+
+    const permissions = new ContainerSASPermissions();
+    permissions.write = true;
+    permissions.create = true;
+    permissions.list = true;
+    permissions.read = true; // Added read for initial check if needed
+
+    const expiryDate = new Date();
+    expiryDate.setMinutes(expiryDate.getMinutes() + 30);
+
+    // Generate SAS for the container (simplest for uploads)
+    const sasToken = generateBlobSASQueryParameters(
+      {
+        containerName: "uploads",
+        permissions: permissions,
+        expiresOn: expiryDate,
+      },
+      blobServiceClient.credential
+    ).toString();
+
+    const sasUrl = `${containerClient.url}?${sasToken}`;
+    res.json({ sasUrl });
+  } catch (error) {
+    console.error("SAS Gen Error:", error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// API: User Stats
+app.get("/api/stats", async (req, res) => {
+  const userId = req.query.userId;
+  if (!userId) {
+    return res.status(400).json({ error: "Missing userId" });
+  }
+
+  try {
+    const submissionsContainer = container.database.container("Submissions");
+    // Ensure container exists logic is handled in Function App usually, but for reading we assume it exists or fail gracefully
+
+    const querySpec = {
+      query:
+        "SELECT c.id, c.payout, c.quality_score, c.original_name, c.upload_timestamp, c.sold_to FROM c WHERE c.userId = @userId ORDER BY c.upload_timestamp DESC",
+      parameters: [{ name: "@userId", value: userId }],
+    };
+
+    const { resources: items } = await submissionsContainer.items
+      .query(querySpec)
+      .fetchAll();
+
+    let totalEarnings = 0.0;
+    let totalScore = 0;
+    const history = [];
+
+    items.forEach((item) => {
+      const payout = item.payout || 0;
+      const score = item.quality_score || 0;
+      const isSold = !!item.sold_to;
+
+      if (isSold) {
+        totalEarnings += payout * 0.8; // 80% split
+      }
+      totalScore += score;
+
+      history.push({
+        name: item.original_name || "Unknown",
+        date: item.upload_timestamp
+          ? item.upload_timestamp.split("T")[0]
+          : "N/A",
+        quality: score,
+        earnings: isSold ? `$${(payout * 0.8).toFixed(2)}` : "$0.00",
+        status: isSold ? "Sold" : "Pending",
+      });
+    });
+
+    const avgQuality =
+      items.length > 0 ? (totalScore / items.length).toFixed(1) : 0;
+
+    res.json({
+      earnings: `$${totalEarnings.toFixed(2)}`,
+      quality: `${avgQuality}%`,
+      total_uploads: items.length,
+      history: history,
+    });
+  } catch (error) {
+    console.error("Stats Error:", error);
+    // Fallback for demo if DB read fails (avoiding empty screen in dev)
+    res.json({
+      earnings: "$0.00",
+      quality: "0%",
+      total_uploads: 0,
+      history: [],
+    });
+  }
+});
+
+// API: File History
+app.get("/api/files", async (req, res) => {
+  const userId = req.query.userId;
+  if (!userId) return res.status(400).json({ error: "Missing userId" });
+
+  // Re-use logic or call stats logic? Let's just quick query for now.
+  // Actually, the Stats API returns history, so we can probably reuse that or just specific query.
+  // Let's implement a specific one for the history page to potentially support pagination later.
+  try {
+    const submissionsContainer = container.database.container("Submissions");
+    const querySpec = {
+      query:
+        "SELECT * FROM c WHERE c.userId = @userId ORDER BY c.upload_timestamp DESC",
+      parameters: [{ name: "@userId", value: userId }],
+    };
+    const { resources: items } = await submissionsContainer.items
+      .query(querySpec)
+      .fetchAll();
+    res.json(items);
+  } catch (err) {
+    console.error("Files Error:", err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// API: Market Summaries
+app.get("/api/market/summaries", async (req, res) => {
+  try {
+    const container = database.container("Submissions");
+    const querySpec = {
+      query: "SELECT c.market_category, c.quality_score, c.sold_to FROM c",
+    };
+
+    const { resources: items } = await container.items
+      .query(querySpec)
+      .fetchAll();
+
+    const marketStats = {};
+    items.forEach((item) => {
+      if (item.sold_to) return; // Skip sold items
+
+      const cat = item.market_category || "General";
+      const score = item.quality_score || 0;
+
+      if (!marketStats[cat]) {
+        marketStats[cat] = { count: 0, sum_score: 0 };
+      }
+      marketStats[cat].count++;
+      marketStats[cat].sum_score += score;
+    });
+
+    const result = Object.keys(marketStats).map((cat) => ({
+      market_category: cat,
+      total_files: marketStats[cat].count,
+      avg_quality: (
+        marketStats[cat].sum_score / marketStats[cat].count
+      ).toFixed(1),
+    }));
+
+    // Mock if empty (for demo)
+    if (result.length === 0) {
+      result.push(
+        {
+          market_category: "Autonomous Driving",
+          total_files: 1240,
+          avg_quality: 94.5,
+        },
+        {
+          market_category: "Medical Imaging",
+          total_files: 850,
+          avg_quality: 98.2,
+        },
+        {
+          market_category: "Developer Tools",
+          total_files: 2100,
+          avg_quality: 91.5,
+        }
+      );
+    }
+
+    res.json(result);
+  } catch (err) {
+    console.error("Market Summaries Error:", err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// API: Agency Purchases
+app.get("/api/agency/purchases", async (req, res) => {
+  try {
+    const agencyId = req.query.agencyId;
+    if (!agencyId) return res.status(400).json({ error: "Missing agencyId" });
+
+    const container = database.container("Submissions");
+    const querySpec = {
+      query:
+        "SELECT c.id, c.original_name, c.market_category, c.sold_price, c.transaction_date, c.quality_score FROM c WHERE c.sold_to = @agencyId ORDER BY c.transaction_date DESC",
+      parameters: [{ name: "@agencyId", value: agencyId }],
+    };
+
+    const { resources: items } = await container.items
+      .query(querySpec)
+      .fetchAll();
+    res.json(items);
+  } catch (err) {
+    console.error("Agency Purchases Error:", err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// API: Market Purchase
+app.post("/api/market/purchase", async (req, res) => {
+  try {
+    const { category, agencyId } = req.body;
+    if (!category || !agencyId)
+      return res.status(400).json({ error: "Missing category or agencyId" });
+
+    const container = database.container("Submissions");
+
+    // 1. Fetch Items in Category
+    const querySpec = {
+      query: "SELECT * FROM c WHERE c.market_category = @category",
+      parameters: [{ name: "@category", value: category }],
+    };
+    const { resources: items } = await container.items
+      .query(querySpec)
+      .fetchAll();
+
+    // 2. Filter Unsold
+    const unsoldItems = items.filter((i) => !i.sold_to);
+
+    if (unsoldItems.length === 0) {
+      return res
+        .status(404)
+        .json({ message: "No available datasets in this category." });
+    }
+
+    // 3. Buy top 5
+    const itemsToBuy = unsoldItems.slice(0, 5);
+    const purchasedCount = itemsToBuy.length;
+    const totalBatchValue = purchasedCount * 25.0;
+    const totalQualityScore = itemsToBuy.reduce(
+      (sum, item) => sum + (item.quality_score || 0),
+      0
+    );
+
+    // 4. Update Items
+    for (const item of itemsToBuy) {
+      item.sold_to = agencyId;
+      item.transaction_date = new Date().toISOString();
+      const itemQuality = item.quality_score || 0;
+
+      let itemPayout = 0;
+      if (totalQualityScore > 0) {
+        itemPayout = totalBatchValue * (itemQuality / totalQualityScore);
+      } else {
+        itemPayout = totalBatchValue / purchasedCount;
+      }
+
+      item.payout = itemPayout;
+      item.sold_price = itemPayout; // Agency view
+
+      await container.items.upsert(item);
+    }
+
+    res.json({
+      message: `Successfully purchased ${purchasedCount} items in '${category}'.`,
+      count: purchasedCount,
+      total_cost: totalBatchValue,
+      note: "Payouts distributed to contributors based on AQI.",
+    });
+  } catch (err) {
+    console.error("Purchase Error:", err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// API: Market Bulk Checkout
+app.post("/api/market/checkout", async (req, res) => {
+  try {
+    const { items, agencyId } = req.body; // items: [{ category: '...' }]
+    if (!items || !Array.isArray(items) || !agencyId)
+      return res.status(400).json({ error: "Invalid checkout data" });
+
+    const container = database.container("Submissions");
+    let totalPurchased = 0;
+    let totalCost = 0;
+
+    for (const cartItem of items) {
+      const category = cartItem.category;
+
+      // 1. Fetch Items
+      const querySpec = {
+        query: "SELECT * FROM c WHERE c.market_category = @category",
+        parameters: [{ name: "@category", value: category }],
+      };
+      const { resources: allItems } = await container.items
+        .query(querySpec)
+        .fetchAll();
+      const unsoldItems = allItems.filter((i) => !i.sold_to);
+
+      if (unsoldItems.length > 0) {
+        // Buy top 5
+        const itemsToBuy = unsoldItems.slice(0, 5);
+        const count = itemsToBuy.length;
+        const batchValue = count * 25.0;
+        totalCost += batchValue;
+        totalPurchased += count;
+
+        const totalQuality = itemsToBuy.reduce(
+          (sum, i) => sum + (i.quality_score || 0),
+          0
+        );
+
+        for (const item of itemsToBuy) {
+          item.sold_to = agencyId;
+          item.transaction_date = new Date().toISOString();
+          const q = item.quality_score || 0;
+          const payout =
+            totalQuality > 0
+              ? batchValue * (q / totalQuality)
+              : batchValue / count;
+          item.sold_price = payout;
+          item.payout = payout;
+          await container.items.upsert(item);
+        }
+      }
+    }
+
+    res.json({
+      message: `Processed checkout. Bought ${totalPurchased} total datasets across ${items.length} bundles.`,
+      total_cost: totalCost,
+    });
+  } catch (err) {
+    console.error("Checkout Error:", err);
+    res.status(500).json({ error: err.message });
+  }
 });
 
 // API: Login

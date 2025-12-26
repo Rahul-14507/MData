@@ -253,16 +253,20 @@
           <img
             alt="User"
             class="w-10 h-10 rounded-full border-2 border-white dark:border-gray-700 shadow-sm"
-            src="https://lh3.googleusercontent.com/aida-public/AB6AXuBJJL6r2F2CGrlVRpg-2_8D8dEqSuXJLoYjAt2PNC9hnBJm7N9O1o67vYni1Io59mXrtu0nPpxIVZamGtum3jPPLDHX9jcGf9MWEhHX1Ii4et3kpOHrEZ_V4f4sCQEW1GWxQ1DqR6p3rY8W1MZ5mJ5N2dwzPwUN7M3aq8BXR1bxHWi2s2uU--uYaVkRPqczUfGNo1l5tMPLX0bfITQxRYbenBYQ6dA1pG5S4wp6wwwxCyX7w3IlTnDk6SU2gNO3U49RquJjVhYRRYlv"
+            src="https://lh3.googleusercontent.com/aida-public/AB6AXuBJJL6r2F2CGrlVRpg-2_8D8dEqSuXJLoYjAt2PNC9hnBJm7N9O1o67vYni1Io59mXrtu0nPpxIVZamGtum3jPPLDHX9jcGf9MWEhHX1Ii4et3kpOHrEZ_V4f4sCQEW1GWxQ1DqR6p3rY8W1MZ5mJ5N2dwzPwUN7M3aq8BXR1bxHWi2s2uU--uYaVkRPqczUfGNo1l5tMPLX0bfITQxRYbenBYQ6dA1pG5S4wp3wwwxCyX7w3IlTnDk6SU2gNO3U49RquJjVhYRRYlv"
           />
           <div class="flex-1 min-w-0">
             <p
+              id="user-name"
               class="text-sm font-semibold text-gray-900 dark:text-white truncate"
             >
-              John Smith
+              Loading...
             </p>
-            <p class="text-xs text-gray-500 dark:text-gray-400 truncate">
-              john@example.com
+            <p
+              id="user-email"
+              class="text-xs text-gray-500 dark:text-gray-400 truncate"
+            >
+              loading...
             </p>
           </div>
           <span
@@ -270,13 +274,13 @@
             >expand_more</span
           >
         </div>
-        <a
-          href="../Landingpage.html"
-          class="flex items-center gap-3 p-2 rounded-xl text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors group"
+        <button
+          onclick="logout()"
+          class="w-full flex items-center gap-3 p-2 rounded-xl text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors group text-left"
         >
           <span class="material-symbols-outlined text-[20px]">logout</span>
           <span class="text-sm font-semibold">Logout</span>
-        </a>
+        </button>
       </div>
     </aside>
     <main class="flex-1 h-full overflow-y-auto relative w-full scroll-smooth">
@@ -367,12 +371,16 @@
                 </div>
               </div>
               <h2
+                id="profile-name"
                 class="text-xl font-bold tracking-tight text-slate-900 dark:text-white"
               >
-                Alex Contributor
+                Loading...
               </h2>
-              <p class="text-sm text-slate-500 dark:text-slate-400 mb-3">
-                alex@example.com
+              <p
+                id="profile-email"
+                class="text-sm text-slate-500 dark:text-slate-400 mb-3"
+              >
+                loading...
               </p>
               <div class="flex items-center gap-2 mb-4">
                 <span
@@ -389,8 +397,9 @@
               >
                 <div class="text-center">
                   <span
+                    id="profile-uploads"
                     class="block text-lg font-bold text-slate-900 dark:text-white"
-                    >124</span
+                    >0</span
                   >
                   <span
                     class="text-[10px] text-slate-500 uppercase tracking-wider font-medium"
@@ -399,12 +408,13 @@
                 </div>
                 <div class="text-center">
                   <span
+                    id="profile-rating"
                     class="block text-lg font-bold text-slate-900 dark:text-white"
-                    >4.9</span
+                    >0</span
                   >
                   <span
                     class="text-[10px] text-slate-500 uppercase tracking-wider font-medium"
-                    >Rating</span
+                    >Quality</span
                   >
                 </div>
               </div>
@@ -462,30 +472,33 @@
                     Earnings Overview
                   </h3>
                 </div>
-                <button
+                <a
+                  href="wallet.html"
                   class="text-xs text-blue-300 font-medium hover:text-white transition-colors flex items-center gap-1"
                 >
                   View History
                   <span class="material-symbols-outlined text-[14px]"
                     >arrow_forward</span
                   >
-                </button>
+                </a>
               </div>
               <div class="grid grid-cols-2 gap-8 relative z-10">
                 <div>
                   <p class="text-xs text-slate-400 mb-1">Available Funds</p>
                   <p
+                    id="earnings-available"
                     class="text-3xl font-bold tracking-tight text-slate-900 dark:text-white"
                   >
-                    $450.00
+                    $0.00
                   </p>
                 </div>
                 <div class="border-l border-white/10 pl-8">
                   <p class="text-xs text-slate-400 mb-1">Lifetime Earnings</p>
                   <p
+                    id="earnings-lifetime"
                     class="text-3xl font-bold tracking-tight text-slate-500 dark:text-gray-400"
                   >
-                    $1,200.00
+                    $0.00
                   </p>
                 </div>
               </div>
@@ -605,6 +618,7 @@
               class="glass-panel rounded-2xl overflow-hidden shadow-sm border border-white/50 dark:border-slate-700/50 p-1"
             >
               <button
+                onclick="logout()"
                 class="w-full flex items-center justify-between p-4 hover:bg-red-50 dark:hover:bg-red-900/10 transition-colors rounded-xl group text-red-500 dark:text-red-400"
               >
                 <div class="flex items-center gap-3">
@@ -638,13 +652,59 @@
         overlay.classList.toggle("hidden");
       }
 
-      toggleButtons.forEach((btn) =>
+      // Hover to open sidebar
+      toggleButtons.forEach((btn) => {
         btn.addEventListener("click", (e) => {
           e.stopPropagation();
           toggleSidebar();
-        })
-      );
+        });
+        btn.addEventListener("mouseenter", () => {
+          if (sidebar && sidebar.classList.contains("-translate-x-full")) {
+            toggleSidebar();
+          }
+        });
+      });
       overlay.addEventListener("click", toggleSidebar);
+
+      function logout() {
+        localStorage.removeItem("user");
+        window.location.href = "../Landingpage.html";
+      }
+
+      // --- Real Data Logic ---
+      document.addEventListener("DOMContentLoaded", async () => {
+        const userStr = localStorage.getItem("user");
+        if (!userStr) {
+          window.location.href = "../Landingpage.html";
+          return;
+        }
+        const user = JSON.parse(userStr);
+
+        // Sidebar
+        document.getElementById("user-name").textContent = user.name;
+        document.getElementById("user-email").textContent = user.email;
+
+        // Profile Main
+        document.getElementById("profile-name").textContent = user.name;
+        document.getElementById("profile-email").textContent = user.email;
+
+        // Fetch Stats for profile
+        try {
+          const res = await fetch(`/api/stats?userId=${user.id}`);
+          const stats = await res.json();
+
+          document.getElementById("profile-uploads").textContent =
+            stats.total_uploads;
+          document.getElementById("profile-rating").textContent = stats.quality; // "98.5%"
+          document.getElementById("earnings-lifetime").textContent =
+            stats.earnings;
+          // Set available funds to match earnings (same as lifetime since no withdrawals)
+          const availFunds = document.getElementById("earnings-available");
+          if (availFunds) availFunds.textContent = stats.earnings;
+        } catch (e) {
+          console.error(e);
+        }
+      });
     </script>
   </body>
 </html>

@@ -377,9 +377,10 @@
               <p class="text-sm font-medium text-slate-400">Total Spend</p>
               <div>
                 <h3
+                  id="total-spend"
                   class="text-2xl font-bold text-white group-hover:text-glow transition-all"
                 >
-                  $12,450
+                  $0
                 </h3>
                 <div
                   class="flex items-center mt-1 text-xs font-medium text-emerald-400"
@@ -409,9 +410,10 @@
               <p class="text-sm font-medium text-slate-400">Active Datasets</p>
               <div>
                 <h3
+                  id="active-datasets"
                   class="text-2xl font-bold text-white group-hover:text-glow transition-all"
                 >
-                  24
+                  0
                 </h3>
                 <div
                   class="flex items-center mt-1 text-xs font-medium text-emerald-400"
@@ -502,10 +504,9 @@
                   >View All</a
                 >
               </div>
-              <div class="space-y-3">
-                <div
-                  class="glass-card rounded-xl p-4 flex flex-col sm:flex-row items-center gap-4 transition-all hover:border-primary/30 group"
-                >
+              <div id="trending-container" class="space-y-3">
+                <!-- Dynamic Content Loading... -->
+
                   <div
                     class="h-14 w-14 shrink-0 rounded-xl bg-gradient-to-br from-blue-600 to-indigo-700 flex items-center justify-center text-white shadow-lg shadow-blue-900/40 group-hover:scale-105 transition-transform"
                   >
@@ -719,13 +720,94 @@
         overlay.classList.toggle("hidden");
       }
 
-      toggleButtons.forEach((btn) =>
+      // Hover to open sidebar
+      toggleButtons.forEach((btn) => {
         btn.addEventListener("click", (e) => {
-          e.stopPropagation();
-          toggleSidebar();
-        })
-      );
+            e.stopPropagation();
+            toggleSidebar();
+        });
+        btn.addEventListener("mouseenter", () => {
+             if (sidebar && sidebar.classList.contains("-translate-x-full")) {
+                 toggleSidebar();
+             }
+        });
+      });
       overlay.addEventListener("click", toggleSidebar);
+
+      // --- Real Data Logic ---
+      document.addEventListener("DOMContentLoaded", async () => {
+          const userStr = localStorage.getItem("user");
+          // if (!userStr) {
+          //   // For demo, if no user, mock one or redirect. Ideally redirect.
+          //   // window.location.href = "../Landingpage.html";
+          // }
+          const user = userStr ? JSON.parse(userStr) : { id: "Agency_Demo_User", name: "Demo Agency", email: "demo@agency.com", role: "agency" };
+          
+          if (user.role !== 'agency' && user.role !== 'admin') {
+               // Optional: redirect regular users
+               // window.location.href = "../User/dashboard.html";
+          }
+          
+          // Identify user in UI if elements exist
+          const headerName = document.querySelector("header .text-sm.font-semibold.text-white");
+          if(headerName) headerName.textContent = user.name;
+          
+          const welcomeName = document.querySelector("h2.text-3xl");
+          if(welcomeName) welcomeName.innerHTML = `Welcome back, ${user.name.split(' ')[0]} <span class="animate-bounce inline-block">👋</span>`;
+
+          try {
+              // 1. Fetch Purchases (Total Spend & Active Datasets)
+              const purchaseRes = await fetch(`/api/agency/purchases?agencyId=${user.id}`);
+              const purchases = await purchaseRes.json();
+              
+              if (Array.isArray(purchases)) {
+                  const totalSpend = purchases.reduce((sum, item) => sum + (item.sold_price || 0), 0);
+                  document.getElementById("total-spend").textContent = `$${totalSpend.toLocaleString(undefined, {minimumFractionDigits: 0, maximumFractionDigits: 0})}`;
+                  document.getElementById("active-datasets").textContent = purchases.length;
+              }
+
+              // 2. Fetch Market Summaries (Trending)
+              const marketRes = await fetch(`/api/market/summaries`);
+              const summaries = await marketRes.json();
+              
+              const trendingContainer = document.getElementById("trending-container");
+              trendingContainer.innerHTML = "";
+              
+              // Sort by avg_quality desc for "Trending"
+              summaries.sort((a,b) => b.avg_quality - a.avg_quality);
+              const top3 = summaries.slice(0, 3);
+              
+              if (top3.length === 0) {
+                  trendingContainer.innerHTML = `<p class="text-slate-400 p-4">No trending datasets available yet.</p>`;
+              }
+              
+              top3.forEach(cat => {
+                  const html = `
+                <div class="glass-card rounded-xl p-4 flex flex-col sm:flex-row items-center gap-4 transition-all hover:border-primary/30 group">
+                  <div class="h-14 w-14 shrink-0 rounded-xl bg-gradient-to-br from-blue-600 to-indigo-700 flex items-center justify-center text-white shadow-lg shadow-blue-900/40 group-hover:scale-105 transition-transform">
+                    <span class="material-symbols-outlined text-2xl">category</span>
+                  </div>
+                  <div class="flex-1 text-center sm:text-left min-w-0">
+                    <h4 class="text-base font-semibold text-white truncate">${cat.market_category} Bundle</h4>
+                    <div class="flex flex-wrap justify-center sm:justify-start gap-2 mt-1.5">
+                      <span class="px-2 py-0.5 rounded-md bg-white/5 border border-white/5 text-[10px] font-medium text-slate-300">Avg Quality: ${cat.avg_quality}%</span>
+                      <span class="px-2 py-0.5 rounded-md bg-white/5 border border-white/5 text-[10px] font-medium text-slate-300">${cat.total_files} Files</span>
+                    </div>
+                  </div>
+                  <div class="flex items-center gap-4">
+                    <span class="text-lg font-bold text-white">$25.00<span class="text-xs text-slate-400 font-normal">/file</span></span>
+                    <a href="browse_datasets.html" class="rounded-lg bg-white/5 hover:bg-primary border border-white/10 hover:border-primary/50 px-4 py-2 text-sm font-medium text-white transition-all shadow-sm">
+                      View
+                    </a>
+                  </div>
+                </div>`;
+                trendingContainer.insertAdjacentHTML('beforeend', html);
+              });
+
+          } catch (e) {
+              console.error("Dashboard Load Error:", e);
+          }
+      });
     </script>
   </body>
 </html>

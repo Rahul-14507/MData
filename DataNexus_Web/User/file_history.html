@@ -255,12 +255,16 @@
           />
           <div class="flex-1 min-w-0">
             <p
+              id="user-name"
               class="text-sm font-semibold text-gray-900 dark:text-white truncate"
             >
-              John Smith
+              Loading...
             </p>
-            <p class="text-xs text-gray-500 dark:text-gray-400 truncate">
-              john@example.com
+            <p
+              id="user-email"
+              class="text-xs text-gray-500 dark:text-gray-400 truncate"
+            >
+              loading...
             </p>
           </div>
           <span
@@ -359,9 +363,10 @@
                     Total Earnings
                   </p>
                   <h3
+                    id="history-earnings"
                     class="text-3xl font-bold text-slate-900 dark:text-white tracking-tight"
                   >
-                    $1,240.50
+                    $0.00
                   </h3>
                 </div>
                 <div
@@ -396,9 +401,10 @@
                     Files Sold
                   </p>
                   <h3
+                    id="history-sold"
                     class="text-3xl font-bold text-slate-900 dark:text-white tracking-tight"
                   >
-                    45
+                    0
                   </h3>
                 </div>
                 <div
@@ -446,10 +452,7 @@
                   <h3
                     class="text-3xl font-bold text-slate-900 dark:text-white tracking-tight"
                   >
-                    9.1<span
-                      class="text-lg text-slate-400 dark:text-slate-600 font-normal ml-1"
-                      >/10</span
-                    >
+                    <span id="history-quality">0</span><span class="text-lg text-slate-400 font-normal">/100</span>
                   </h3>
                 </div>
                 <div
@@ -572,477 +575,10 @@
             </div>
           </section>
           <div
+            id="file-grid"
             class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 pb-20"
           >
-            <div
-              class="glass-card rounded-2xl overflow-hidden group flex flex-col hover:scale-[1.01] hover:shadow-xl transition-all duration-300 animate-slide-up"
-              style="animation-delay: 0.1s"
-            >
-              <div
-                class="relative h-48 bg-gray-100 dark:bg-gray-800 overflow-hidden"
-              >
-                <div
-                  class="absolute inset-0 bg-cover bg-center transform group-hover:scale-110 transition-transform duration-700"
-                  style="
-                    background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuCwSeIOjc0nFAI2gg7Fu1xxeyJ2Tkq5c_4WqQvES_sPkPZtES0MoV0v2yDz45COrYSyoggTp5ERDk8bV50yHvqlSnRZv0ER0_JHwzPQ0UF6zDnk_UgDJptOE5BeXZAbZA8ao1J-7c_uq3CXDpiQHgEuueGUukql9xjdv9VTA0dRhkjBbmMXBxf3G8MSYwMIZ6inv6ArSKdoM9Iyi_u5fHegAy7_lFGpPPE4NbTRKQMHokapLdWWu4uSU5vBU7WKdYwOigR0YqdMuWMi');
-                  "
-                ></div>
-                <div
-                  class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-60"
-                ></div>
-                <div class="absolute top-3 left-3">
-                  <span
-                    class="bg-blue-500/90 backdrop-blur-md text-white text-xs font-bold px-2.5 py-1 rounded-lg shadow-sm flex items-center gap-1"
-                  >
-                    <span class="material-symbols-outlined text-[14px]"
-                      >csv</span
-                    >
-                    CSV
-                  </span>
-                </div>
-                <div class="absolute top-3 right-3">
-                  <span
-                    class="bg-green-500 text-white text-xs font-bold px-2.5 py-1 rounded-lg shadow-sm"
-                    >Purchased</span
-                  >
-                </div>
-                <div
-                  class="absolute bottom-3 left-3 right-3 flex justify-between items-end text-white"
-                >
-                  <div>
-                    <div class="text-xs opacity-80 mb-0.5">Healthcare</div>
-                    <div class="font-semibold text-sm truncate">
-                      Dataset_Healthcare_01.csv
-                    </div>
-                  </div>
-                  <div class="text-xs opacity-75">14 MB</div>
-                </div>
-              </div>
-              <div class="p-5 flex-1 flex flex-col">
-                <div class="flex justify-between items-start mb-4">
-                  <div>
-                    <div
-                      class="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wider font-semibold mb-1"
-                    >
-                      Earnings
-                    </div>
-                    <div
-                      class="text-xl font-bold text-green-600 dark:text-green-400"
-                    >
-                      +$150.00
-                    </div>
-                  </div>
-                  <div class="text-right">
-                    <div
-                      class="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wider font-semibold mb-1"
-                    >
-                      Quality
-                    </div>
-                    <div class="flex items-center gap-1 justify-end">
-                      <span
-                        class="text-lg font-bold text-slate-800 dark:text-white"
-                        >9.2</span
-                      >
-                      <span class="text-xs text-slate-400">/10</span>
-                    </div>
-                  </div>
-                </div>
-                <div
-                  class="w-full h-1.5 bg-gray-100 dark:bg-gray-700 rounded-full mb-5 overflow-hidden"
-                >
-                  <div
-                    class="h-full bg-gradient-to-r from-green-400 to-green-600"
-                    style="width: 92%"
-                  ></div>
-                </div>
-                <div
-                  class="mt-auto flex items-center gap-3 pt-4 border-t border-gray-100 dark:border-gray-700/50"
-                >
-                  <div class="text-xs text-slate-400">Uploaded Oct 24</div>
-                  <div class="flex-1"></div>
-                  <button
-                    class="p-2 text-slate-400 hover:text-primary hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors"
-                    title="Analytics"
-                  >
-                    <span class="material-symbols-outlined text-[20px]"
-                      >analytics</span
-                    >
-                  </button>
-                  <button
-                    class="p-2 text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
-                    title="More"
-                  >
-                    <span class="material-symbols-outlined text-[20px]"
-                      >more_vert</span
-                    >
-                  </button>
-                </div>
-              </div>
-            </div>
-            <div
-              class="glass-card rounded-2xl overflow-hidden group flex flex-col hover:scale-[1.01] hover:shadow-xl transition-all duration-300 animate-slide-up"
-              style="animation-delay: 0.2s"
-            >
-              <div
-                class="relative h-48 bg-gray-100 dark:bg-gray-800 overflow-hidden flex items-center justify-center"
-              >
-                <div
-                  class="absolute inset-0 bg-gradient-to-tr from-purple-600 to-blue-600 opacity-90 group-hover:scale-110 transition-transform duration-700"
-                ></div>
-                <span
-                  class="material-symbols-outlined text-white text-6xl relative z-10 opacity-80"
-                  >graphic_eq</span
-                >
-                <div class="absolute top-3 left-3 z-20">
-                  <span
-                    class="bg-purple-500/90 backdrop-blur-md text-white text-xs font-bold px-2.5 py-1 rounded-lg shadow-sm flex items-center gap-1"
-                  >
-                    <span class="material-symbols-outlined text-[14px]"
-                      >audio_file</span
-                    >
-                    WAV
-                  </span>
-                </div>
-                <div class="absolute top-3 right-3 z-20">
-                  <span
-                    class="bg-yellow-500 text-white text-xs font-bold px-2.5 py-1 rounded-lg shadow-sm animate-pulse"
-                    >Pending</span
-                  >
-                </div>
-                <div
-                  class="absolute bottom-0 left-0 right-0 p-3 bg-gradient-to-t from-black/80 to-transparent z-20 text-white flex justify-between items-end"
-                >
-                  <div>
-                    <div class="text-xs opacity-80 mb-0.5">Audio Sample</div>
-                    <div class="font-semibold text-sm truncate">
-                      Voice_Sample_B3.wav
-                    </div>
-                  </div>
-                  <div class="text-xs opacity-75">4 MB</div>
-                </div>
-              </div>
-              <div class="p-5 flex-1 flex flex-col">
-                <div
-                  class="flex-1 flex flex-col justify-center items-center py-4 text-center"
-                >
-                  <div
-                    class="w-12 h-12 rounded-full bg-yellow-50 dark:bg-yellow-900/20 text-yellow-500 flex items-center justify-center mb-2"
-                  >
-                    <span class="material-symbols-outlined animate-spin"
-                      >progress_activity</span
-                    >
-                  </div>
-                  <h4 class="font-semibold text-slate-700 dark:text-slate-200">
-                    Analysis in progress
-                  </h4>
-                  <p class="text-xs text-slate-500 mt-1 max-w-[200px]">
-                    Our AI is currently verifying the quality of this asset.
-                  </p>
-                </div>
-                <div
-                  class="mt-auto flex items-center gap-2 pt-4 border-t border-gray-100 dark:border-gray-700/50"
-                >
-                  <button
-                    class="flex-1 py-2 px-3 text-xs font-semibold text-slate-700 dark:text-slate-300 bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg border border-gray-200 dark:border-gray-700 transition-colors flex items-center justify-center gap-2"
-                  >
-                    <span class="material-symbols-outlined text-[16px]"
-                      >edit</span
-                    >
-                    Edit Details
-                  </button>
-                  <button
-                    class="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
-                  >
-                    <span class="material-symbols-outlined text-[20px]"
-                      >delete</span
-                    >
-                  </button>
-                </div>
-              </div>
-            </div>
-            <div
-              class="glass-card rounded-2xl overflow-hidden group flex flex-col hover:scale-[1.01] hover:shadow-xl transition-all duration-300 animate-slide-up"
-              style="animation-delay: 0.3s"
-            >
-              <div
-                class="relative h-48 bg-gray-100 dark:bg-gray-800 overflow-hidden"
-              >
-                <div
-                  class="absolute inset-0 bg-cover bg-center transform group-hover:scale-110 transition-transform duration-700"
-                  style="
-                    background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuBC3MVlY3XYlJz18yn1Nm3R3csCEXAqvK8BWca5K1fKLgcWkDEiDZsxdotaiUu85YuzNKmoJt_n1jad7KFqE1pLlj22uh76DO-Y9QYroU02TG-mlkYS29R6YpzCtmvJcYCHgIfYAPiWoXKVh41zzxAwuovXsxHBRY7nAw0_rZ_MRcNXhb5PXQVBbi3YXha5IEfxM0NnNi81oGYJcLkSf9yJe-mX1TmT3mNSujRk-diickTFPMIUuZy1u_stWZwG1BjNCM0Ct31KNc1d');
-                  "
-                ></div>
-                <div
-                  class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-60"
-                ></div>
-                <div class="absolute top-3 left-3">
-                  <span
-                    class="bg-orange-500/90 backdrop-blur-md text-white text-xs font-bold px-2.5 py-1 rounded-lg shadow-sm flex items-center gap-1"
-                  >
-                    <span class="material-symbols-outlined text-[14px]"
-                      >view_in_ar</span
-                    >
-                    OBJ
-                  </span>
-                </div>
-                <div class="absolute top-3 right-3">
-                  <span
-                    class="bg-green-500 text-white text-xs font-bold px-2.5 py-1 rounded-lg shadow-sm"
-                    >Purchased</span
-                  >
-                </div>
-                <div
-                  class="absolute bottom-3 left-3 right-3 flex justify-between items-end text-white"
-                >
-                  <div>
-                    <div class="text-xs opacity-80 mb-0.5">3D Models</div>
-                    <div class="font-semibold text-sm truncate">
-                      3D_Asset_Cyberpunk_Car.obj
-                    </div>
-                  </div>
-                  <div class="text-xs opacity-75">128 MB</div>
-                </div>
-              </div>
-              <div class="p-5 flex-1 flex flex-col">
-                <div class="flex justify-between items-start mb-4">
-                  <div>
-                    <div
-                      class="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wider font-semibold mb-1"
-                    >
-                      Earnings
-                    </div>
-                    <div
-                      class="text-xl font-bold text-green-600 dark:text-green-400"
-                    >
-                      +$240.00
-                    </div>
-                  </div>
-                  <div class="text-right">
-                    <div
-                      class="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wider font-semibold mb-1"
-                    >
-                      Quality
-                    </div>
-                    <div class="flex items-center gap-1 justify-end">
-                      <span
-                        class="text-lg font-bold text-slate-800 dark:text-white"
-                        >8.8</span
-                      >
-                      <span class="text-xs text-slate-400">/10</span>
-                    </div>
-                  </div>
-                </div>
-                <div
-                  class="w-full h-1.5 bg-gray-100 dark:bg-gray-700 rounded-full mb-5 overflow-hidden"
-                >
-                  <div
-                    class="h-full bg-gradient-to-r from-green-400 to-green-600"
-                    style="width: 88%"
-                  ></div>
-                </div>
-                <div
-                  class="mt-auto flex items-center gap-3 pt-4 border-t border-gray-100 dark:border-gray-700/50"
-                >
-                  <div class="text-xs text-slate-400">Uploaded Oct 20</div>
-                  <div class="flex-1"></div>
-                  <button
-                    class="p-2 text-slate-400 hover:text-primary hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors"
-                    title="Analytics"
-                  >
-                    <span class="material-symbols-outlined text-[20px]"
-                      >analytics</span
-                    >
-                  </button>
-                  <button
-                    class="p-2 text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
-                    title="More"
-                  >
-                    <span class="material-symbols-outlined text-[20px]"
-                      >more_vert</span
-                    >
-                  </button>
-                </div>
-              </div>
-            </div>
-            <div
-              class="glass-card rounded-2xl overflow-hidden group flex flex-col hover:scale-[1.01] hover:shadow-xl transition-all duration-300 animate-slide-up opacity-80 hover:opacity-100"
-              style="animation-delay: 0.4s"
-            >
-              <div
-                class="relative h-48 bg-gray-100 dark:bg-gray-800 overflow-hidden grayscale group-hover:grayscale-0 transition-all duration-500"
-              >
-                <div
-                  class="absolute inset-0 bg-cover bg-center"
-                  style="
-                    background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuD96qIbyS4Dr8XUcRHh9P_JniF2P9cIxTYJM-_cy-kiX599TzPqck8hvcbM7W7IvKKgHyjvclieOAiKLpTxf0EwYfDaOB1SOeGKNPktippwArZODL_kxH4H_9d1NbZiH3QLfKTb_YkzkGaqVxQT5cIHfpCG6OTLujxjkCb9TPeX-g9W1QaA6qMLBiYUvokZ5-K4EZAEcOkXCKZDMgRXrxCIiGKHQ2i0vgh3O4_tC3uJ5JANuKwK9d2OIr3SE9HTwnjP44USKnLKfC2v');
-                  "
-                ></div>
-                <div
-                  class="absolute inset-0 bg-black/50 flex items-center justify-center"
-                >
-                  <div
-                    class="bg-black/40 backdrop-blur-sm p-3 rounded-full border border-white/20"
-                  >
-                    <span class="material-symbols-outlined text-white text-3xl"
-                      >block</span
-                    >
-                  </div>
-                </div>
-                <div class="absolute top-3 right-3">
-                  <span
-                    class="bg-red-500 text-white text-xs font-bold px-2.5 py-1 rounded-lg shadow-sm"
-                    >Rejected</span
-                  >
-                </div>
-                <div class="absolute bottom-3 left-3 right-3 text-white">
-                  <div
-                    class="font-semibold text-sm truncate line-through opacity-70"
-                  >
-                    Urban_Noise_Raw.wav
-                  </div>
-                </div>
-              </div>
-              <div
-                class="p-5 flex-1 flex flex-col bg-red-50/50 dark:bg-red-900/10"
-              >
-                <div class="flex items-start gap-3 mb-4">
-                  <span class="material-symbols-outlined text-red-500 mt-0.5"
-                    >error</span
-                  >
-                  <div>
-                    <h4
-                      class="text-sm font-bold text-red-700 dark:text-red-400"
-                    >
-                      Quality Issues
-                    </h4>
-                    <p
-                      class="text-xs text-red-600 dark:text-red-300 mt-1 leading-relaxed"
-                    >
-                      Audio contains too much background noise. Please clean up
-                      the track and re-upload.
-                    </p>
-                  </div>
-                </div>
-                <div
-                  class="mt-auto pt-4 border-t border-red-100 dark:border-red-900/30"
-                >
-                  <button
-                    class="w-full py-2 px-3 text-xs font-semibold text-red-600 dark:text-red-400 bg-red-100 dark:bg-red-900/30 hover:bg-red-200 dark:hover:bg-red-900/50 rounded-lg border border-red-200 dark:border-red-900/30 transition-colors flex items-center justify-center gap-2"
-                  >
-                    <span class="material-symbols-outlined text-[16px]"
-                      >delete</span
-                    >
-                    Remove File
-                  </button>
-                </div>
-              </div>
-            </div>
-            <div
-              class="glass-card rounded-2xl overflow-hidden group flex flex-col hover:scale-[1.01] hover:shadow-xl transition-all duration-300 animate-slide-up"
-              style="animation-delay: 0.5s"
-            >
-              <div
-                class="relative h-48 bg-gray-100 dark:bg-gray-800 overflow-hidden"
-              >
-                <div
-                  class="absolute inset-0 bg-cover bg-center transform group-hover:scale-110 transition-transform duration-700"
-                  style="
-                    background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuApjupT2ulbjEdsOQpbf65tMrgbQtKtpGlJJV0UV4H859QkNmuKL3_Bw_VNZRV5B8wsgsrDI3BwwsuiIhLUOB0nN-5jh1wwXhDpFyx3olpffxVLhLZ8bV8Nq4fnuLvBTN0Oivze3g1Gsg23_H2ZaR3KXBMoEPq1WDy4X6w1DSjuxNkKo_e_CVkmBNhnakJPCW7zdeJXHr7NiHVk_FLy15_5ylIrXRSlPsgHjRHLKRdf5461zw_O2FO14faN8A-SRmHFnVWIKl5RlYHp');
-                  "
-                ></div>
-                <div
-                  class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-60"
-                ></div>
-                <div class="absolute top-3 left-3">
-                  <span
-                    class="bg-amber-600/90 backdrop-blur-md text-white text-xs font-bold px-2.5 py-1 rounded-lg shadow-sm flex items-center gap-1"
-                  >
-                    <span class="material-symbols-outlined text-[14px]"
-                      >texture</span
-                    >
-                    ZIP
-                  </span>
-                </div>
-                <div class="absolute top-3 right-3">
-                  <span
-                    class="bg-green-500 text-white text-xs font-bold px-2.5 py-1 rounded-lg shadow-sm"
-                    >Purchased</span
-                  >
-                </div>
-                <div
-                  class="absolute bottom-3 left-3 right-3 flex justify-between items-end text-white"
-                >
-                  <div>
-                    <div class="text-xs opacity-80 mb-0.5">Textures</div>
-                    <div class="font-semibold text-sm truncate">
-                      Texture_Pack_Wood_04.zip
-                    </div>
-                  </div>
-                  <div class="text-xs opacity-75">200 MB</div>
-                </div>
-              </div>
-              <div class="p-5 flex-1 flex flex-col">
-                <div class="flex justify-between items-start mb-4">
-                  <div>
-                    <div
-                      class="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wider font-semibold mb-1"
-                    >
-                      Earnings
-                    </div>
-                    <div
-                      class="text-xl font-bold text-green-600 dark:text-green-400"
-                    >
-                      +$85.00
-                    </div>
-                  </div>
-                  <div class="text-right">
-                    <div
-                      class="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wider font-semibold mb-1"
-                    >
-                      Quality
-                    </div>
-                    <div class="flex items-center gap-1 justify-end">
-                      <span
-                        class="text-lg font-bold text-slate-800 dark:text-white"
-                        >9.5</span
-                      >
-                      <span class="text-xs text-slate-400">/10</span>
-                    </div>
-                  </div>
-                </div>
-                <div
-                  class="w-full h-1.5 bg-gray-100 dark:bg-gray-700 rounded-full mb-5 overflow-hidden"
-                >
-                  <div
-                    class="h-full bg-gradient-to-r from-green-400 to-green-600"
-                    style="width: 95%"
-                  ></div>
-                </div>
-                <div
-                  class="mt-auto flex items-center gap-3 pt-4 border-t border-gray-100 dark:border-gray-700/50"
-                >
-                  <div class="text-xs text-slate-400">Uploaded Oct 10</div>
-                  <div class="flex-1"></div>
-                  <button
-                    class="p-2 text-slate-400 hover:text-primary hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors"
-                    title="Analytics"
-                  >
-                    <span class="material-symbols-outlined text-[20px]"
-                      >analytics</span
-                    >
-                  </button>
-                  <button
-                    class="p-2 text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
-                    title="More"
-                  >
-                    <span class="material-symbols-outlined text-[20px]"
-                      >more_vert</span
-                    >
-                  </button>
-                </div>
-              </div>
-            </div>
+            <!-- Files will be injected here -->
           </div>
         </div>
       </div>
@@ -1057,11 +593,136 @@
         overlay.classList.toggle("hidden");
       }
 
-      toggleButtons.forEach((btn) => btn.addEventListener("click", (e) => {
-        e.stopPropagation();
-        toggleSidebar();
-      }));
+      // Hover to open sidebar
+      toggleButtons.forEach((btn) => {
+        btn.addEventListener("click", (e) => {
+            e.stopPropagation();
+            toggleSidebar();
+        });
+        btn.addEventListener("mouseenter", () => {
+             if (sidebar && sidebar.classList.contains("-translate-x-full")) {
+                 toggleSidebar();
+             }
+        });
+      });
       overlay.addEventListener("click", toggleSidebar);
+
+      // --- Real Data Logic ---
+      document.addEventListener("DOMContentLoaded", async () => {
+        const userStr = localStorage.getItem("user");
+        if (!userStr) {
+           window.location.href = "../Landingpage.html";
+           return;
+        }
+        const user = JSON.parse(userStr);
+        document.getElementById("user-name").textContent = user.name;
+        document.getElementById("user-email").textContent = user.email;
+
+        const fileGrid = document.getElementById("file-grid");
+        
+        try {
+            // Fetch Files
+            const res = await fetch(`/api/files?userId=${user.id}`);
+            const files = await res.json();
+            
+            // Fetch Stats for Cards
+            const statsRes = await fetch(`/api/stats?userId=${user.id}`);
+            const stats = await statsRes.json();
+            
+            // Update Stats Cards
+            document.getElementById("history-earnings").textContent = stats.earnings;
+            // Calculate Files Sold from actual sold files
+            const soldCount = files.filter(f => f.sold_to).length;
+            document.getElementById("history-sold").textContent = soldCount;
+            // Display quality as is (it's already a percentage/100 value)
+            const qualityPercent = parseFloat(stats.quality) || 0;
+            document.getElementById("history-quality").textContent = Math.round(qualityPercent);
+
+            
+            fileGrid.innerHTML = "";
+
+            if (files.length === 0) {
+                fileGrid.innerHTML = `<div class="col-span-full text-center text-slate-500 py-10">No files found. Upload some!</div>`;
+                return;
+            }
+
+            files.forEach((file, index) => {
+                // Determine icon/type
+                let fileType = "FILE";
+                let icon = "description";
+                let bgGradient = "from-gray-600 to-gray-400"; // default
+                const limitName = file.original_name || file.name || "Unknown";
+                
+                if (limitName.endsWith('.csv')) { fileType = "CSV"; icon = "csv"; bgGradient = "from-green-600 to-teal-600"; }
+                else if (limitName.endsWith('.png') || limitName.endsWith('.jpg')) { fileType = "IMG"; icon = "image"; bgGradient = "from-blue-600 to-indigo-600"; }
+                else if (limitName.endsWith('.wav') || limitName.endsWith('.mp3')) { fileType = "AUDIO"; icon = "audio_file"; bgGradient = "from-purple-600 to-pink-600"; }
+                else if (limitName.endsWith('.zip')) { fileType = "ZIP"; icon = "folder_zip"; bgGradient = "from-orange-500 to-red-500"; }
+
+                // Status Badge
+                let statusBadge = "";
+                let showEarnings = false;
+                // Check 'processed' flag or 'sold_to'
+                if (file.sold_to) {
+                     statusBadge = `<span class="bg-green-500 text-white text-xs font-bold px-2.5 py-1 rounded-lg shadow-sm">Purchased</span>`;
+                     showEarnings = true;
+                } else if (file.processed) {
+                     statusBadge = `<span class="bg-blue-500 text-white text-xs font-bold px-2.5 py-1 rounded-lg shadow-sm">Verified</span>`;
+                } else {
+                     statusBadge = `<span class="bg-yellow-500 text-white text-xs font-bold px-2.5 py-1 rounded-lg shadow-sm animate-pulse">Pending</span>`;
+                }
+
+                const earningsDisplay = showEarnings ? `+$${(file.payout * 0.8 || 0).toFixed(2)}` : "--";
+                const earningsClass = showEarnings ? "text-green-600 dark:text-green-400" : "text-slate-400";
+                const qualityScore = file.quality_score ? `${file.quality_score}/100` : "--";
+
+                const cardHtml = `
+                <div class="glass-card rounded-2xl overflow-hidden group flex flex-col hover:scale-[1.01] hover:shadow-xl transition-all duration-300 animate-slide-up" style="animation-delay: ${index * 0.1}s">
+                  <div class="relative h-48 bg-gray-100 dark:bg-gray-800 overflow-hidden flex items-center justify-center">
+                    <div class="absolute inset-0 bg-gradient-to-tr ${bgGradient} opacity-90 group-hover:scale-110 transition-transform duration-700"></div>
+                    <span class="material-symbols-outlined text-white text-6xl relative z-10 opacity-80">${icon}</span>
+                    <div class="absolute top-3 left-3 z-20">
+                      <span class="bg-white/20 backdrop-blur-md text-white text-xs font-bold px-2.5 py-1 rounded-lg shadow-sm flex items-center gap-1">
+                        ${fileType}
+                      </span>
+                    </div>
+                    <div class="absolute top-3 right-3 z-20">
+                      ${statusBadge}
+                    </div>
+                    <div class="absolute bottom-0 left-0 right-0 p-3 bg-gradient-to-t from-black/80 to-transparent z-20 text-white flex justify-between items-end">
+                      <div class="overflow-hidden">
+                        <div class="text-xs opacity-80 mb-0.5">${fileType} Data</div>
+                        <div class="font-semibold text-sm truncate mr-2" title="${limitName}">${limitName}</div>
+                      </div>
+                      <div class="text-xs opacity-75 whitespace-nowrap">${(file.size / 1024 / 1024).toFixed(2)} MB</div>
+                    </div>
+                  </div>
+                  <div class="p-5 flex-1 flex flex-col">
+                    <div class="flex justify-between items-start mb-4">
+                      <div>
+                        <div class="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wider font-semibold mb-1">Earnings</div>
+                        <div class="text-xl font-bold ${earningsClass}">${earningsDisplay}</div>
+                      </div>
+                      <div class="text-right">
+                        <div class="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wider font-semibold mb-1">Quality</div>
+                        <div class="flex items-center gap-1 justify-end">
+                          <span class="text-lg font-bold text-slate-800 dark:text-white">${qualityScore}</span>
+                        </div>
+                      </div>
+                    </div>
+                     <div class="mt-auto flex items-center gap-3 pt-4 border-t border-gray-100 dark:border-gray-700/50">
+                      <div class="text-xs text-slate-400">Uploaded ${file.upload_timestamp ? file.upload_timestamp.split('T')[0] : 'N/A'}</div>
+                    </div>
+                  </div>
+                </div>
+                `;
+                fileGrid.insertAdjacentHTML('beforeend', cardHtml);
+            });
+
+        } catch (error) {
+            console.error(error);
+            fileGrid.innerHTML = `<div class="col-span-full text-red-500">Error loading files.</div>`;
+        }
+      });
     </script>
   </body>
 </html>

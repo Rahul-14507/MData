@@ -229,8 +229,8 @@
             >
             Cart
             <span
-              class="ml-auto bg-blue-500/20 text-blue-400 text-xs py-0.5 px-2 rounded-full border border-blue-500/20"
-              >3</span
+              class="ml-auto bg-blue-500/20 text-blue-400 text-xs py-0.5 px-2 rounded-full border border-blue-500/20 cart-badge hidden"
+              >0</span
             >
           </a>
           <div class="pt-4 mt-4 border-t border-white/5">
@@ -354,9 +354,9 @@
               </div>
               <div class="flex items-center gap-3">
                 <span
-                  class="px-3 py-1 bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 rounded-md text-sm font-medium border border-blue-100 dark:border-blue-900/30"
+                  class="px-3 py-1 bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 rounded-md text-sm font-medium border border-blue-100 dark:border-blue-900/30" id="cart-count-header"
                 >
-                  3 Items Selected
+                  0 Items Selected
                 </span>
                 <button
                   class="text-slate-400 hover:text-red-500 text-sm font-medium transition-colors flex items-center gap-1"
@@ -369,341 +369,10 @@
               </div>
             </div>
             <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-              <div class="lg:col-span-8 space-y-4">
-                <div
-                  class="glass-card rounded-2xl p-5 group hover:shadow-md hover:border-primary/30 transition-all duration-300 relative overflow-hidden"
-                >
-                  <div
-                    class="absolute top-0 left-0 w-1 h-full bg-primary opacity-0 group-hover:opacity-100 transition-opacity"
-                  ></div>
-                  <div class="flex flex-col sm:flex-row gap-5">
-                    <div class="relative shrink-0">
-                      <div
-                        class="w-full sm:w-36 h-32 rounded-xl bg-slate-100 dark:bg-slate-700 bg-cover bg-center shadow-inner"
-                        style="
-                          background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuA2JgfndP9uZQ8G1lGHwgkkUuR-D-COzLOg1uHfST_kVynzKDY78aVZ3IWHYjEQHjZpd2WGtN9y00ywbJGdxyB-ku-Eaq48vHWFePdQhxR3HIKchj0ju_X3WweAk-1nwClKBDQWkWRwJOnJXvgI_3k6YXVfYBM1w1bl60SydzTpk17-MQGUGe0tyNP9ygw3d7220mJbomHvJQnqWdjiHHwSr8RK7oogUjl9ynuRAmbQoxb48RVzg-7khTZQQNd5YSUUonAQ5_VKfLUi');
-                        "
-                      ></div>
-                      <div
-                        class="absolute top-2 left-2 px-2 py-0.5 bg-slate-900/70 backdrop-blur-md rounded text-[10px] font-bold text-white shadow-sm border border-white/10"
-                      >
-                        JSON
-                      </div>
-                    </div>
-                    <div class="flex-1 flex flex-col justify-between">
-                      <div>
-                        <div class="flex justify-between items-start gap-4">
-                          <div>
-                            <h3
-                              class="text-lg font-bold text-slate-900 dark:text-white group-hover:text-primary transition-colors cursor-pointer"
-                            >
-                              NLP - Medical Dialogue v4
-                            </h3>
-                            <p
-                              class="text-sm text-slate-500 dark:text-slate-400 mt-1 line-clamp-1"
-                            >
-                              150,000 doctor-patient conversation pairs
-                              annotated for intent.
-                            </p>
-                          </div>
-                          <div class="text-right shrink-0">
-                            <p
-                              class="text-lg font-bold text-slate-900 dark:text-white"
-                            >
-                              $1,200.00
-                            </p>
-                            <p class="text-xs text-slate-400 line-through">
-                              $1,500.00
-                            </p>
-                          </div>
-                        </div>
-                        <div class="flex flex-wrap items-center gap-3 mt-3">
-                          <span
-                            class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400 text-xs font-medium border border-green-100 dark:border-green-900/30"
-                          >
-                            <span class="material-symbols-outlined text-[14px]"
-                              >verified_user</span
-                            >
-                            Commercial Use
-                          </span>
-                          <span
-                            class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 text-xs font-medium border border-slate-200 dark:border-slate-700"
-                          >
-                            <span class="material-symbols-outlined text-[14px]"
-                              >sd_storage</span
-                            >
-                            2.4 GB
-                          </span>
-                        </div>
-                      </div>
-                      <div
-                        class="flex items-center justify-between mt-4 pt-4 border-t border-slate-100 dark:border-slate-700/50"
-                      >
-                        <div
-                          class="flex items-center border border-slate-200 dark:border-slate-700 rounded-lg overflow-hidden h-8"
-                        >
-                          <button
-                            class="w-8 h-full flex items-center justify-center hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-500 transition-colors"
-                          >
-                            -
-                          </button>
-                          <div
-                            class="px-3 text-sm font-medium text-slate-700 dark:text-slate-200 border-x border-slate-200 dark:border-slate-700 h-full flex items-center bg-slate-50 dark:bg-slate-800"
-                          >
-                            1
-                          </div>
-                          <button
-                            class="w-8 h-full flex items-center justify-center hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-500 transition-colors"
-                          >
-                            +
-                          </button>
-                        </div>
-                        <div class="flex gap-4">
-                          <button
-                            class="text-sm font-medium text-slate-500 hover:text-primary transition-colors flex items-center gap-1"
-                          >
-                            <span class="material-symbols-outlined text-[18px]"
-                              >favorite</span
-                            >
-                            Save for later
-                          </button>
-                          <button
-                            class="text-sm font-medium text-slate-500 hover:text-red-500 transition-colors flex items-center gap-1"
-                          >
-                            <span class="material-symbols-outlined text-[18px]"
-                              >delete</span
-                            >
-                            Remove
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
+                <div class="lg:col-span-8 space-y-4" id="cart-items-container">
+                    <!-- Dynamic Cart Items Loop Here -->
+                     <div class="text-center py-10 text-slate-500">Your cart is empty.</div>
                 </div>
-                <div
-                  class="glass-card rounded-2xl p-5 group hover:shadow-md hover:border-primary/30 transition-all duration-300 relative overflow-hidden"
-                >
-                  <div
-                    class="absolute top-0 left-0 w-1 h-full bg-primary opacity-0 group-hover:opacity-100 transition-opacity"
-                  ></div>
-                  <div class="flex flex-col sm:flex-row gap-5">
-                    <div class="relative shrink-0">
-                      <div
-                        class="w-full sm:w-36 h-32 rounded-xl bg-slate-100 dark:bg-slate-700 bg-cover bg-center shadow-inner"
-                        style="
-                          background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuD8td5jNrhwqwhX350i4uVQge9DeBXo2esRVEQPzg8tC62tLO9QdVWmD81ezx33sNuKNuO6oED45v56DItNIZ0pFNB066By-fRJ0H7NWNqnOsdXVVB-JoZig4iN7uVNNJUZJYNbkZfIH2aThlPoH0G8xPg2gE1w2bQE6KIhOYETAnEBYqt9rilOXRTkhChUb4BYIKod2CIBq3aDFV2lTNw4Wll-RvbBX0EdsEb_Vp5kqeUFLkHI1MlXXFxLYI4owlAKJ1QwHpG32xqM');
-                        "
-                      ></div>
-                      <div
-                        class="absolute top-2 left-2 px-2 py-0.5 bg-slate-900/70 backdrop-blur-md rounded text-[10px] font-bold text-white shadow-sm border border-white/10"
-                      >
-                        CSV
-                      </div>
-                    </div>
-                    <div class="flex-1 flex flex-col justify-between">
-                      <div>
-                        <div class="flex justify-between items-start gap-4">
-                          <div>
-                            <h3
-                              class="text-lg font-bold text-slate-900 dark:text-white group-hover:text-primary transition-colors cursor-pointer"
-                            >
-                              Autonomous Driving - LiDAR Raw
-                            </h3>
-                            <p
-                              class="text-sm text-slate-500 dark:text-slate-400 mt-1 line-clamp-1"
-                            >
-                              High-fidelity LiDAR point clouds from urban
-                              environments.
-                            </p>
-                          </div>
-                          <div class="text-right shrink-0">
-                            <p
-                              class="text-lg font-bold text-slate-900 dark:text-white"
-                            >
-                              $4,500.00
-                            </p>
-                          </div>
-                        </div>
-                        <div class="flex flex-wrap items-center gap-3 mt-3">
-                          <span
-                            class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-purple-50 dark:bg-purple-900/20 text-purple-700 dark:text-purple-400 text-xs font-medium border border-purple-100 dark:border-purple-900/30"
-                          >
-                            <span class="material-symbols-outlined text-[14px]"
-                              >business_center</span
-                            >
-                            Enterprise
-                          </span>
-                          <span
-                            class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 text-xs font-medium border border-slate-200 dark:border-slate-700"
-                          >
-                            <span class="material-symbols-outlined text-[14px]"
-                              >sd_storage</span
-                            >
-                            145 GB
-                          </span>
-                        </div>
-                      </div>
-                      <div
-                        class="flex items-center justify-between mt-4 pt-4 border-t border-slate-100 dark:border-slate-700/50"
-                      >
-                        <div
-                          class="flex items-center border border-slate-200 dark:border-slate-700 rounded-lg overflow-hidden h-8"
-                        >
-                          <button
-                            class="w-8 h-full flex items-center justify-center hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-500 transition-colors"
-                          >
-                            -
-                          </button>
-                          <div
-                            class="px-3 text-sm font-medium text-slate-700 dark:text-slate-200 border-x border-slate-200 dark:border-slate-700 h-full flex items-center bg-slate-50 dark:bg-slate-800"
-                          >
-                            1
-                          </div>
-                          <button
-                            class="w-8 h-full flex items-center justify-center hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-500 transition-colors"
-                          >
-                            +
-                          </button>
-                        </div>
-                        <div class="flex gap-4">
-                          <button
-                            class="text-sm font-medium text-slate-500 hover:text-primary transition-colors flex items-center gap-1"
-                          >
-                            <span class="material-symbols-outlined text-[18px]"
-                              >favorite</span
-                            >
-                            Save
-                          </button>
-                          <button
-                            class="text-sm font-medium text-slate-500 hover:text-red-500 transition-colors flex items-center gap-1"
-                          >
-                            <span class="material-symbols-outlined text-[18px]"
-                              >delete</span
-                            >
-                            Remove
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                <div
-                  class="glass-card rounded-2xl p-5 group hover:shadow-md hover:border-primary/30 transition-all duration-300 relative overflow-hidden"
-                >
-                  <div
-                    class="absolute top-0 left-0 w-1 h-full bg-primary opacity-0 group-hover:opacity-100 transition-opacity"
-                  ></div>
-                  <div class="flex flex-col sm:flex-row gap-5">
-                    <div class="relative shrink-0">
-                      <div
-                        class="w-full sm:w-36 h-32 rounded-xl bg-slate-100 dark:bg-slate-700 bg-cover bg-center shadow-inner"
-                        style="
-                          background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuBTyxU7BGsDNrN7d-wKdIgCyrhiUo7LiPyThGK-e24azRZfIN_edKxGh0PoE1c4trZeTgHvfxaZjPTGiNKirS7Z0PHZ7jB7i6c0_LGYeIgIf-naa5tiyzvon98oulUAdjg7EmlEFZbi7y4wMnjyzGmYkeZNFRliETnudTW7Q4ldqfg0lLCYHoO1I975kMSS6e7NfEMQfLo4fT5_deSBdXacVmAgBNU7Ds4_a5S3SAh-DiIaFXDekd13zDFS7OV4ikBl-yR7Czl9GhwW');
-                        "
-                      ></div>
-                      <div
-                        class="absolute top-2 left-2 px-2 py-0.5 bg-slate-900/70 backdrop-blur-md rounded text-[10px] font-bold text-white shadow-sm border border-white/10"
-                      >
-                        IMG
-                      </div>
-                    </div>
-                    <div class="flex-1 flex flex-col justify-between">
-                      <div>
-                        <div class="flex justify-between items-start gap-4">
-                          <div>
-                            <h3
-                              class="text-lg font-bold text-slate-900 dark:text-white group-hover:text-primary transition-colors cursor-pointer"
-                            >
-                              Retail Object Detection
-                            </h3>
-                            <p
-                              class="text-sm text-slate-500 dark:text-slate-400 mt-1 line-clamp-1"
-                            >
-                              50k labeled images of common supermarket items.
-                            </p>
-                          </div>
-                          <div class="text-right shrink-0">
-                            <p
-                              class="text-lg font-bold text-slate-900 dark:text-white"
-                            >
-                              $850.00
-                            </p>
-                          </div>
-                        </div>
-                        <div class="flex flex-wrap items-center gap-3 mt-3">
-                          <span
-                            class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400 text-xs font-medium border border-blue-100 dark:border-blue-900/30"
-                          >
-                            <span class="material-symbols-outlined text-[14px]"
-                              >school</span
-                            >
-                            Research
-                          </span>
-                          <span
-                            class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 text-xs font-medium border border-slate-200 dark:border-slate-700"
-                          >
-                            <span class="material-symbols-outlined text-[14px]"
-                              >sd_storage</span
-                            >
-                            12 GB
-                          </span>
-                        </div>
-                      </div>
-                      <div
-                        class="flex items-center justify-between mt-4 pt-4 border-t border-slate-100 dark:border-slate-700/50"
-                      >
-                        <div
-                          class="flex items-center border border-slate-200 dark:border-slate-700 rounded-lg overflow-hidden h-8"
-                        >
-                          <button
-                            class="w-8 h-full flex items-center justify-center hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-500 transition-colors"
-                          >
-                            -
-                          </button>
-                          <div
-                            class="px-3 text-sm font-medium text-slate-700 dark:text-slate-200 border-x border-slate-200 dark:border-slate-700 h-full flex items-center bg-slate-50 dark:bg-slate-800"
-                          >
-                            1
-                          </div>
-                          <button
-                            class="w-8 h-full flex items-center justify-center hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-500 transition-colors"
-                          >
-                            +
-                          </button>
-                        </div>
-                        <div class="flex gap-4">
-                          <button
-                            class="text-sm font-medium text-slate-500 hover:text-primary transition-colors flex items-center gap-1"
-                          >
-                            <span class="material-symbols-outlined text-[18px]"
-                              >favorite</span
-                            >
-                            Save
-                          </button>
-                          <button
-                            class="text-sm font-medium text-slate-500 hover:text-red-500 transition-colors flex items-center gap-1"
-                          >
-                            <span class="material-symbols-outlined text-[18px]"
-                              >delete</span
-                            >
-                            Remove
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                <a
-                  class="inline-flex items-center gap-2 mt-2 text-primary hover:text-primary-dark font-medium transition-colors group"
-                  href="#"
-                >
-                  <span
-                    class="material-symbols-outlined group-hover:-translate-x-1 transition-transform"
-                    >arrow_back</span
-                  >
-                  Continue Shopping
-                </a>
-              </div>
               <div class="lg:col-span-4 sticky top-28 space-y-6">
                 <div
                   class="glass-card rounded-2xl p-6 shadow-xl shadow-slate-200/50 dark:shadow-none border-t-4 border-t-primary"
@@ -719,8 +388,8 @@
                     >
                       <span>Subtotal</span>
                       <span
-                        class="font-medium text-slate-900 dark:text-slate-200"
-                        >$6,550.00</span
+                        class="font-medium text-slate-900 dark:text-slate-200" id="cart-subtotal"
+                        >$0.00</span
                       >
                     </div>
                     <div
@@ -774,13 +443,13 @@
                         >Total</span
                       >
                       <span
-                        class="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-primary to-indigo-600"
-                        >$6,700.00</span
+                        class="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-primary to-indigo-600" id="cart-total"
+                        >$0.00</span
                       >
                     </div>
                   </div>
                   <div class="mt-8 space-y-4">
-                    <button
+                    <button onclick="checkout()"
                       class="w-full py-3.5 bg-gradient-to-r from-primary to-indigo-600 hover:from-primary-dark hover:to-indigo-700 text-white font-bold rounded-xl transition-all shadow-lg shadow-primary/25 hover:shadow-primary/40 transform hover:-translate-y-0.5 flex items-center justify-center gap-2 group"
                     >
                       Checkout Now
@@ -852,6 +521,7 @@
       </main>
     </div>
     <script>
+      // Sidebar Logic
       const sidebar = document.getElementById("sidebar");
       const overlay = document.getElementById("sidebar-overlay");
       const toggleButtons = document.querySelectorAll(".sidebar-toggle");
@@ -861,11 +531,125 @@
         overlay.classList.toggle("hidden");
       }
 
-      toggleButtons.forEach((btn) => btn.addEventListener("click", (e) => {
-        e.stopPropagation();
-        toggleSidebar();
-      }));
+      toggleButtons.forEach((btn) =>
+        btn.addEventListener("click", (e) => {
+          e.stopPropagation();
+          toggleSidebar();
+        })
+      );
       overlay.addEventListener("click", toggleSidebar);
+
+      // --- Cart Logic ---
+      document.addEventListener("DOMContentLoaded", () => {
+          renderCart();
+      });
+
+      function renderCart() {
+          const cart = JSON.parse(localStorage.getItem('cart') || '[]');
+          const container = document.getElementById('cart-items-container');
+          const totalEl = document.getElementById('cart-total');
+          const subtotalEl = document.getElementById('cart-subtotal');
+          const countEl = document.getElementById('cart-count-header');
+          const badges = document.querySelectorAll('.cart-badge');
+
+          badges.forEach(b => {
+             b.textContent = cart.length;
+             b.classList.remove('hidden');
+             if(cart.length === 0) b.classList.add('hidden');
+          });
+
+          if(countEl) countEl.textContent = `${cart.length} Items Selected`;
+
+          if(cart.length === 0) {
+              container.innerHTML = `<div class="text-center py-20 text-slate-500">Your cart is empty. <a href="browse_datasets.html" class="text-primary hover:underline">Browse Datasets</a></div>`;
+              if(totalEl) totalEl.textContent = "$0.00";
+              if(subtotalEl) subtotalEl.textContent = "$0.00";
+              return;
+          }
+
+          container.innerHTML = '';
+          let subtotal = 0;
+
+          cart.forEach((item, index) => {
+              subtotal += item.price;
+              const card = `
+                <div class="glass-card rounded-2xl p-5 group hover:shadow-md hover:border-primary/30 transition-all duration-300 relative overflow-hidden">
+                  <div class="flex flex-col sm:flex-row gap-5">
+                    <div class="relative shrink-0">
+                      <div class="w-full sm:w-36 h-32 rounded-xl bg-slate-100 dark:bg-slate-700 bg-cover bg-center shadow-inner" style="background-image: url('${item.image}');"></div>
+                    </div>
+                    <div class="flex-1 flex flex-col justify-between">
+                      <div>
+                         <div class="flex justify-between items-start gap-4">
+                            <div>
+                               <h3 class="text-lg font-bold text-slate-900 dark:text-white">${item.category} Bundle</h3>
+                               <p class="text-sm text-slate-500 dark:text-slate-400 mt-1 line-clamp-1">${item.files} verified files. Quality: ${item.quality}</p>
+                            </div>
+                            <div class="text-right shrink-0">
+                               <p class="text-lg font-bold text-slate-900 dark:text-white">$${item.price.toLocaleString()}</p>
+                            </div>
+                         </div>
+                      </div>
+                      <div class="flex items-center justify-between mt-4 pt-4 border-t border-slate-100 dark:border-slate-700/50">
+                         <button onclick="removeFromCart(${index})" class="text-sm font-medium text-slate-500 hover:text-red-500 transition-colors flex items-center gap-1">
+                            <span class="material-symbols-outlined text-[18px]">delete</span> Remove
+                         </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              `;
+              container.insertAdjacentHTML('beforeend', card);
+          });
+
+          if(subtotalEl) subtotalEl.textContent = `$${subtotal.toLocaleString()}`;
+          // Add processing fee
+          const total = subtotal + 150; 
+          if(totalEl) totalEl.textContent = `$${total.toLocaleString()}`;
+      }
+
+      function removeFromCart(index) {
+          const cart = JSON.parse(localStorage.getItem('cart') || '[]');
+          cart.splice(index, 1);
+          localStorage.setItem('cart', JSON.stringify(cart));
+          renderCart();
+      }
+
+      async function checkout() {
+          const cart = JSON.parse(localStorage.getItem('cart') || '[]');
+          if(cart.length === 0) return alert("Cart is empty!");
+          
+          const userStr = localStorage.getItem("user");
+          const user = userStr ? JSON.parse(userStr) : { id: "Agency_Demo", role: "agency" };
+
+          if(!confirm(`Proceed to checkout? Total items: ${cart.length}`)) return;
+
+          try {
+             const res = await fetch('/api/market/checkout', {
+                 method: 'POST',
+                 headers: { 'Content-Type': 'application/json' },
+                 body: JSON.stringify({ 
+                    agencyId: user.id,
+                    items: cart.map(c => ({ category: c.category })) 
+                 })
+             });
+
+             const data = await res.json();
+             
+             if(res.ok) {
+                 alert("Checkout Successful! " + data.message);
+                 localStorage.removeItem('cart');
+                 renderCart();
+                 window.location.href = 'my_library.html';
+             } else {
+                 alert("Checkout failed: " + res.status + " " + (data.error || "Unknown error"));
+             }
+
+          } catch (e) {
+              console.error(e);
+              alert("Error during checkout.");
+          }
+      }
     </script>
   </body>
 </html>
