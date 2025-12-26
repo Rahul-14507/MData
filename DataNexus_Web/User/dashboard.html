@@ -158,8 +158,13 @@
   <body
     class="bg-background-light dark:bg-background-dark font-display antialiased text-slate-900 dark:text-white flex h-screen overflow-hidden selection:bg-primary/20 selection:text-primary"
   >
+    <div
+      id="sidebar-overlay"
+      class="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 hidden transition-opacity duration-300"
+    ></div>
     <aside
-      class="hidden md:flex flex-col w-72 h-full glass border-r border-gray-200/50 dark:border-white/5 shrink-0 transition-all duration-300"
+      id="sidebar"
+      class="fixed inset-y-0 left-0 z-50 flex flex-col w-72 h-full glass border-r border-gray-200/50 dark:border-white/5 shrink-0 transition-transform duration-300 -translate-x-full"
     >
       <div class="p-6 pb-8">
         <div class="flex items-center gap-3">
@@ -280,7 +285,7 @@
       >
         <div class="flex items-center p-4 justify-between w-full">
           <div class="flex items-center gap-3">
-            <button class="p-1 -ml-1 text-slate-600 dark:text-white">
+            <button class="p-1 -ml-1 text-slate-600 dark:text-white sidebar-toggle">
               <span class="material-symbols-outlined">menu</span>
             </button>
             <h2 class="text-lg font-bold">Dashboard</h2>
@@ -298,7 +303,13 @@
       <header
         class="hidden lg:flex items-center justify-between px-8 py-5 border-b border-white/5 shrink-0"
       >
-        <div>
+        <div class="flex items-center gap-4">
+          <button
+            class="sidebar-toggle p-2 rounded-xl bg-white/5 hover:bg-white/10 transition-colors text-slate-600 dark:text-white border border-white/5"
+          >
+            <span class="material-symbols-outlined">menu</span>
+          </button>
+          <div>
           <h2 class="text-2xl font-bold tracking-tight">Overview</h2>
           <p class="text-sm text-secondary-text">
             Welcome back, here's what's happening with your files.
@@ -703,32 +714,20 @@
       </main>
     </div>
     <script>
-      document.addEventListener("DOMContentLoaded", function () {
-        const menuButtons = document.querySelectorAll("button");
-        const menuBtn = Array.from(menuButtons).find(
-          (btn) =>
-            btn.textContent.trim().includes("menu") ||
-            btn.querySelector("span")?.textContent.trim() === "menu"
-        );
-        const sidebar = document.querySelector("aside");
+      const sidebar = document.getElementById("sidebar");
+      const overlay = document.getElementById("sidebar-overlay");
+      const toggleButtons = document.querySelectorAll(".sidebar-toggle");
 
-        if (menuBtn && sidebar) {
-          menuBtn.addEventListener("click", () => {
-            sidebar.classList.toggle("hidden");
-            sidebar.classList.toggle("fixed");
-            sidebar.classList.toggle("inset-0");
-            sidebar.classList.toggle("z-40");
-            // Ensure background is sufficient
-            if (sidebar.classList.contains("fixed")) {
-              sidebar.classList.add("bg-white", "dark:bg-[#0B0F19]");
-            }
-          });
+      function toggleSidebar() {
+        sidebar.classList.toggle("-translate-x-full");
+        overlay.classList.toggle("hidden");
+      }
 
-          sidebar.addEventListener("click", (e) => {
-            // Close if clicking outside nav content (optional, but good UX)
-          });
-        }
-      });
+      toggleButtons.forEach((btn) => btn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        toggleSidebar();
+      }));
+      overlay.addEventListener("click", toggleSidebar);
     </script>
   </body>
 </html>

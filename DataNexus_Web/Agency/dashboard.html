@@ -159,8 +159,13 @@
     class="bg-background-light dark:bg-background-dark font-display antialiased text-slate-900 dark:text-white flex h-screen overflow-hidden selection:bg-primary/20 selection:text-primary"
   >
     <div class="relative z-10 flex h-full w-full">
+      <div
+        id="sidebar-overlay"
+        class="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 hidden transition-opacity duration-300"
+      ></div>
       <aside
-        class="hidden lg:flex flex-col w-72 h-full glass border-r border-gray-200/50 dark:border-white/5 shrink-0 transition-all duration-300 z-50"
+        id="sidebar"
+        class="fixed inset-y-0 left-0 z-50 flex flex-col w-72 h-full glass border-r border-gray-200/50 dark:border-white/5 shrink-0 transition-transform duration-300 -translate-x-full"
       >
         <div class="p-6 pb-8">
           <div class="flex items-center gap-3">
@@ -278,7 +283,7 @@
         >
           <div class="flex items-center gap-4">
             <button
-              class="md:hidden p-2 -ml-2 text-slate-400 hover:text-white transition-colors"
+              class="sidebar-toggle p-2 -ml-2 text-slate-400 hover:text-white transition-colors"
             >
               <span class="material-symbols-outlined">menu</span>
             </button>
@@ -705,31 +710,22 @@
       </div>
     </div>
     <script>
-      document.addEventListener("DOMContentLoaded", function () {
-        const menuButtons = document.querySelectorAll("button");
-        const menuBtn = Array.from(menuButtons).find(
-          (btn) =>
-            btn.textContent.trim().includes("menu") ||
-            btn.querySelector("span")?.textContent.trim() === "menu"
-        );
-        const sidebar = document.querySelector("aside");
+      const sidebar = document.getElementById("sidebar");
+      const overlay = document.getElementById("sidebar-overlay");
+      const toggleButtons = document.querySelectorAll(".sidebar-toggle");
 
-        if (menuBtn && sidebar) {
-          menuBtn.addEventListener("click", () => {
-            sidebar.classList.toggle("hidden");
-            sidebar.classList.toggle("fixed");
-            sidebar.classList.toggle("inset-0");
-            sidebar.classList.toggle("z-40");
-            if (sidebar.classList.contains("fixed")) {
-              sidebar.classList.add("bg-[#0f172a]");
-            }
-          });
+      function toggleSidebar() {
+        sidebar.classList.toggle("-translate-x-full");
+        overlay.classList.toggle("hidden");
+      }
 
-          sidebar.addEventListener("click", (e) => {
-            // Close if clicking outside
-          });
-        }
-      });
+      toggleButtons.forEach((btn) =>
+        btn.addEventListener("click", (e) => {
+          e.stopPropagation();
+          toggleSidebar();
+        })
+      );
+      overlay.addEventListener("click", toggleSidebar);
     </script>
   </body>
 </html>
