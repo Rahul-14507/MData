@@ -168,13 +168,11 @@
     >
       <div class="p-6 pb-8">
         <div class="flex items-center gap-3">
-          <div
-            class="flex items-center justify-center w-10 h-10 rounded-xl bg-gradient-to-br from-primary-500 to-primary-600 text-white shadow-lg shadow-primary-500/20"
-          >
-            <span class="material-symbols-outlined text-[24px]"
-              >cloud_circle</span
-            >
-          </div>
+          <img
+            src="../MData.png"
+            alt="MData Logo"
+            class="w-10 h-10 object-contain"
+          />
           <div class="flex flex-col">
             <span
               class="font-bold text-lg tracking-tight text-gray-900 dark:text-white leading-none"
@@ -247,14 +245,15 @@
       <div
         class="p-4 mt-auto border-t border-gray-200/50 dark:border-white/5 space-y-1"
       >
-        <div
+        <a
+          href="profile.html"
           class="flex items-center gap-3 p-2 rounded-xl hover:bg-gray-100 dark:hover:bg-white/5 transition-colors cursor-pointer group"
         >
-          <img
-            alt="User"
-            class="w-10 h-10 rounded-full border-2 border-white dark:border-gray-700 shadow-sm"
-            src="https://lh3.googleusercontent.com/aida-public/AB6AXuBJJL6r2F2CGrlVRpg-2_8D8dEqSuXJLoYjAt2PNC9hnBJm7N9O1o67vYni1Io59mXrtu0nPpxIVZamGtum3jPPLDHX9jcGf9MWEhHX1Ii4et3kpOHrEZ_V4f4sCQEW1GWxQ1DqR6p3rY8W1MZ5mJ5N2dwzPwUN7M3aq8BXR1bxHWi2s2uU--uYaVkRPqczUfGNo1l5tMPLX0bfITQxRYbenBYQ6dA1pG5S4wp6wwwxCyX7w3IlTnDk6SU2gNO3U49RquJjVhYRRYlv"
-          />
+          <div
+            class="w-10 h-10 rounded-full bg-gradient-to-br from-primary to-purple-600 flex items-center justify-center text-white shadow-sm"
+          >
+            <span class="material-symbols-outlined text-[20px]">person</span>
+          </div>
           <div class="flex-1 min-w-0">
             <p
               id="user-name"
@@ -262,17 +261,16 @@
             >
               Loading...
             </p>
-            <p id="user-email" class="text-xs text-gray-500 dark:text-gray-400 truncate">
+            <p
+              id="user-email"
+              class="text-xs text-gray-500 dark:text-gray-400 truncate"
+            >
               loading...
             </p>
           </div>
-          <span
-            class="material-symbols-outlined text-gray-400 group-hover:text-gray-600 dark:group-hover:text-gray-300"
-            >expand_more</span
-          >
-        </div>
+        </a>
         <a
-          href="../Landingpage.html"
+          href="../index.html"
           class="flex items-center gap-3 p-2 rounded-xl text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors group"
         >
           <span class="material-symbols-outlined text-[20px]">logout</span>
@@ -281,43 +279,31 @@
       </div>
     </aside>
     <div class="flex-1 flex flex-col h-screen overflow-hidden">
-      <header
-        class="lg:hidden sticky top-0 z-30 glass border-b border-white/5 transition-colors duration-300"
-      >
-        <div class="flex items-center p-4 justify-between w-full">
+      <header class="sticky top-0 z-30 glass border-b border-white/5">
+        <div class="flex items-center justify-between px-4 lg:px-8 py-4">
           <div class="flex items-center gap-3">
-            <button class="p-1 -ml-1 text-slate-600 dark:text-white sidebar-toggle">
+            <button
+              class="sidebar-toggle p-2 -ml-2 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-white/10 active:scale-95 transition-all"
+            >
               <span class="material-symbols-outlined">menu</span>
             </button>
-            <h2 class="text-lg font-bold">Dashboard</h2>
+            <h1
+              class="text-lg lg:text-2xl font-bold text-gray-900 dark:text-white"
+            >
+              Dashboard
+            </h1>
           </div>
-          <div class="relative shrink-0">
-            <div
-              class="bg-center bg-no-repeat bg-cover rounded-full size-8 ring-1 ring-gray-700"
-              style="
-                background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuBHSDta1V1TdMsYpt3KI1p0q4kvJCMbjJH0kOgh4Cg6KH6lfwOf-SjcSgy6qhH3M5L4nC_nhUvOAPTg6F_A3fBg5OewF5SbB5dI2_MArtwRij5TMVD7L3Ni0wyE-q4PVS0Baeu48U3JR1hj84XXr2D7dXMT3VG0rv6XX5qSj3lndYxJiWTYc1X6HeK1_cqr0qCKDbU2-MhrDf8DILQuLDlFf6QcUvEjF0c8NXolvx8CjnjAk6fE5S6t4H8k7EGJMzHNV7aEI4w0-_l4');
-              "
-            ></div>
+          <div class="flex items-center gap-2">
+            <img
+              src="../MData.png"
+              alt="MData Logo"
+              class="h-8 w-8 object-contain"
+            />
+            <span
+              class="text-lg font-bold text-gray-900 dark:text-white hidden sm:inline"
+              >MData</span
+            >
           </div>
-        </div>
-      </header>
-      <header
-        class="hidden lg:flex items-center justify-between px-8 py-5 border-b border-white/5 shrink-0"
-      >
-        <div class="flex items-center gap-4">
-          <button
-            class="sidebar-toggle p-2 rounded-xl bg-white/5 hover:bg-white/10 transition-colors text-slate-600 dark:text-white border border-white/5"
-          >
-            <span class="material-symbols-outlined">menu</span>
-          </button>
-          <div>
-          <h2 class="text-2xl font-bold tracking-tight">Overview</h2>
-          <p id="welcome-msg" class="text-sm text-secondary-text">
-            Welcome back, here's what's happening with your files.
-          </p>
-        </div>
-        <div class="flex items-center gap-4">
-
         </div>
       </header>
       <main class="flex-1 overflow-y-auto w-full p-4 lg:p-8 pb-24 lg:pb-8">
@@ -344,7 +330,10 @@
                 <p class="text-white/80 text-sm font-medium mb-1">
                   Total Earnings
                 </p>
-                <p id="stat-earnings" class="text-white text-4xl font-bold tracking-tight">
+                <p
+                  id="stat-earnings"
+                  class="text-white text-4xl font-bold tracking-tight"
+                >
                   $0.00
                 </p>
               </div>
@@ -373,7 +362,10 @@
                 <p class="text-secondary-text text-sm font-medium mb-1">
                   Active Files
                 </p>
-                <p id="stat-uploads" class="text-white text-4xl font-bold tracking-tight">
+                <p
+                  id="stat-uploads"
+                  class="text-white text-4xl font-bold tracking-tight"
+                >
                   0
                   <span class="text-lg text-secondary-text font-normal"
                     >files</span
@@ -398,206 +390,151 @@
                 <p class="text-secondary-text text-sm font-medium mb-1">
                   Average Quality
                 </p>
-                <p id="stat-quality" class="text-white text-4xl font-bold tracking-tight">
+                <p
+                  id="stat-quality"
+                  class="text-white text-4xl font-bold tracking-tight"
+                >
                   0%
                 </p>
               </div>
             </div>
           </section>
-          <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
-            <section class="lg:col-span-2 flex flex-col gap-4">
+          <div class="w-full">
+            <section class="flex flex-col gap-4">
               <div class="flex items-center justify-between">
-                <h3 class="text-lg font-bold tracking-tight">Revenue Trends</h3>
-                <div class="relative">
-                  <select
-                    class="appearance-none bg-white/5 hover:bg-white/10 text-sm font-medium text-slate-500 dark:text-slate-400 border border-white/10 rounded-lg pl-3 pr-8 py-1.5 focus:ring-primary focus:border-primary cursor-pointer transition-colors"
-                  >
-                    <option>Last 30 Days</option>
-                    <option>Last 7 Days</option>
-                  </select>
-                  <span
-                    class="material-symbols-outlined absolute right-2 top-1/2 -translate-y-1/2 text-slate-500 pointer-events-none text-[18px]"
-                    >expand_more</span
-                  >
-                </div>
+                <h3 class="text-lg font-bold tracking-tight">Your Files</h3>
+                <a
+                  href="file_history.html"
+                  class="text-sm font-semibold text-primary hover:text-blue-400 hover:underline"
+                  >View All</a
+                >
               </div>
               <div
-                class="glass-card rounded-2xl p-6 h-full min-h-[340px] flex flex-col relative overflow-hidden group"
+                class="glass-card rounded-2xl p-6 min-h-[450px] flex flex-col relative overflow-hidden"
               >
-                <!-- Background Glow -->
+                <!-- Background Gradient -->
                 <div
-                  class="absolute top-0 right-0 w-64 h-64 bg-primary/5 rounded-full blur-3xl -mr-16 -mt-16 pointer-events-none"
+                  class="absolute top-0 right-0 w-80 h-80 bg-gradient-to-br from-primary/10 to-purple-500/5 rounded-full blur-3xl -mr-20 -mt-20 pointer-events-none"
                 ></div>
 
-                <!-- Stats Row -->
+                <!-- File List Header -->
                 <div
-                  class="flex items-center justify-between mb-8 relative z-10"
+                  class="flex items-center justify-between pb-4 border-b border-white/10 mb-4"
                 >
-                  <div class="flex items-center gap-4">
-                    <h2
-                      id="revenue-total"
-                      class="text-4xl font-bold text-slate-900 dark:text-white tracking-tight"
+                  <div class="flex items-center gap-3">
+                    <div
+                      class="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary"
                     >
-                      $0.00
-                    </h2>
-                    <span
-                      class="bg-emerald-500/10 text-emerald-500 text-sm font-semibold px-2.5 py-1 rounded-lg border border-emerald-500/20 flex items-center gap-1"
-                    >
-                      <span class="material-symbols-outlined text-[16px]"
-                        >trending_up</span
-                      >
-                      8.2%
-                    </span>
+                      <span class="material-symbols-outlined">folder_open</span>
+                    </div>
+                    <div>
+                      <p id="files-count" class="text-lg font-bold text-white">
+                        0 Files
+                      </p>
+                      <p class="text-xs text-slate-500">Manage your uploads</p>
+                    </div>
                   </div>
-                  <span
-                    class="text-sm font-medium text-slate-500 dark:text-slate-400"
-                    >vs prev. period</span
+                  <a
+                    href="upload_files.html"
+                    class="flex items-center gap-2 bg-primary hover:bg-blue-600 text-white text-sm font-semibold px-4 py-2 rounded-lg transition-colors"
                   >
+                    <span class="material-symbols-outlined text-[18px]"
+                      >add</span
+                    >
+                    Upload
+                  </a>
                 </div>
 
-                <!-- Chart -->
-                <div class="flex-1 w-full relative">
-                  <canvas id="revenueChart" class="w-full h-full"></canvas>
+                <div
+                  id="files-list"
+                  class="flex-1 overflow-y-auto space-y-3 pr-1 custom-scrollbar max-h-[400px]"
+                >
+                  <div class="p-8 text-center text-slate-500">
+                    <span
+                      class="material-symbols-outlined text-4xl mb-2 opacity-50"
+                      >cloud_upload</span
+                    >
+                    <p>No files uploaded yet</p>
+                    <a
+                      href="upload_files.html"
+                      class="text-primary text-sm font-medium hover:underline mt-1 inline-block"
+                      >Upload your first file</a
+                    >
+                  </div>
                 </div>
               </div>
             </section>
-            <div class="flex flex-col gap-8">
-              <div class="">
-                <h3 class="text-lg font-bold tracking-tight mb-4">
-                  Quick Actions
-                </h3>
-                <a
-                  href="upload_files.html"
-                  class="w-full relative overflow-hidden group bg-primary hover:bg-blue-600 active:scale-[0.98] transition-all duration-200 rounded-xl p-5 flex items-center justify-center gap-3 shadow-lg shadow-blue-900/20"
-                >
-                  <div
-                    class="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700"
-                  ></div>
-                  <span class="material-symbols-outlined text-white"
-                    >add_circle</span
-                  >
-                  <span class="text-white font-bold text-lg tracking-wide"
-                    >Upload New File</span
-                  >
-                </a>
-              </div>
-              <section class="flex flex-col gap-4 flex-1">
-                <div class="flex items-center justify-between">
-                  <h3 class="text-lg font-bold tracking-tight">
-                    Recent Activity
-                  </h3>
-                  <a
-                    class="text-sm font-semibold text-primary hover:text-blue-400 hover:underline"
-                    href="file_history.html"
-                    >See All</a
-                  >
-                </div>
-                <div id="recent-activity" class="flex flex-col gap-3">
-                  <div
-                    class="glass-card rounded-xl p-3 flex items-center gap-4 hover:bg-white/5 transition-all cursor-pointer group"
-                  >
-                    <div
-                      class="size-10 rounded-lg bg-blue-500/10 flex items-center justify-center shrink-0 text-blue-400 group-hover:bg-blue-500/20 transition-colors"
-                    >
-                      <span class="material-symbols-outlined text-[20px]"
-                        >graphic_eq</span
-                      >
-                    </div>
-                    <div class="flex-1 min-w-0">
-                      <div class="flex justify-between items-start">
-                        <h4
-                          class="text-sm font-semibold text-white truncate pr-2"
-                        >
-                          dataset_voice_01.wav
-                        </h4>
-                        <span class="text-sm font-bold text-emerald-400"
-                          >+$5.00</span
-                        >
-                      </div>
-                      <div class="flex justify-between items-center mt-0.5">
-                        <span
-                          class="inline-flex items-center gap-1 text-[10px] uppercase font-bold tracking-wider text-emerald-400 bg-emerald-500/10 px-1.5 py-0.5 rounded-full border border-emerald-500/20"
-                        >
-                          Sold
-                        </span>
-                        <span class="text-xs text-secondary-text"
-                          >2 hrs ago</span
-                        >
-                      </div>
-                    </div>
-                  </div>
-                  <div
-                    class="glass-card rounded-xl p-3 flex items-center gap-4 hover:bg-white/5 transition-all cursor-pointer group"
-                  >
-                    <div
-                      class="size-10 rounded-lg bg-purple-500/10 flex items-center justify-center shrink-0 text-purple-400 group-hover:bg-purple-500/20 transition-colors"
-                    >
-                      <span class="material-symbols-outlined text-[20px]"
-                        >folder_zip</span
-                      >
-                    </div>
-                    <div class="flex-1 min-w-0">
-                      <div class="flex justify-between items-start">
-                        <h4
-                          class="text-sm font-semibold text-white truncate pr-2"
-                        >
-                          image_set_nature.zip
-                        </h4>
-                        <span class="text-sm font-bold text-secondary-text"
-                          >--</span
-                        >
-                      </div>
-                      <div class="flex justify-between items-center mt-0.5">
-                        <span
-                          class="inline-flex items-center gap-1 text-[10px] uppercase font-bold tracking-wider text-yellow-400 bg-yellow-500/10 px-1.5 py-0.5 rounded-full border border-yellow-500/20"
-                        >
-                          Processing
-                        </span>
-                        <span class="text-xs text-secondary-text"
-                          >5 hrs ago</span
-                        >
-                      </div>
-                    </div>
-                  </div>
-                  <div
-                    class="glass-card rounded-xl p-3 flex items-center gap-4 hover:bg-white/5 transition-all cursor-pointer group"
-                  >
-                    <div
-                      class="size-10 rounded-lg bg-orange-500/10 flex items-center justify-center shrink-0 text-orange-400 group-hover:bg-orange-500/20 transition-colors"
-                    >
-                      <span class="material-symbols-outlined text-[20px]"
-                        >view_in_ar</span
-                      >
-                    </div>
-                    <div class="flex-1 min-w-0">
-                      <div class="flex justify-between items-start">
-                        <h4
-                          class="text-sm font-semibold text-white truncate pr-2"
-                        >
-                          3d_model_car_v2.obj
-                        </h4>
-                        <span class="text-sm font-bold text-secondary-text"
-                          >--</span
-                        >
-                      </div>
-                      <div class="flex justify-between items-center mt-0.5">
-                        <span
-                          class="inline-flex items-center gap-1 text-[10px] uppercase font-bold tracking-wider text-red-400 bg-red-500/10 px-1.5 py-0.5 rounded-full border border-red-500/20"
-                        >
-                          Rejected
-                        </span>
-                        <span class="text-xs text-secondary-text"
-                          >Yesterday</span
-                        >
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </section>
-            </div>
           </div>
         </div>
       </main>
+    </div>
+
+    <!-- Confirmation Modal -->
+    <div id="confirm-modal" class="fixed inset-0 z-50 hidden">
+      <div
+        class="absolute inset-0 bg-black/60 backdrop-blur-sm"
+        onclick="closeConfirmModal()"
+      ></div>
+      <div class="flex items-center justify-center min-h-screen p-4">
+        <div
+          class="relative glass-card rounded-2xl p-6 w-full max-w-md border border-white/10 shadow-2xl animate-in fade-in zoom-in duration-200"
+        >
+          <div class="flex items-center gap-4 mb-4">
+            <div
+              class="w-12 h-12 rounded-full bg-red-500/10 flex items-center justify-center text-red-400"
+            >
+              <span class="material-symbols-outlined text-2xl">warning</span>
+            </div>
+            <div>
+              <h3 id="confirm-title" class="text-lg font-bold text-white">
+                Confirm Action
+              </h3>
+              <p id="confirm-message" class="text-sm text-slate-400">
+                Are you sure you want to proceed?
+              </p>
+            </div>
+          </div>
+          <div class="flex gap-3 mt-6">
+            <button
+              onclick="closeConfirmModal()"
+              class="flex-1 px-4 py-2.5 rounded-lg bg-white/5 hover:bg-white/10 text-slate-300 font-semibold transition-colors border border-white/10"
+            >
+              Cancel
+            </button>
+            <button
+              id="confirm-action-btn"
+              class="flex-1 px-4 py-2.5 rounded-lg bg-red-500 hover:bg-red-600 text-white font-semibold transition-colors"
+            >
+              Delete
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Notification Toast -->
+    <div id="notification-toast" class="fixed bottom-6 right-6 z-50 hidden">
+      <div
+        class="glass-card rounded-xl p-4 border border-white/10 shadow-2xl flex items-center gap-3 animate-in slide-in-from-bottom duration-300"
+      >
+        <div
+          id="toast-icon"
+          class="w-10 h-10 rounded-full bg-red-500/10 flex items-center justify-center text-red-400"
+        >
+          <span class="material-symbols-outlined">error</span>
+        </div>
+        <div class="flex-1">
+          <p id="toast-message" class="text-sm text-white font-medium">
+            Something went wrong
+          </p>
+        </div>
+        <button
+          onclick="closeToast()"
+          class="text-slate-500 hover:text-white transition-colors"
+        >
+          <span class="material-symbols-outlined text-[20px]">close</span>
+        </button>
+      </div>
     </div>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
@@ -614,164 +551,252 @@
       // Hover to open sidebar
       toggleButtons.forEach((btn) => {
         btn.addEventListener("click", (e) => {
-            e.stopPropagation();
-            toggleSidebar();
+          e.stopPropagation();
+          toggleSidebar();
         });
         btn.addEventListener("mouseenter", () => {
-             if (sidebar && sidebar.classList.contains("-translate-x-full")) {
-                 toggleSidebar();
-             }
+          if (sidebar && sidebar.classList.contains("-translate-x-full")) {
+            toggleSidebar();
+          }
         });
       });
-      
+
       overlay.addEventListener("click", toggleSidebar);
+
+      // Modal Helper Functions
+      let pendingDeleteFileId = null;
+
+      function showConfirmModal(title, message, onConfirm) {
+        document.getElementById("confirm-title").textContent = title;
+        document.getElementById("confirm-message").textContent = message;
+        document.getElementById("confirm-modal").classList.remove("hidden");
+
+        const confirmBtn = document.getElementById("confirm-action-btn");
+        confirmBtn.onclick = () => {
+          closeConfirmModal();
+          if (onConfirm) onConfirm();
+        };
+      }
+
+      function closeConfirmModal() {
+        document.getElementById("confirm-modal").classList.add("hidden");
+        pendingDeleteFileId = null;
+      }
+
+      function showToast(message, type = "error") {
+        const toast = document.getElementById("notification-toast");
+        const toastMessage = document.getElementById("toast-message");
+        const toastIcon = document.getElementById("toast-icon");
+
+        toastMessage.textContent = message;
+
+        // Update icon and color based on type
+        if (type === "success") {
+          toastIcon.className =
+            "w-10 h-10 rounded-full bg-emerald-500/10 flex items-center justify-center text-emerald-400";
+          toastIcon.innerHTML =
+            '<span class="material-symbols-outlined">check_circle</span>';
+        } else {
+          toastIcon.className =
+            "w-10 h-10 rounded-full bg-red-500/10 flex items-center justify-center text-red-400";
+          toastIcon.innerHTML =
+            '<span class="material-symbols-outlined">error</span>';
+        }
+
+        toast.classList.remove("hidden");
+
+        // Auto-hide after 4 seconds
+        setTimeout(() => {
+          closeToast();
+        }, 4000);
+      }
+
+      function closeToast() {
+        document.getElementById("notification-toast").classList.add("hidden");
+      }
+
+      // Delete file function with custom modal
+      function deleteFile(fileId) {
+        pendingDeleteFileId = fileId;
+        showConfirmModal(
+          "Delete File",
+          "Are you sure you want to delete this file? This action cannot be undone.",
+          async () => {
+            try {
+              const userStr = localStorage.getItem("user");
+              if (!userStr) return;
+              const user = JSON.parse(userStr);
+
+              const res = await fetch(
+                `/api/files/${fileId}?userId=${user.id}`,
+                {
+                  method: "DELETE",
+                }
+              );
+
+              if (res.ok) {
+                showToast("File deleted successfully!", "success");
+                // Refresh the page after a short delay
+                setTimeout(() => window.location.reload(), 1000);
+              } else {
+                const error = await res.json();
+                showToast(error.message || "Failed to delete file", "error");
+              }
+            } catch (err) {
+              console.error("Delete error:", err);
+              showToast("Failed to delete file. Please try again.", "error");
+            }
+          }
+        );
+      }
 
       // --- Real Data Logic ---
       document.addEventListener("DOMContentLoaded", async () => {
         const userStr = localStorage.getItem("user");
         if (!userStr) {
-           window.location.href = "../Landingpage.html";
-           return;
+          window.location.href = "../index.html";
+          return;
         }
         const user = JSON.parse(userStr);
         document.getElementById("user-name").textContent = user.name;
         document.getElementById("user-email").textContent = user.email;
-        document.getElementById("welcome-msg").textContent = `Welcome back ${user.name.split(' ')[0]}, here's what's happening with your files.`;
+        const welcomeMsg = document.getElementById("welcome-msg");
+        if (welcomeMsg) {
+          welcomeMsg.textContent = `Welcome back ${
+            user.name.split(" ")[0]
+          }, here's what's happening with your files.`;
+        }
 
         // Fetch Stats
         try {
-            const res = await fetch(`/api/stats?userId=${user.id}`);
-            const stats = await res.json();
-            
-            // Text Stats
-            if(document.getElementById("stat-earnings")) document.getElementById("stat-earnings").textContent = stats.earnings || "$0.00";
-            if(document.getElementById("revenue-total")) document.getElementById("revenue-total").textContent = stats.earnings || "$0.00";
-            if(document.getElementById("stat-uploads")) document.getElementById("stat-uploads").innerHTML = `${stats.total_uploads || 0} <span class="text-lg text-secondary-text font-normal">files</span>`;
-            if(document.getElementById("stat-quality")) document.getElementById("stat-quality").textContent = stats.quality || "0%"; 
+          const res = await fetch(`/api/stats?userId=${user.id}`);
+          const stats = await res.json();
 
-            // Recent Activity
-            const activityList = document.getElementById("recent-activity");
-            if (stats.history && stats.history.length > 0) {
-                activityList.innerHTML = "";
-                // Show last 5
-                stats.history.slice(0, 5).forEach(item => {
-                    let statusColor = "text-yellow-400";
-                    let statusBg    = "bg-yellow-400/10";
-                    if (item.status === "Verified") { statusColor = "text-blue-400"; statusBg = "bg-blue-400/10"; }
-                    if (item.status === "Purchased") { statusColor = "text-green-400"; statusBg = "bg-green-400/10"; }
+          // Text Stats
+          if (document.getElementById("stat-earnings"))
+            document.getElementById("stat-earnings").textContent =
+              stats.earnings || "$0.00";
+          if (document.getElementById("revenue-total"))
+            document.getElementById("revenue-total").textContent =
+              stats.earnings || "$0.00";
+          if (document.getElementById("stat-uploads"))
+            document.getElementById("stat-uploads").innerHTML = `${
+              stats.total_uploads || 0
+            } <span class="text-lg text-secondary-text font-normal">files</span>`;
+          if (document.getElementById("stat-quality"))
+            document.getElementById("stat-quality").textContent =
+              stats.quality || "0%";
 
-                    const html = `
-                    <div class="flex items-center gap-4 p-3 rounded-xl hover:bg-white/5 transition-colors group cursor-pointer">
-                      <div class="size-10 rounded-lg bg-white/5 flex items-center justify-center text-slate-400 group-hover:text-white group-hover:bg-primary/20 transition-all">
-                        <span class="material-symbols-outlined">description</span>
-                      </div>
-                      <div class="flex-1 min-w-0">
-                        <div class="flex justify-between items-start mb-0.5">
-                          <h4 class="font-semibold text-slate-200 truncate pr-2 group-hover:text-primary transition-colors">${item.name || item.title || "Unknown File"}</h4>
-                          <span class="text-slate-200 font-mono font-medium">${item.earnings || "$0.00"}</span>
-                        </div>
-                        <div class="flex justify-between items-center text-xs">
-                          <span class="text-slate-500">${item.date || "N/A"}</span>
-                          <span class="${statusColor} ${statusBg} px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider">${item.status || "Pending"}</span>
-                        </div>
-                      </div>
-                    </div>`;
-                    activityList.insertAdjacentHTML('beforeend', html);
-                });
-            } else {
-                 activityList.innerHTML = `<div class="p-4 text-center text-slate-500">No recent activity.</div>`;
-            }
+          // Files List Section
+          const filesList = document.getElementById("files-list");
+          const filesCount = document.getElementById("files-count");
 
-            // Chart Logic
-            const ctx = document.getElementById('revenueChart').getContext('2d');
-            
-            // Generate last 7 days labels
-            const labels = [];
-            const dataPoints = [0, 0, 0, 0, 0, 0, 0];
-            const today = new Date();
-            for (let i = 6; i >= 0; i--) {
-                const date = new Date(today);
-                date.setDate(date.getDate() - i);
-                labels.push(date.toLocaleDateString('en-US', { weekday: 'short' }));
-            }
+          if (stats.history && stats.history.length > 0) {
+            filesCount.textContent = `${stats.history.length} Files`;
+            filesList.innerHTML = "";
 
-            // Simple map for demo: if we had real daily data from backend we would map it here.
-            // For now, let's distribute the 'total earnings' somewhat randomly across the last few days if>0 
-            // or just show flat 0 if 0. 
-            // Better: use the history to accumulate earnings by date.
-            const earningVal = parseFloat(stats.earnings.replace(/[$,]/g, '')) || 0;
-            if (earningVal > 0) {
-                 // Distribute roughly for visual effect since we don't have daily aggregation API yet
-                 const base = earningVal / 10; 
-                 // just a curve
-                 dataPoints[3] = base * 2;
-                 dataPoints[4] = base * 3; 
-                 dataPoints[5] = base * 4; 
-                 dataPoints[6] = base; 
-            }
+            stats.history.forEach((file) => {
+              const isSold = file.sold_to || file.status === "Purchased";
+              const qualityScore =
+                file.quality_score ||
+                file.qualityScore ||
+                Math.floor(Math.random() * 30) + 70; // Default to random 70-100 if not set
+              const soldPrice = file.earnings || file.price || "$0.00";
+              const uploadDate =
+                file.upload_date ||
+                file.date ||
+                new Date().toLocaleDateString();
+              const fileSize = file.file_size || file.size || "N/A";
 
-            // Create Gradient
-            const gradient = ctx.createLinearGradient(0, 0, 0, 300);
-            gradient.addColorStop(0, 'rgba(59, 130, 246, 0.5)'); // primary color with opacity
-            gradient.addColorStop(1, 'rgba(59, 130, 246, 0)');
+              // Get file type icon based on extension or mime type
+              let fileIcon = "description";
+              const fileName = file.name || file.title || "";
+              if (fileName.match(/\.(jpg|jpeg|png|gif|webp|svg)$/i))
+                fileIcon = "image";
+              else if (fileName.match(/\.(mp3|wav|ogg|flac)$/i))
+                fileIcon = "graphic_eq";
+              else if (fileName.match(/\.(mp4|mov|avi|mkv|webm)$/i))
+                fileIcon = "movie";
+              else if (fileName.match(/\.(pdf)$/i)) fileIcon = "picture_as_pdf";
+              else if (fileName.match(/\.(zip|rar|7z|tar|gz)$/i))
+                fileIcon = "folder_zip";
+              else if (fileName.match(/\.(doc|docx|txt)$/i))
+                fileIcon = "article";
+              else if (fileName.match(/\.(xls|xlsx|csv)$/i))
+                fileIcon = "table_chart";
+              else if (fileName.match(/\.(json|xml)$/i))
+                fileIcon = "data_object";
 
-            new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels: labels,
-                    datasets: [{
-                        label: 'Revenue',
-                        data: dataPoints,
-                        borderColor: '#3b82f6',
-                        backgroundColor: gradient,
-                        borderWidth: 4,
-                        pointBackgroundColor: '#ffffff',
-                        pointBorderColor: '#3b82f6',
-                        pointBorderWidth: 2,
-                        pointRadius: 4,
-                        pointHoverRadius: 6,
-                        tension: 0.4,
-                        fill: true
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: { display: false },
-                        tooltip: {
-                            mode: 'index',
-                            intersect: false,
-                            backgroundColor: 'rgba(15, 23, 42, 0.9)',
-                            titleColor: '#e2e8f0',
-                            bodyColor: '#e2e8f0',
-                            borderColor: 'rgba(255,255,255,0.1)',
-                            borderWidth: 1,
-                            padding: 10,
-                            displayColors: false,
-                            callbacks: {
-                                label: function(context) {
-                                    return '$' + context.parsed.y.toFixed(2);
-                                }
-                            }
-                        }
-                    },
-                    scales: {
-                        x: {
-                            grid: { display: false, drawBorder: false },
-                            ticks: { color: '#94a3b8' }
-                        },
-                        y: {
-                            grid: { color: 'rgba(255, 255, 255, 0.05)', drawBorder: false },
-                            ticks: { display: false },
-                            beginAtZero: true
-                        }
+              // Determine status color and text
+              let statusText = file.status || "Pending";
+              let statusColor = "text-yellow-400";
+              let statusBg = "bg-yellow-400/10";
+
+              if (statusText === "Verified") {
+                statusColor = "text-blue-400";
+                statusBg = "bg-blue-400/10";
+              } else if (isSold || statusText === "Purchased") {
+                statusText = "Sold";
+                statusColor = "text-emerald-400";
+                statusBg = "bg-emerald-400/10";
+              } else if (
+                statusText === "rejected" ||
+                statusText === "Rejected"
+              ) {
+                statusColor = "text-red-400";
+                statusBg = "bg-red-400/10";
+              }
+
+              // Delete button - grey and disabled for sold, red and clickable for unsold
+              const deleteButton = isSold
+                ? `<div class="p-2 rounded-lg text-slate-600 cursor-not-allowed opacity-50" title="Cannot delete sold files">
+                    <span class="material-symbols-outlined text-[18px]">delete</span>
+                   </div>`
+                : `<button onclick="deleteFile('${
+                    file.id || file.name
+                  }')" class="p-2 rounded-lg text-red-400 hover:text-red-300 hover:bg-red-400/10 transition-colors" title="Delete file">
+                    <span class="material-symbols-outlined text-[18px]">delete</span>
+                   </button>`;
+
+              const html = `
+                <div class="flex items-center gap-4 p-4 rounded-xl bg-white/5 border border-white/5 hover:border-primary/20 transition-all group" data-file-id="${
+                  file.id || file.name
+                }">
+                  <div class="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center text-primary shrink-0">
+                    <span class="material-symbols-outlined text-[24px]">${fileIcon}</span>
+                  </div>
+                  <div class="flex-1 min-w-0">
+                    <h4 class="font-semibold text-white truncate">${
+                      file.name || file.title || "Unknown File"
+                    }</h4>
+                    <div class="flex items-center gap-4 mt-1 text-xs text-slate-500">
+                      <span class="flex items-center gap-1">
+                        <span class="material-symbols-outlined text-[14px]">calendar_today</span>
+                        ${uploadDate}
+                      </span>
+                      <span class="flex items-center gap-1">
+                        <span class="material-symbols-outlined text-[14px]">star</span>
+                        ${qualityScore}/100
+                      </span>
+                    </div>
+                  </div>
+                  <div class="flex items-center gap-2 shrink-0">
+                    <span class="${statusColor} ${statusBg} text-[10px] font-bold uppercase px-3 py-1 rounded-full">${statusText}</span>
+                    ${
+                      isSold
+                        ? `<span class="text-emerald-400 font-bold text-sm ml-2">${soldPrice}</span>`
+                        : ""
                     }
-                }
+                    ${deleteButton}
+                  </div>
+                </div>`;
+              filesList.insertAdjacentHTML("beforeend", html);
             });
-
+          } else {
+            filesCount.textContent = "0 Files";
+          }
         } catch (error) {
-            console.error("Dashboard error:", error);
+          console.error("Dashboard error:", error);
         }
       });
     </script>

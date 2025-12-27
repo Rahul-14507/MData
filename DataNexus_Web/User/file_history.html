@@ -168,13 +168,7 @@
     >
       <div class="p-6 pb-8">
         <div class="flex items-center gap-3">
-          <div
-            class="flex items-center justify-center w-10 h-10 rounded-xl bg-gradient-to-br from-primary-500 to-primary-600 text-white shadow-lg shadow-primary-500/20"
-          >
-            <span class="material-symbols-outlined text-[24px]"
-              >cloud_circle</span
-            >
-          </div>
+          <img src="../MData.png" alt="MData Logo" class="w-10 h-10 object-contain" />
           <div class="flex flex-col">
             <span
               class="font-bold text-lg tracking-tight text-gray-900 dark:text-white leading-none"
@@ -245,14 +239,13 @@
         </nav>
       </div>
       <div class="p-4 mt-auto border-t border-gray-200/50 dark:border-white/5 space-y-1">
-        <div
+        <a
+          href="profile.html"
           class="flex items-center gap-3 p-2 rounded-xl hover:bg-gray-100 dark:hover:bg-white/5 transition-colors cursor-pointer group"
         >
-          <img
-            alt="User"
-            class="w-10 h-10 rounded-full border-2 border-white dark:border-gray-700 shadow-sm"
-            src="https://lh3.googleusercontent.com/aida-public/AB6AXuBJJL6r2F2CGrlVRpg-2_8D8dEqSuXJLoYjAt2PNC9hnBJm7N9O1o67vYni1Io59mXrtu0nPpxIVZamGtum3jPPLDHX9jcGf9MWEhHX1Ii4et3kpOHrEZ_V4f4sCQEW1GWxQ1DqR6p3rY8W1MZ5mJ5N2dwzPwUN7M3aq8BXR1bxHWi2s2uU--uYaVkRPqczUfGNo1l5tMPLX0bfITQxRYbenBYQ6dA1pG5S4wp6wwwxCyX7w3IlTnDk6SU2gNO3U49RquJjVhYRRYlv"
-          />
+          <div class="w-10 h-10 rounded-full bg-gradient-to-br from-primary to-purple-600 flex items-center justify-center text-white shadow-sm">
+            <span class="material-symbols-outlined text-[20px]">person</span>
+          </div>
           <div class="flex-1 min-w-0">
             <p
               id="user-name"
@@ -267,13 +260,9 @@
               loading...
             </p>
           </div>
-          <span
-            class="material-symbols-outlined text-gray-400 group-hover:text-gray-600 dark:group-hover:text-gray-300"
-            >expand_more</span
-          >
-        </div>
+        </a>
         <a
-          href="../Landingpage.html"
+          href="../index.html"
           class="flex items-center gap-3 p-2 rounded-xl text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors group"
         >
           <span class="material-symbols-outlined text-[20px]">logout</span>
@@ -282,58 +271,18 @@
       </div>
     </aside>
     <div class="flex-1 flex flex-col h-screen overflow-hidden relative z-10">
-      <header
-        class="lg:hidden sticky top-0 z-30 glass border-b border-white/5 transition-colors duration-300"
-      >
-        <div class="flex items-center p-4 justify-between w-full">
+      <header class="sticky top-0 z-30 glass border-b border-white/5">
+        <div class="flex items-center justify-between px-4 lg:px-8 py-4">
           <div class="flex items-center gap-3">
-            <button class="p-1 -ml-1 text-slate-600 dark:text-white sidebar-toggle">
+            <button class="sidebar-toggle p-2 -ml-2 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-white/10 active:scale-95 transition-all">
               <span class="material-symbols-outlined">menu</span>
             </button>
-            <h2 class="text-lg font-bold">File History</h2>
+            <h1 class="text-lg lg:text-2xl font-bold text-gray-900 dark:text-white">File History</h1>
           </div>
-          <div class="relative shrink-0">
-            <div
-              class="bg-center bg-no-repeat bg-cover rounded-full size-8 ring-1 ring-gray-700"
-              style="
-                background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuBHSDta1V1TdMsYpt3KI1p0q4kvJCMbjJH0kOgh4Cg6KH6lfwOf-SjcSgy6qhH3M5L4nC_nhUvOAPTg6F_A3fBg5OewF5SbB5dI2_MArtwRij5TMVD7L3Ni0wyE-q4PVS0Baeu48U3JR1hj84XXr2D7dXMT3VG0rv6XX5qSj3lndYxJiWTYc1X6HeK1_cqr0qCKDbU2-MhrDf8DILQuLDlFf6QcUvEjF0c8NXolvx8CjnjAk6fE5S6t4H8k7EGJMzHNV7aEI4w0-_l4');
-              "
-            ></div>
+          <div class="flex items-center gap-2">
+            <img src="../MData.png" alt="MData Logo" class="h-8 w-8 object-contain" />
+            <span class="text-lg font-bold text-gray-900 dark:text-white hidden sm:inline">MData</span>
           </div>
-        </div>
-      </header>
-
-      <header
-        class="hidden lg:flex items-center justify-between px-8 py-5 border-b border-white/5 shrink-0 glass-panel sticky top-0 z-20"
-      >
-        <div class="flex items-center gap-4">
-          <button
-            class="sidebar-toggle p-2 rounded-xl bg-white/5 hover:bg-white/10 transition-colors text-slate-600 dark:text-white border border-white/5"
-          >
-            <span class="material-symbols-outlined">menu</span>
-          </button>
-          <div>
-          <h2 class="text-2xl font-bold tracking-tight">File History</h2>
-          <p class="text-sm text-slate-500 dark:text-slate-400 hidden sm:block">
-            Manage your uploaded assets and track performance
-          </p>
-        </div>
-        <div class="flex items-center gap-4">
-
-          <a
-            href="upload_files.html"
-            class="bg-primary hover:bg-primary-hover text-white px-5 py-2.5 rounded-xl text-sm font-semibold transition-all shadow-lg shadow-blue-500/30 flex items-center gap-2 hover:-translate-y-0.5 active:translate-y-0"
-          >
-            <span class="material-symbols-outlined text-[20px]"
-              >cloud_upload</span
-            >
-            Upload New
-          </a>
-          <button
-            class="md:hidden p-2 text-slate-600 dark:text-slate-300 bg-white/50 dark:bg-white/5 rounded-lg"
-          >
-            <span class="material-symbols-outlined">menu</span>
-          </button>
         </div>
       </header>
       <div class="flex-1 overflow-y-auto p-4 md:p-8 scroll-smooth">
@@ -592,7 +541,7 @@
       document.addEventListener("DOMContentLoaded", async () => {
         const userStr = localStorage.getItem("user");
         if (!userStr) {
-           window.location.href = "../Landingpage.html";
+           window.location.href = "../index.html";
            return;
         }
         const user = JSON.parse(userStr);

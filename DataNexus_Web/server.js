@@ -72,7 +72,7 @@ function hashPassword(password, salt) {
 
 // Routes
 app.get("/", (req, res) => {
-  res.sendFile(path.join(__dirname, "landingpage.html"));
+  res.sendFile(path.join(__dirname, "index.html"));
 });
 
 // API: Generate SAS Token
@@ -166,13 +166,18 @@ app.get("/api/stats", async (req, res) => {
       totalScore += score;
 
       history.push({
+        id: item.id,
         name: item.original_name || "Unknown",
         date: item.upload_timestamp
           ? item.upload_timestamp.split("T")[0]
           : "N/A",
-        quality: score,
+        upload_date: item.upload_timestamp
+          ? new Date(item.upload_timestamp).toLocaleDateString()
+          : "N/A",
+        quality_score: score,
         earnings: isSold ? `$${userShare.toFixed(2)}` : "$0.00",
-        status: isSold ? "Sold" : "Pending",
+        status: isSold ? "Sold" : item.status || "Pending",
+        sold_to: item.sold_to || null,
       });
     });
 
@@ -228,6 +233,71 @@ app.get("/api/files", async (req, res) => {
   } catch (err) {
     console.error("Files Error:", err);
     res.status(500).json({ error: err.message });
+  }
+});
+
+// API: Delete File
+app.delete("/api/files/:fileId", async (req, res) => {
+  const fileId = req.params.fileId;
+  const userId = req.query.userId;
+
+  if (!fileId || !userId) {
+    return res.status(400).json({ error: "Missing fileId or userId" });
+  }
+
+  try {
+    const submissionsContainer = container.database.container("Submissions");
+
+    // Query for the file by id and userId to get the item and verify ownership
+    const querySpec = {
+      query: "SELECT * FROM c WHERE c.id = @fileId AND c.userId = @userId",
+      parameters: [
+        { name: "@fileId", value: fileId },
+        { name: "@userId", value: userId },
+      ],
+    };
+
+    const { resources: items } = await submissionsContainer.items
+      .query(querySpec)
+      .fetchAll();
+
+    if (!items || items.length === 0) {
+      return res.status(404).json({
+        error: "File not found or you don't have permission to delete it",
+      });
+    }
+
+    const item = items[0];
+
+    // Check if already sold
+    if (item.sold_to) {
+      return res
+        .status(400)
+        .json({ error: "Cannot delete a file that has already been sold" });
+    }
+
+    // Delete the item from Cosmos DB - use userId as partition key
+    await submissionsContainer.item(fileId, userId).delete();
+
+    // Optionally delete from Blob Storage as well
+    if (blobServiceClient && item.blob_url) {
+      try {
+        const blobName = item.blob_url.split("/").pop().split("?")[0];
+        const blobClient = containerClient.getBlobClient(blobName);
+        await blobClient.deleteIfExists();
+        console.log(`Deleted blob: ${blobName}`);
+      } catch (blobErr) {
+        console.warn(
+          "Failed to delete blob, but database record was removed:",
+          blobErr.message
+        );
+      }
+    }
+
+    res.json({ message: "File deleted successfully", fileId });
+  } catch (err) {
+    console.error("Delete File Error:", err);
+    res.status(500).json({ error: err.message || "Failed to delete file" });
   }
 });
 

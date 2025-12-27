@@ -476,9 +476,18 @@ def blob_process_trigger(myblob: func.InputStream):
     file_extension = os.path.splitext(filename)[1].lower()
     
     # Initialize metadata
-    # Try to get userId from blob metadata (set by frontend)
+    # Try to get userId and user-provided metadata from blob metadata (set by frontend)
     blob_metadata = myblob.metadata or {}
     user_id = blob_metadata.get("userid", "public_contributor") # Keys are often lowercased by Azure
+    
+    # User-provided metadata for quality scoring
+    from urllib.parse import unquote
+    user_title = unquote(blob_metadata.get("title", ""))
+    user_description = unquote(blob_metadata.get("description", ""))
+    user_tags_str = unquote(blob_metadata.get("usertags", ""))
+    user_tags = [t.strip() for t in user_tags_str.split(",") if t.strip()]
+    
+    logging.info(f"User metadata - Title: {user_title}, Description: {user_description[:50]}..., Tags: {user_tags}")
 
     # Read content ONCE into memory to avoid seek() issues
     blob_bytes = myblob.read()
@@ -492,8 +501,12 @@ def blob_process_trigger(myblob: func.InputStream):
         "processed": True,
         "analysis_type": "unknown",
         "tags": [],
+        "user_tags": user_tags,  # Store user-provided tags
+        "user_title": user_title,
+        "user_description": user_description,
         "caption": "",
         "quality_score": 0,
+        "metadata_bonus": 0,  # Bonus for relevant metadata
         "payout": 0,
         "market_category": "Uncategorized",
         "ai_analysis": {}
@@ -556,10 +569,59 @@ def blob_process_trigger(myblob: func.InputStream):
             metadata['quality_score'] = 10
             metadata['payout'] = 0.50
 
-        # 2. Store in Cosmos DB 'Submissions' Container
+        # 3. Verify User Metadata Relevance and Apply Bonus
+        metadata_bonus = 0
+        bonus_reasons = []
+        
+        # Check if user provided any metadata
+        if user_tags or user_description:
+            ai_tags = [t.lower() for t in metadata.get('tags', [])]
+            ai_summary = metadata.get('ai_analysis', {}).get('summary', '')
+            
+            # Image tag matching
+            if metadata['analysis_type'] == 'image' and user_tags:
+                matching_tags = [t for t in user_tags if t.lower() in ai_tags]
+                if matching_tags:
+                    metadata_bonus += min(len(matching_tags) * 3, 10)  # Up to +10 for matching tags
+                    bonus_reasons.append(f"Tags match: {matching_tags}")
+                    logging.info(f"Tag bonus: +{min(len(matching_tags) * 3, 10)} for matching tags: {matching_tags}")
+            
+            # Description relevance check using GPT-4o
+            if user_description and ai_summary:
+                try:
+                    client = get_openai_client()
+                    relevance_check = client.chat.completions.create(
+                        model=AZURE_OPENAI_DEPLOYMENT,
+                        messages=[
+                            {"role": "system", "content": "You verify if user descriptions are accurate. Return only 'RELEVANT' or 'NOT_RELEVANT' based on whether the description accurately matches the content."},
+                            {"role": "user", "content": f"User description: '{user_description}'\n\nAI analysis: '{ai_summary}'\n\nIs the user's description relevant and accurate?"}
+                        ]
+                    )
+                    relevance_result = relevance_check.choices[0].message.content.strip().upper()
+                    if 'RELEVANT' in relevance_result and 'NOT' not in relevance_result:
+                        metadata_bonus += 10
+                        bonus_reasons.append("Description verified as relevant")
+                        logging.info(f"Description bonus: +10 for relevant description")
+                except Exception as e:
+                    logging.warning(f"Failed to verify description relevance: {e}")
+        
+        # Apply bonus (max +20)
+        metadata_bonus = min(metadata_bonus, 20)
+        metadata['metadata_bonus'] = metadata_bonus
+        if metadata_bonus > 0:
+            original_score = metadata['quality_score']
+            metadata['quality_score'] = min(original_score + metadata_bonus, 100)
+            metadata['payout'] = calculate_payout(metadata['quality_score'])
+            metadata['ai_analysis']['metadata_bonus'] = {
+                "bonus_points": metadata_bonus,
+                "reasons": bonus_reasons
+            }
+            logging.info(f"Applied metadata bonus: {original_score} + {metadata_bonus} = {metadata['quality_score']}")
+
+        # 4. Store in Cosmos DB 'Submissions' Container
         container = get_cosmos_container("Submissions")
         container.upsert_item(metadata)
-        logging.info(f"SUCCESS: Metadata stored for {filename} with Score: {metadata['quality_score']}")
+        logging.info(f"SUCCESS: Metadata stored for {filename} with Score: {metadata['quality_score']} (bonus: {metadata_bonus})")
 
     except Exception as e:
         logging.error(f"FATAL Error processing blob {filename}: {e}")

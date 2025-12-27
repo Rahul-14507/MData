@@ -168,13 +168,11 @@
     >
       <div class="p-6 pb-8">
         <div class="flex items-center gap-3">
-          <div
-            class="flex items-center justify-center w-10 h-10 rounded-xl bg-gradient-to-br from-primary-500 to-primary-600 text-white shadow-lg shadow-primary-500/20"
-          >
-            <span class="material-symbols-outlined text-[24px]"
-              >cloud_circle</span
-            >
-          </div>
+          <img
+            src="../MData.png"
+            alt="MData Logo"
+            class="w-10 h-10 object-contain"
+          />
           <div class="flex flex-col">
             <span
               class="font-bold text-lg tracking-tight text-gray-900 dark:text-white leading-none"
@@ -247,14 +245,15 @@
       <div
         class="p-4 mt-auto border-t border-gray-200/50 dark:border-white/5 space-y-1"
       >
-        <div
+        <a
+          href="profile.html"
           class="flex items-center gap-3 p-2 rounded-xl hover:bg-gray-100 dark:hover:bg-white/5 transition-colors cursor-pointer group"
         >
-          <img
-            alt="User"
-            class="w-10 h-10 rounded-full border-2 border-white dark:border-gray-700 shadow-sm"
-            src="https://lh3.googleusercontent.com/aida-public/AB6AXuBJJL6r2F2CGrlVRpg-2_8D8dEqSuXJLoYjAt2PNC9hnBJm7N9O1o67vYni1Io59mXrtu0nPpxIVZamGtum3jPPLDHX9jcGf9MWEhHX1Ii4et3kpOHrEZ_V4f4sCQEW1GWxQ1DqR6p3rY8W1MZ5mJ5N2dwzPwUN7M3aq8BXR1bxHWi2s2uU--uYaVkRPqczUfGNo1l5tMPLX0bfITQxRYbenBYQ6dA1pG5S4wp3wwwxCyX7w3IlTnDk6SU2gNO3U49RquJjVhYRRYlv"
-          />
+          <div
+            class="w-10 h-10 rounded-full bg-gradient-to-br from-primary to-purple-600 flex items-center justify-center text-white shadow-sm"
+          >
+            <span class="material-symbols-outlined text-[20px]">person</span>
+          </div>
           <div class="flex-1 min-w-0">
             <p
               id="user-name"
@@ -269,11 +268,7 @@
               loading...
             </p>
           </div>
-          <span
-            class="material-symbols-outlined text-gray-400 group-hover:text-gray-600 dark:group-hover:text-gray-300"
-            >expand_more</span
-          >
-        </div>
+        </a>
         <button
           onclick="logout()"
           class="w-full flex items-center gap-3 p-2 rounded-xl text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors group text-left"
@@ -284,43 +279,34 @@
       </div>
     </aside>
     <main class="flex-1 h-full overflow-y-auto relative w-full scroll-smooth">
-      <div class="sticky top-0 z-50 glass border-b border-white/5">
-        <div class="flex items-center p-4 justify-between h-16">
+      <header class="sticky top-0 z-30 glass border-b border-white/5">
+        <div class="flex items-center justify-between px-4 lg:px-8 py-4">
           <div class="flex items-center gap-3">
             <button
               class="sidebar-toggle p-2 -ml-2 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-white/10 active:scale-95 transition-all"
             >
               <span class="material-symbols-outlined">menu</span>
             </button>
-            <div
-              class="bg-primary h-8 w-8 rounded-lg flex items-center justify-center text-white"
-            >
-              <span class="material-symbols-outlined text-[20px]"
-                >cloud_upload</span
-              >
-            </div>
-          </div>
-          <h2
-            class="text-base font-semibold leading-tight tracking-tight flex-1 text-center"
-          >
-            My Profile
-          </h2>
-        </div>
-      </div>
-      <div class="max-w-4xl mx-auto md:py-10 pb-28 md:pb-12 px-4 md:px-8">
-        <div class="hidden md:flex items-center justify-between mb-8">
-          <div>
             <h1
-              class="text-3xl font-bold text-slate-900 dark:text-white tracking-tight"
+              class="text-lg lg:text-2xl font-bold text-gray-900 dark:text-white"
             >
-              Profile Settings
+              Profile
             </h1>
-            <p class="text-slate-500 dark:text-slate-400 mt-1">
-              Manage your account and view your performance.
-            </p>
           </div>
-          <div class="flex gap-3"></div>
+          <div class="flex items-center gap-2">
+            <img
+              src="../MData.png"
+              alt="MData Logo"
+              class="h-8 w-8 object-contain"
+            />
+            <span
+              class="text-lg font-bold text-gray-900 dark:text-white hidden sm:inline"
+              >MData</span
+            >
+          </div>
         </div>
+      </header>
+      <div class="max-w-4xl mx-auto px-4 md:px-8 py-6 md:py-10 pb-28 md:pb-12">
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div class="space-y-6 md:col-span-1">
             <div
@@ -334,13 +320,11 @@
                   class="absolute -inset-1 bg-gradient-to-r from-primary to-purple-500 rounded-full opacity-70 blur-md group-hover:opacity-100 group-hover:blur-lg transition-all duration-500"
                 ></div>
                 <div
-                  class="relative h-24 w-24 rounded-full border-[3px] border-white dark:border-slate-800 overflow-hidden shadow-xl"
+                  class="relative h-24 w-24 rounded-full border-[3px] border-white dark:border-slate-800 overflow-hidden shadow-xl bg-gradient-to-br from-primary to-purple-500 flex items-center justify-center"
                 >
-                  <img
-                    alt="Profile picture"
-                    class="h-full w-full object-cover transform group-hover:scale-110 transition-transform duration-700"
-                    src="https://lh3.googleusercontent.com/aida-public/AB6AXuBpveL4lwMeSPnUUNpPDEdQPYw-fI9LgCbF-At-fzZnDs2BnoZ6ZWTGbHZafVfqDwA1kuTXh_S29nyHP_HOjyv6z4Q_urO0yXVui-eTXkx-VVk49KI05kZhXU6zvFZTAHFESv7YnGi0qw1ZdrvDRnY8B879Dk7lImlVA1vLxv8aSRZJRFB9ijw3eNdFxOrOOOrSLMv1bthaaFVcc58cp5QHyuMzI2fYiZX8cBFFs0Y72ohLZ11m8YGQAY5-xjj2b6hrhKf7uPDo0tmX"
-                  />
+                  <span class="material-symbols-outlined text-white text-[48px]"
+                    >person</span
+                  >
                 </div>
                 <div
                   class="absolute bottom-0 right-0 bg-blue-500 text-white rounded-full p-1 border-[3px] border-white dark:border-slate-800 flex items-center justify-center"
@@ -512,9 +496,9 @@
                   Account Settings
                 </h3>
               </div>
-              <a
-                class="flex items-center justify-between p-5 hover:bg-white dark:hover:bg-slate-700/30 transition-colors border-b border-slate-100 dark:border-slate-700/50 group"
-                href="#"
+              <button
+                onclick="openModal('personal-info-modal')"
+                class="w-full flex items-center justify-between p-5 hover:bg-white dark:hover:bg-slate-700/30 transition-colors border-b border-slate-100 dark:border-slate-700/50 group"
               >
                 <div class="flex items-center gap-4">
                   <div
@@ -538,10 +522,10 @@
                   class="material-symbols-outlined text-slate-400 text-[20px] group-hover:translate-x-1 transition-transform"
                   >chevron_right</span
                 >
-              </a>
-              <a
-                class="flex items-center justify-between p-5 hover:bg-white dark:hover:bg-slate-700/30 transition-colors border-b border-slate-100 dark:border-slate-700/50 group"
-                href="#"
+              </button>
+              <button
+                onclick="openModal('payment-modal')"
+                class="w-full flex items-center justify-between p-5 hover:bg-white dark:hover:bg-slate-700/30 transition-colors border-b border-slate-100 dark:border-slate-700/50 group"
               >
                 <div class="flex items-center gap-4">
                   <div
@@ -565,34 +549,7 @@
                   class="material-symbols-outlined text-slate-400 text-[20px] group-hover:translate-x-1 transition-transform"
                   >chevron_right</span
                 >
-              </a>
-              <a
-                class="flex items-center justify-between p-5 hover:bg-white dark:hover:bg-slate-700/30 transition-colors group"
-                href="#"
-              >
-                <div class="flex items-center gap-4">
-                  <div
-                    class="h-10 w-10 rounded-xl bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 flex items-center justify-center shadow-sm group-hover:scale-110 transition-transform"
-                  >
-                    <span class="material-symbols-outlined text-[22px]"
-                      >receipt_long</span
-                    >
-                  </div>
-                  <div>
-                    <span
-                      class="block text-sm font-semibold text-slate-900 dark:text-white"
-                      >Tax Information</span
-                    >
-                    <span class="text-xs text-slate-500 dark:text-slate-400"
-                      >Documents and tax status</span
-                    >
-                  </div>
-                </div>
-                <span
-                  class="material-symbols-outlined text-slate-400 text-[20px] group-hover:translate-x-1 transition-transform"
-                  >chevron_right</span
-                >
-              </a>
+              </button>
             </div>
             <div
               class="glass-panel rounded-2xl overflow-hidden shadow-sm border border-white/50 dark:border-slate-700/50 p-1"
@@ -622,6 +579,131 @@
         </div>
       </div>
     </main>
+
+    <!-- Personal Information Modal -->
+    <div id="personal-info-modal" class="fixed inset-0 z-50 hidden">
+      <div
+        class="absolute inset-0 bg-black/60 backdrop-blur-sm"
+        onclick="closeModal('personal-info-modal')"
+      ></div>
+      <div class="flex items-center justify-center min-h-screen p-4">
+        <div
+          class="relative glass-card rounded-2xl p-6 w-full max-w-lg border border-white/10 shadow-2xl"
+        >
+          <div class="flex items-center justify-between mb-6">
+            <h3 class="text-xl font-bold text-white">Personal Information</h3>
+            <button
+              onclick="closeModal('personal-info-modal')"
+              class="text-slate-400 hover:text-white"
+            >
+              <span class="material-symbols-outlined">close</span>
+            </button>
+          </div>
+          <form id="personal-info-form" class="space-y-4">
+            <div>
+              <label class="block text-sm font-medium text-slate-300 mb-2"
+                >Full Name</label
+              >
+              <input
+                id="edit-name"
+                type="text"
+                class="w-full px-4 py-2.5 rounded-lg bg-white/5 border border-white/10 text-white focus:border-primary focus:outline-none"
+              />
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-slate-300 mb-2"
+                >Email</label
+              >
+              <input
+                id="edit-email"
+                type="email"
+                class="w-full px-4 py-2.5 rounded-lg bg-white/5 border border-white/10 text-white focus:border-primary focus:outline-none"
+                readonly
+              />
+              <p class="text-xs text-slate-500 mt-1">Email cannot be changed</p>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-slate-300 mb-2"
+                >Bio</label
+              >
+              <textarea
+                id="edit-bio"
+                rows="3"
+                class="w-full px-4 py-2.5 rounded-lg bg-white/5 border border-white/10 text-white focus:border-primary focus:outline-none resize-none"
+                placeholder="Tell us about yourself..."
+              ></textarea>
+            </div>
+            <div class="flex gap-3 pt-4">
+              <button
+                type="button"
+                onclick="closeModal('personal-info-modal')"
+                class="flex-1 py-2.5 rounded-lg bg-white/5 text-slate-300 font-medium hover:bg-white/10 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                class="flex-1 py-2.5 rounded-lg bg-primary text-white font-medium hover:bg-primary-hover transition-colors"
+              >
+                Save Changes
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- Payment Methods Modal -->
+    <div id="payment-modal" class="fixed inset-0 z-50 hidden">
+      <div
+        class="absolute inset-0 bg-black/60 backdrop-blur-sm"
+        onclick="closeModal('payment-modal')"
+      ></div>
+      <div class="flex items-center justify-center min-h-screen p-4">
+        <div
+          class="relative glass-card rounded-2xl p-6 w-full max-w-lg border border-white/10 shadow-2xl"
+        >
+          <div class="flex items-center justify-between mb-6">
+            <h3 class="text-xl font-bold text-white">Payment Methods</h3>
+            <button
+              onclick="closeModal('payment-modal')"
+              class="text-slate-400 hover:text-white"
+            >
+              <span class="material-symbols-outlined">close</span>
+            </button>
+          </div>
+          <div class="space-y-4">
+            <div
+              class="p-4 rounded-xl bg-white/5 border border-white/10 flex items-center gap-4"
+            >
+              <div
+                class="w-12 h-8 bg-gradient-to-r from-blue-600 to-blue-400 rounded flex items-center justify-center text-white text-xs font-bold"
+              >
+                VISA
+              </div>
+              <div class="flex-1">
+                <p class="text-white font-medium">•••• •••• •••• 4242</p>
+                <p class="text-xs text-slate-400">Expires 12/25</p>
+              </div>
+              <span
+                class="text-xs text-emerald-400 bg-emerald-500/10 px-2 py-1 rounded"
+                >Default</span
+              >
+            </div>
+            <button
+              class="w-full py-3 rounded-xl border-2 border-dashed border-white/10 text-slate-400 hover:border-primary hover:text-primary transition-colors flex items-center justify-center gap-2"
+            >
+              <span class="material-symbols-outlined text-[20px]">add</span>
+              Add Payment Method
+            </button>
+            <p class="text-xs text-slate-500 text-center">
+              Your payment information is securely stored and encrypted
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <script>
       const sidebar = document.getElementById("sidebar");
       const overlay = document.getElementById("sidebar-overlay");
@@ -646,16 +728,60 @@
       });
       overlay.addEventListener("click", toggleSidebar);
 
+      // Modal Functions
+      function openModal(modalId) {
+        const modal = document.getElementById(modalId);
+        if (modal) {
+          modal.classList.remove("hidden");
+          // Pre-fill personal info modal with current data
+          if (modalId === "personal-info-modal") {
+            const user = JSON.parse(localStorage.getItem("user") || "{}");
+            document.getElementById("edit-name").value = user.name || "";
+            document.getElementById("edit-email").value = user.email || "";
+            document.getElementById("edit-bio").value = user.bio || "";
+          }
+        }
+      }
+
+      function closeModal(modalId) {
+        const modal = document.getElementById(modalId);
+        if (modal) {
+          modal.classList.add("hidden");
+        }
+      }
+
+      // Personal Info Form Submission
+      document
+        .getElementById("personal-info-form")
+        ?.addEventListener("submit", (e) => {
+          e.preventDefault();
+          const newName = document.getElementById("edit-name").value.trim();
+          const newBio = document.getElementById("edit-bio").value.trim();
+
+          // Update localStorage
+          const user = JSON.parse(localStorage.getItem("user") || "{}");
+          user.name = newName || user.name;
+          user.bio = newBio;
+          localStorage.setItem("user", JSON.stringify(user));
+
+          // Update UI
+          document.getElementById("profile-name").textContent = user.name;
+          document.getElementById("user-name").textContent = user.name;
+
+          // Close modal
+          closeModal("personal-info-modal");
+        });
+
       function logout() {
         localStorage.removeItem("user");
-        window.location.href = "../Landingpage.html";
+        window.location.href = "../index.html";
       }
 
       // --- Real Data Logic ---
       document.addEventListener("DOMContentLoaded", async () => {
         const userStr = localStorage.getItem("user");
         if (!userStr) {
-          window.location.href = "../Landingpage.html";
+          window.location.href = "../index.html";
           return;
         }
         const user = JSON.parse(userStr);
