@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+  workflow_dispatch:
 
 jobs:
   build-and-deploy:
@@ -22,9 +23,13 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Create deployment package
+        run: |
+          zip -r deploy.zip . -x "*.git*" -x "*.env*" -x "DEPLOY.md" -x "publish-profile.txt"
+
       - name: Deploy to Azure App Service
         uses: azure/webapps-deploy@v3
         with:
-          app-name: "mdata-web"
+          app-name: mdata-web
           publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
-          package: .
+          package: deploy.zip
