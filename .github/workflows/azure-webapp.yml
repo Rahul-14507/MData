@@ -34,5 +34,4 @@ jobs:
 
       - name: Deploy to Azure App Service
         run: |
-          az webapp config appsettings set --name mdata-web --resource-group mdata-rg --settings SCM_DO_BUILD_DURING_DEPLOYMENT=false WEBSITE_RUN_FROM_PACKAGE=0
-          az webapp deployment source config-zip --name mdata-web --resource-group mdata-rg --src deploy.zip
+          az webapp deploy --name mdata-web --resource-group mdata-rg --src-path deploy.zip --type zip --clean true
