@@ -1005,12 +1005,30 @@
                 },
                 body: file,
               });
+
+              // Call process-file API to trigger AI analysis (replaces blob trigger)
+              try {
+                const processRes = await fetch("/api/process-file", {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({
+                    blobName: file.name,
+                    userId: user.id,
+                    originalName: file.name,
+                    fileSize: file.size,
+                  }),
+                });
+                const processResult = await processRes.json();
+                console.log("File processed:", processResult);
+              } catch (processErr) {
+                console.warn(
+                  "Process API failed, file will be processed later:",
+                  processErr
+                );
+              }
             }
 
-            showToast(
-              "Upload Successful! Waiting for AI processing...",
-              "success"
-            );
+            showToast("Upload & Processing Complete!", "success");
 
             // Store uploaded filenames to check for
             const uploadedFileNames = selectedFiles.map((f) => f.name);

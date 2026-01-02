@@ -5,8 +5,203 @@ const { CosmosClient } = require("@azure/cosmos");
 const crypto = require("crypto");
 const nodemailer = require("nodemailer");
 
+// Azure AI SDKs for file processing
+const { AzureOpenAI } = require("@azure/openai");
+const createImageAnalysisClient =
+  require("@azure-rest/ai-vision-image-analysis").default;
+const { AzureKeyCredential } = require("@azure/core-auth");
+
 const app = express();
 const PORT = process.env.PORT || 3000;
+
+// ========== AZURE AI CLIENT INITIALIZATION ==========
+
+// Azure OpenAI Client (GPT-4o for content quality analysis)
+let openaiClient = null;
+const OPENAI_DEPLOYMENT = "gpt-4o";
+
+function getOpenAIClient() {
+  if (
+    !openaiClient &&
+    process.env.AZURE_OPENAI_ENDPOINT &&
+    process.env.AZURE_OPENAI_KEY
+  ) {
+    openaiClient = new AzureOpenAI({
+      endpoint: process.env.AZURE_OPENAI_ENDPOINT,
+      apiKey: process.env.AZURE_OPENAI_KEY,
+      apiVersion: "2024-02-15-preview",
+    });
+    console.log("Azure OpenAI client initialized.");
+  }
+  return openaiClient;
+}
+
+// Azure Vision Client (Image tagging and captioning)
+let visionClient = null;
+
+function getVisionClient() {
+  if (!visionClient && process.env.VISION_ENDPOINT && process.env.VISION_KEY) {
+    visionClient = createImageAnalysisClient(
+      process.env.VISION_ENDPOINT,
+      new AzureKeyCredential(process.env.VISION_KEY)
+    );
+    console.log("Azure Vision AI client initialized.");
+  }
+  return visionClient;
+}
+
+// ========== AI ANALYSIS FUNCTIONS ==========
+
+// Content Safety Check (simplified - logs warning if not configured)
+async function analyzeContentSafety(content, isImage = false) {
+  // Content Safety SDK requires separate installation
+  // For now, return safe by default with warning
+  console.log("Content Safety check skipped (SDK not configured)");
+  return { isSafe: true, reason: "Content Safety not configured" };
+}
+
+// GPT-4o Content Quality Analysis
+async function analyzeContentQualityGPT4o(content, filename) {
+  try {
+    const client = getOpenAIClient();
+    if (!client) {
+      console.warn("OpenAI not configured - using default score");
+      return {
+        quality_score: 50,
+        payout: 10,
+        ai_analysis: { error: "OpenAI not configured" },
+      };
+    }
+
+    const preview = content.substring(0, 8000);
+    const prompt = `Analyze the following file named '${filename}'.
+    
+Determine:
+1. Is this valid, high-quality code/text?
+2. What does it do? (Short summary)
+3. Assign a 'Trust Score' from 1 to 100 based on utility, cleanliness, and complexity.
+
+Return ONLY a JSON object:
+{
+    "trust_score": <int>,
+    "summary": "<string>",
+    "reasoning": "<string>"
+}
+
+Content:
+${preview}`;
+
+    const response = await client.chat.completions.create({
+      model: OPENAI_DEPLOYMENT,
+      messages: [
+        {
+          role: "system",
+          content: "You are a senior code auditor and data quality expert.",
+        },
+        { role: "user", content: prompt },
+      ],
+      response_format: { type: "json_object" },
+    });
+
+    const resultJson = JSON.parse(response.choices[0].message.content);
+    const score = resultJson.trust_score || 50;
+
+    return {
+      quality_score: score,
+      payout: calculatePayout(score),
+      ai_analysis: {
+        summary: resultJson.summary,
+        reasoning: resultJson.reasoning,
+      },
+    };
+  } catch (e) {
+    console.error("OpenAI analysis failed:", e.message);
+    return { quality_score: 50, payout: 10, ai_analysis: { error: e.message } };
+  }
+}
+
+// Azure Vision 4.0 Image Analysis
+async function analyzeImageVision(imageBuffer) {
+  try {
+    const client = getVisionClient();
+    if (!client) {
+      console.warn("Vision AI not configured - using default analysis");
+      return {
+        tags: [],
+        caption: "Vision AI not configured",
+        ai_analysis: { error: "Not configured" },
+      };
+    }
+
+    const response = await client.path("/imageanalysis:analyze").post({
+      body: imageBuffer,
+      queryParameters: {
+        features: ["tags", "caption"],
+      },
+      contentType: "application/octet-stream",
+    });
+
+    if (response.status !== "200") {
+      throw new Error(`Vision API error: ${response.status}`);
+    }
+
+    const result = response.body;
+    const tags = result.tagsResult?.values?.map((t) => t.name) || [];
+    const caption = result.captionResult?.text || "No caption generated";
+
+    return {
+      tags: tags,
+      caption: caption,
+      ai_analysis: {
+        vision_model: "4.0",
+        confidence: result.captionResult?.confidence || 0,
+      },
+    };
+  } catch (e) {
+    console.error("Vision analysis failed:", e.message);
+    return {
+      tags: [],
+      caption: "Error in vision analysis",
+      ai_analysis: { error: e.message },
+    };
+  }
+}
+
+// Classify content into market category using GPT-4o
+async function classifyContent(description) {
+  try {
+    const client = getOpenAIClient();
+    if (!client) return "General";
+
+    const response = await client.chat.completions.create({
+      model: OPENAI_DEPLOYMENT,
+      messages: [
+        {
+          role: "system",
+          content:
+            "Classify this content into exactly ONE of these categories: 'Autonomous Driving', 'Medical Imaging', 'Robotics Training', 'Developer Tools', 'Financial Data', 'General'. Return only the category name.",
+        },
+        { role: "user", content: description },
+      ],
+    });
+
+    return response.choices[0].message.content.trim();
+  } catch (e) {
+    console.error("Classification failed:", e.message);
+    return "General";
+  }
+}
+
+// Calculate payout based on quality score
+function calculatePayout(qualityScore) {
+  if (qualityScore < 50) {
+    return Math.max(0.1, qualityScore * 0.1);
+  } else if (qualityScore < 80) {
+    return 5 + (qualityScore - 50) * 0.5;
+  } else {
+    return 20 + (qualityScore - 80) * 4.0;
+  }
+}
 
 // Middleware
 app.use(express.json());
@@ -1057,6 +1252,179 @@ app.post("/api/otp/verify", async (req, res) => {
       error: "Failed to verify OTP",
       message: err.message,
     });
+  }
+});
+
+// ========== AI FILE PROCESSING API ==========
+// This endpoint replaces the Azure Functions blob trigger
+// Frontend calls this after successful blob upload
+
+app.post("/api/process-file", async (req, res) => {
+  try {
+    const { blobName, userId, originalName, fileSize } = req.body;
+
+    if (!blobName || !userId) {
+      return res.status(400).json({ error: "Missing blobName or userId" });
+    }
+
+    console.log(`Processing file: ${blobName} for user: ${userId}`);
+
+    const filename = originalName || blobName;
+    const fileExtension = path.extname(filename).toLowerCase();
+
+    // Initialize metadata
+    const metadata = {
+      id: blobName,
+      userId: userId,
+      original_name: filename,
+      size: fileSize || 0,
+      upload_timestamp: new Date().toISOString(),
+      processed: true,
+      analysis_type: "unknown",
+      tags: [],
+      caption: "",
+      quality_score: 0,
+      payout: 0,
+      market_category: "Uncategorized",
+      ai_analysis: {},
+      is_safe: true,
+      safety_reason: "Safe",
+    };
+
+    // Get the blob content for analysis
+    let blobContent = null;
+    let contentString = "";
+
+    try {
+      if (containerClient) {
+        const blobClient = containerClient.getBlobClient(blobName);
+        const downloadResponse = await blobClient.download();
+        const chunks = [];
+        for await (const chunk of downloadResponse.readableStreamBody) {
+          chunks.push(chunk);
+        }
+        blobContent = Buffer.concat(chunks);
+
+        // For text-based files, decode to string
+        if (
+          [
+            ".txt",
+            ".py",
+            ".dart",
+            ".js",
+            ".md",
+            ".json",
+            ".html",
+            ".css",
+            ".ts",
+            ".jsx",
+            ".tsx",
+          ].includes(fileExtension)
+        ) {
+          contentString = blobContent.toString("utf-8");
+        }
+      }
+    } catch (downloadErr) {
+      console.error(
+        "Failed to download blob for analysis:",
+        downloadErr.message
+      );
+      // Continue with default analysis if download fails
+    }
+
+    // Perform AI Analysis based on file type
+    if ([".jpg", ".jpeg", ".png", ".gif", ".webp"].includes(fileExtension)) {
+      metadata.analysis_type = "image";
+
+      if (blobContent) {
+        const visionResult = await analyzeImageVision(blobContent);
+        metadata.tags = visionResult.tags;
+        metadata.caption = visionResult.caption;
+        metadata.ai_analysis = visionResult.ai_analysis;
+
+        // Score based on richness of tags
+        const score = Math.min(visionResult.tags.length * 10, 100);
+        metadata.quality_score = score;
+        metadata.payout = calculatePayout(score);
+
+        // Classify based on tags
+        metadata.market_category = await classifyContent(
+          `Image with tags: ${visionResult.tags.join(", ")}`
+        );
+      } else {
+        metadata.quality_score = 50;
+        metadata.payout = 10;
+      }
+    } else if (
+      [
+        ".txt",
+        ".py",
+        ".dart",
+        ".js",
+        ".md",
+        ".json",
+        ".html",
+        ".css",
+        ".ts",
+        ".jsx",
+        ".tsx",
+      ].includes(fileExtension)
+    ) {
+      metadata.analysis_type = "code_or_text";
+
+      if (contentString) {
+        const aiResult = await analyzeContentQualityGPT4o(
+          contentString,
+          filename
+        );
+        metadata.quality_score = aiResult.quality_score;
+        metadata.payout = aiResult.payout;
+        metadata.ai_analysis = aiResult.ai_analysis;
+
+        // Classify based on content
+        metadata.market_category = await classifyContent(
+          `Code/Text file named ${filename}. Summary: ${
+            aiResult.ai_analysis?.summary || "N/A"
+          }`
+        );
+      } else {
+        metadata.quality_score = 50;
+        metadata.payout = 10;
+        metadata.ai_analysis = {
+          info: "Content could not be read for analysis.",
+        };
+      }
+    } else {
+      metadata.analysis_type = "other";
+      metadata.ai_analysis = {
+        info: "File type not supported for deep AI analysis yet.",
+      };
+      metadata.quality_score = 10;
+      metadata.payout = 0.5;
+    }
+
+    // Store metadata in Cosmos DB Submissions container
+    const submissionsContainer = database.container("Submissions");
+    await submissionsContainer.items.upsert(metadata);
+
+    console.log(
+      `SUCCESS: File ${filename} processed with Score: ${metadata.quality_score}`
+    );
+
+    res.json({
+      success: true,
+      message: "File processed successfully",
+      metadata: {
+        id: metadata.id,
+        quality_score: metadata.quality_score,
+        payout: metadata.payout,
+        market_category: metadata.market_category,
+        analysis_type: metadata.analysis_type,
+      },
+    });
+  } catch (err) {
+    console.error("Process File Error:", err);
+    res.status(500).json({ error: err.message || "Failed to process file" });
   }
 });
 
