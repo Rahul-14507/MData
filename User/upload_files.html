@@ -744,11 +744,6 @@
           e.stopPropagation();
           toggleSidebar();
         });
-        btn.addEventListener("mouseenter", () => {
-          if (sidebar.classList.contains("-translate-x-full")) {
-            toggleSidebar();
-          }
-        });
       });
       overlay.addEventListener("click", toggleSidebar);
 
