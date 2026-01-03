@@ -5,6 +5,10 @@ const { CosmosClient } = require("@azure/cosmos");
 const crypto = require("crypto");
 const nodemailer = require("nodemailer");
 const Razorpay = require("razorpay");
+const session = require("express-session");
+const passport = require("passport");
+const GoogleStrategy = require("passport-google-oauth20").Strategy;
+const GitHubStrategy = require("passport-github2").Strategy;
 
 // Azure AI SDKs for file processing
 const { AzureOpenAI } = require("@azure/openai");
@@ -223,6 +227,158 @@ app.get("/refund", (req, res) =>
   res.sendFile(path.join(__dirname, "refund.html"))
 );
 
+// ========== SESSION & PASSPORT CONFIGURATION ==========
+app.use(
+  session({
+    secret:
+      process.env.SESSION_SECRET || "mdata-oauth-secret-key-change-in-prod",
+    resave: false,
+    saveUninitialized: false,
+    cookie: {
+      secure: process.env.NODE_ENV === "production",
+      maxAge: 24 * 60 * 60 * 1000, // 24 hours
+    },
+  })
+);
+
+app.use(passport.initialize());
+app.use(passport.session());
+
+// Passport serialize/deserialize
+passport.serializeUser((user, done) => {
+  done(null, { id: user.id, role: user.role });
+});
+
+passport.deserializeUser(async (data, done) => {
+  try {
+    const container =
+      data.role === "agency" ? agenciesContainer : usersContainer;
+    if (!container) return done(null, false);
+
+    const { resource } = await container.item(data.id, data.id).read();
+    done(null, resource);
+  } catch (err) {
+    done(err, null);
+  }
+});
+
+// Google OAuth Strategy
+if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
+  passport.use(
+    new GoogleStrategy(
+      {
+        clientID: process.env.GOOGLE_CLIENT_ID,
+        clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+        callbackURL: "/auth/google/callback",
+        passReqToCallback: true,
+      },
+      async (req, accessToken, refreshToken, profile, done) => {
+        try {
+          const email = profile.emails[0].value;
+          const role = req.session.oauthRole || "user";
+          const container =
+            role === "agency" ? agenciesContainer : usersContainer;
+
+          // Check if user exists
+          const { resources } = await container.items
+            .query({
+              query: "SELECT * FROM c WHERE c.email = @email",
+              parameters: [{ name: "@email", value: email }],
+            })
+            .fetchAll();
+
+          if (resources.length > 0) {
+            // User exists, log them in
+            return done(null, { ...resources[0], role });
+          }
+
+          // Create new user
+          const newUser = {
+            id: crypto.randomUUID(),
+            name: profile.displayName,
+            email: email,
+            oauth_provider: "google",
+            oauth_id: profile.id,
+            role: role === "agency" ? "agency" : "contributor",
+            balance: 0.0,
+            joined_date: new Date().toISOString(),
+          };
+
+          await container.items.create(newUser);
+          console.log(
+            `OAuth: Created new ${role} account for ${email} via Google`
+          );
+          return done(null, { ...newUser, role });
+        } catch (err) {
+          console.error("Google OAuth error:", err);
+          return done(err, null);
+        }
+      }
+    )
+  );
+  console.log("Google OAuth strategy configured.");
+}
+
+// GitHub OAuth Strategy
+if (process.env.GITHUB_CLIENT_ID && process.env.GITHUB_CLIENT_SECRET) {
+  passport.use(
+    new GitHubStrategy(
+      {
+        clientID: process.env.GITHUB_CLIENT_ID,
+        clientSecret: process.env.GITHUB_CLIENT_SECRET,
+        callbackURL: "/auth/github/callback",
+        scope: ["user:email"],
+        passReqToCallback: true,
+      },
+      async (req, accessToken, refreshToken, profile, done) => {
+        try {
+          const email =
+            profile.emails && profile.emails[0]
+              ? profile.emails[0].value
+              : `${profile.username}@github.local`;
+          const role = req.session.oauthRole || "user";
+          const container =
+            role === "agency" ? agenciesContainer : usersContainer;
+
+          // Check if user exists
+          const { resources } = await container.items
+            .query({
+              query: "SELECT * FROM c WHERE c.email = @email",
+              parameters: [{ name: "@email", value: email }],
+            })
+            .fetchAll();
+
+          if (resources.length > 0) {
+            return done(null, { ...resources[0], role });
+          }
+
+          // Create new user
+          const newUser = {
+            id: crypto.randomUUID(),
+            name: profile.displayName || profile.username,
+            email: email,
+            oauth_provider: "github",
+            oauth_id: profile.id,
+            role: role === "agency" ? "agency" : "contributor",
+            balance: 0.0,
+            joined_date: new Date().toISOString(),
+          };
+
+          await container.items.create(newUser);
+          console.log(
+            `OAuth: Created new ${role} account for ${email} via GitHub`
+          );
+          return done(null, { ...newUser, role });
+        } catch (err) {
+          console.error("GitHub OAuth error:", err);
+          return done(err, null);
+        }
+      }
+    )
+  );
+  console.log("GitHub OAuth strategy configured.");
+}
+
 // Azure Cosmos DB Configuration
 const endpoint = process.env.COSMOS_ENDPOINT;
 const key = process.env.COSMOS_KEY;
@@ -302,6 +458,73 @@ function hashPassword(password, salt) {
 app.get("/", (req, res) => {
   res.sendFile(path.join(__dirname, "index.html"));
 });
+
+// ========== OAUTH ROUTES ==========
+
+// Google OAuth - User
+app.get("/auth/google", (req, res, next) => {
+  req.session.oauthRole = req.query.role || "user";
+  passport.authenticate("google", { scope: ["profile", "email"] })(
+    req,
+    res,
+    next
+  );
+});
+
+app.get(
+  "/auth/google/callback",
+  passport.authenticate("google", { failureRedirect: "/?error=oauth_failed" }),
+  (req, res) => {
+    const role = req.user.role || "user";
+    const redirectUrl =
+      role === "agency" ? "/Agency/dashboard.html" : "/User/dashboard.html";
+
+    // Set localStorage via client-side script
+    const userData = JSON.stringify({
+      id: req.user.id,
+      name: req.user.name,
+      email: req.user.email,
+      role: role,
+    });
+
+    res.send(`
+      <script>
+        localStorage.setItem('user', '${userData.replace(/'/g, "\\'")}');
+        window.location.href = '${redirectUrl}';
+      </script>
+    `);
+  }
+);
+
+// GitHub OAuth
+app.get("/auth/github", (req, res, next) => {
+  req.session.oauthRole = req.query.role || "user";
+  passport.authenticate("github", { scope: ["user:email"] })(req, res, next);
+});
+
+app.get(
+  "/auth/github/callback",
+  passport.authenticate("github", { failureRedirect: "/?error=oauth_failed" }),
+  (req, res) => {
+    const role = req.user.role || "user";
+    const redirectUrl =
+      role === "agency" ? "/Agency/dashboard.html" : "/User/dashboard.html";
+
+    const userData = JSON.stringify({
+      id: req.user.id,
+      name: req.user.name,
+      email: req.user.email,
+      role: role,
+    });
+
+    res.send(`
+      <script>
+        localStorage.setItem('user', '${userData.replace(/'/g, "\\'")}');
+        window.location.href = '${redirectUrl}';
+      </script>
+    `);
+  }
+);
 
 // API: Generate SAS Token
 app.get("/api/storage/sas", async (req, res) => {
