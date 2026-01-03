@@ -473,7 +473,7 @@ app.delete("/api/files/:fileId", async (req, res) => {
   }
 
   try {
-    const submissionsContainer = container.database.container("Submissions");
+    const submissionsContainer = database.container("Submissions");
 
     // Query for the file by id and userId to get the item and verify ownership
     const querySpec = {
