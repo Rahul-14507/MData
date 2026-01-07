@@ -530,33 +530,60 @@ app.get(
   }
 );
 
-// API: Generate SAS Token
+// API: Generate SAS Token for blob download
 app.get("/api/storage/sas", async (req, res) => {
   try {
     if (!blobServiceClient || !containerClient) {
       return res.status(500).json({ error: "Storage not configured" });
     }
 
-    const permissions = new ContainerSASPermissions();
-    permissions.write = true;
-    permissions.create = true;
-    permissions.list = true;
-    permissions.read = true; // Added read for initial check if needed
+    const blobName = req.query.blobName;
+
+    if (!blobName) {
+      // Container-level SAS for uploads (existing behavior)
+      const permissions = new ContainerSASPermissions();
+      permissions.write = true;
+      permissions.create = true;
+      permissions.list = true;
+      permissions.read = true;
+
+      const expiryDate = new Date();
+      expiryDate.setMinutes(expiryDate.getMinutes() + 30);
+
+      const sasToken = generateBlobSASQueryParameters(
+        {
+          containerName: "uploads",
+          permissions: permissions,
+          expiresOn: expiryDate,
+        },
+        blobServiceClient.credential
+      ).toString();
+
+      const sasUrl = `${containerClient.url}?${sasToken}`;
+      return res.json({ sasUrl });
+    }
+
+    // Blob-specific SAS for downloads
+    const { BlobSASPermissions } = require("@azure/storage-blob");
+    const blobClient = containerClient.getBlobClient(blobName);
+
+    const permissions = new BlobSASPermissions();
+    permissions.read = true;
 
     const expiryDate = new Date();
     expiryDate.setMinutes(expiryDate.getMinutes() + 30);
 
-    // Generate SAS for the container (simplest for uploads)
     const sasToken = generateBlobSASQueryParameters(
       {
         containerName: "uploads",
+        blobName: blobName,
         permissions: permissions,
         expiresOn: expiryDate,
       },
       blobServiceClient.credential
     ).toString();
 
-    const sasUrl = `${containerClient.url}?${sasToken}`;
+    const sasUrl = `${blobClient.url}?${sasToken}`;
     res.json({ sasUrl });
   } catch (error) {
     console.error("SAS Gen Error:", error);
@@ -2153,6 +2180,124 @@ app.get("/api/user/balance", async (req, res) => {
   } catch (err) {
     console.error("Balance error:", err);
     res.status(500).json({ error: err.message });
+  }
+});
+
+// ========== PASSWORD CHANGE WITH OTP ==========
+
+// Email transporter for password OTP
+const passwordEmailTransporter = nodemailer.createTransport({
+  service: "gmail",
+  auth: {
+    user: process.env.SMTP_USER,
+    pass: process.env.SMTP_PASS,
+  },
+});
+
+// In-memory OTP store for password changes (key: agencyId, value: { otp, email, expires })
+const passwordOtpStore = new Map();
+
+// API: Send Password Change OTP
+app.post("/api/agency/send-password-otp", async (req, res) => {
+  const { agencyId, email } = req.body;
+
+  if (!agencyId || !email) {
+    return res.status(400).json({ error: "Missing agencyId or email" });
+  }
+
+  try {
+    // Generate 6-digit OTP
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+
+    // Store with 5-minute expiry
+    passwordOtpStore.set(agencyId, {
+      otp,
+      email,
+      expires: Date.now() + 5 * 60 * 1000,
+    });
+
+    // Send email
+    await passwordEmailTransporter.sendMail({
+      from: `"MData Security" <${process.env.SMTP_USER}>`,
+      to: email,
+      subject: "MData - Password Change Verification Code",
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+          <h2 style="color: #3b82f6;">Password Change Request</h2>
+          <p>You've requested to change your password. Use the following verification code:</p>
+          <div style="background: #f1f5f9; padding: 20px; text-align: center; border-radius: 8px; margin: 20px 0;">
+            <span style="font-size: 32px; font-weight: bold; letter-spacing: 8px; color: #1e293b;">${otp}</span>
+          </div>
+          <p style="color: #64748b;">This code expires in 5 minutes. If you didn't request this, please ignore this email.</p>
+          <p style="color: #64748b; margin-top: 20px;">— The MData Team</p>
+        </div>
+      `,
+    });
+
+    console.log(`Password OTP sent to ${email} for agency ${agencyId}`);
+    res.json({ success: true, message: "OTP sent to your email" });
+  } catch (error) {
+    console.error("Password OTP error:", error);
+    res.status(500).json({ error: "Failed to send OTP" });
+  }
+});
+
+// API: Change Password (with OTP verification)
+app.post("/api/agency/change-password", async (req, res) => {
+  const { agencyId, otp, newPassword } = req.body;
+
+  if (!agencyId || !otp || !newPassword) {
+    return res.status(400).json({ error: "Missing required fields" });
+  }
+
+  try {
+    // Verify OTP
+    const storedData = passwordOtpStore.get(agencyId);
+    if (!storedData) {
+      return res
+        .status(400)
+        .json({ error: "No OTP request found. Please request a new OTP." });
+    }
+
+    if (Date.now() > storedData.expires) {
+      passwordOtpStore.delete(agencyId);
+      return res
+        .status(400)
+        .json({ error: "OTP has expired. Please request a new one." });
+    }
+
+    if (storedData.otp !== otp) {
+      return res.status(400).json({ error: "Invalid OTP" });
+    }
+
+    // Hash the new password
+    const hashedPassword = crypto
+      .createHash("sha256")
+      .update(newPassword)
+      .digest("hex");
+
+    // Update password in Agencies container
+    const { resource: agency } = await agenciesContainer
+      .item(agencyId, agencyId)
+      .read();
+
+    if (!agency) {
+      return res.status(404).json({ error: "Agency not found" });
+    }
+
+    agency.password = hashedPassword;
+    agency.passwordChangedAt = new Date().toISOString();
+
+    await agenciesContainer.item(agencyId, agencyId).replace(agency);
+
+    // Clear OTP from store
+    passwordOtpStore.delete(agencyId);
+
+    console.log(`Password changed for agency ${agencyId}`);
+    res.json({ success: true, message: "Password changed successfully" });
+  } catch (error) {
+    console.error("Change password error:", error);
+    res.status(500).json({ error: "Failed to change password" });
   }
 });
 

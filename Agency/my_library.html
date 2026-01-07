@@ -543,9 +543,9 @@
           );
           const data = await res.json();
 
-          if (res.ok && data.url) {
+          if (res.ok && data.sasUrl) {
             const link = document.createElement("a");
-            link.href = data.url;
+            link.href = data.sasUrl;
             link.download = filename;
             document.body.appendChild(link);
             link.click();
