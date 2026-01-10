@@ -12,7 +12,7 @@ A marketplace where data contributors earn rewards for quality datasets, and AI 
 
 - **For Contributors:** Upload datasets → AI analysis → Earn payouts based on quality
 - **For Agencies:** Browse marketplace → Cart system → Purchase verified datasets
-- **AI-Powered:** Gemini quality scoring, Vertex AI image tagging
+- **AI-Powered:** GPT-4o quality scoring, Vision AI image tagging
 - **Secure:** Email OTP auth, encrypted storage, SSL
 
 ---
@@ -23,10 +23,10 @@ A marketplace where data contributors earn rewards for quality datasets, and AI 
 | -------- | ---------------------------------- |
 | Frontend | HTML, CSS, TailwindCSS, Vanilla JS |
 | Backend  | Node.js 20, Express.js             |
-| Database | Firebase Firestore (NoSQL)         |
-| Storage  | Google Cloud Storage               |
-| AI       | Google Gemini, Vertex AI Vision    |
-| Hosting  | Azure App Service                  |
+| Database | Azure Cosmos DB (NoSQL)            |
+| Storage  | Azure Blob Storage                 |
+| AI       | Azure OpenAI (GPT-4o), Vision AI   |
+| Hosting  | Azure App Service (B1 Linux)       |
 | CI/CD    | GitHub Actions                     |
 
 ---
@@ -60,9 +60,9 @@ MData/
 npm install
 
 # Create .env file with:
-# FIREBASE_PROJECT_ID=...
-# FIREBASE_PRIVATE_KEY=...
-# GCS_BUCKET_NAME=...
+# COSMOS_ENDPOINT=https://...
+# COSMOS_KEY=...
+# AZURE_STORAGE_CONNECTION_STRING=...
 # SMTP_USER=...
 # SMTP_PASS=...
 
@@ -72,7 +72,7 @@ node server.js
 
 Open http://localhost:8080
 
-### Deploy to Google Cloud
+### Deploy to Azure
 
 ```bash
 git add .
@@ -80,22 +80,23 @@ git commit -m "Your changes"
 git push origin main
 ```
 
-GitHub Actions auto-deploys to Google Cloud Run.
+GitHub Actions auto-deploys to Azure App Service.
 
 ---
 
 ## 🔧 Environment Variables
 
-| Variable               | Purpose              |
-| ---------------------- | -------------------- |
-| `FIREBASE_PROJECT_ID`  | Firebase project ID  |
-| `FIREBASE_PRIVATE_KEY` | Firebase service key |
-| `GCS_BUCKET_NAME`      | Cloud Storage bucket |
-| `GEMINI_API_KEY`       | Gemini AI service    |
-| `VERTEX_PROJECT_ID`    | Vertex AI project    |
-| `VERTEX_LOCATION`      | Vertex AI region     |
-| `SMTP_USER`            | Email (for OTP)      |
-| `SMTP_PASS`            | Email app password   |
+| Variable                          | Purpose            |
+| --------------------------------- | ------------------ |
+| `COSMOS_ENDPOINT`                 | Cosmos DB URL      |
+| `COSMOS_KEY`                      | Cosmos DB key      |
+| `AZURE_STORAGE_CONNECTION_STRING` | Blob storage       |
+| `AZURE_OPENAI_ENDPOINT`           | GPT-4o service     |
+| `AZURE_OPENAI_KEY`                | GPT-4o key         |
+| `VISION_ENDPOINT`                 | Image analysis     |
+| `VISION_KEY`                      | Vision AI key      |
+| `SMTP_USER`                       | Email (for OTP)    |
+| `SMTP_PASS`                       | Email app password |
 
 ---
 
@@ -114,17 +115,17 @@ GitHub Actions auto-deploys to Google Cloud Run.
 ## 🏗 Architecture
 
 ```
-User Browser → Google Cloud Run (Node.js)
+User Browser → Azure App Service (Node.js)
                    ↓
           ┌───────┴───────┐
           ↓               ↓
-    Firestore       Cloud Storage
+    Cosmos DB       Blob Storage
           ↓               ↓
      Metadata         Files
           ↓
     ┌─────┴─────┐
     ↓           ↓
- Gemini    Vertex AI
+GPT-4o      Vision AI
 ```
 
 ---
