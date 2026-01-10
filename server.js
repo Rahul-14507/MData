@@ -10,6 +10,12 @@ const passport = require("passport");
 const GoogleStrategy = require("passport-google-oauth20").Strategy;
 const GitHubStrategy = require("passport-github2").Strategy;
 
+// Security packages
+const bcrypt = require("bcrypt");
+const helmet = require("helmet");
+const rateLimit = require("express-rate-limit");
+const cors = require("cors");
+
 // Azure AI SDKs for file processing
 const { AzureOpenAI } = require("@azure/openai");
 const createImageAnalysisClient =
@@ -227,15 +233,66 @@ app.get("/refund", (req, res) =>
   res.sendFile(path.join(__dirname, "refund.html"))
 );
 
+// ========== SECURITY MIDDLEWARE ==========
+
+// Helmet for security headers (XSS, clickjacking protection, etc.)
+app.use(
+  helmet({
+    contentSecurityPolicy: false, // Disable CSP for now (can break inline scripts)
+    crossOriginEmbedderPolicy: false,
+  })
+);
+
+// CORS configuration
+app.use(
+  cors({
+    origin:
+      process.env.NODE_ENV === "production"
+        ? [process.env.ALLOWED_ORIGIN || "https://your-domain.com"]
+        : true, // Allow all origins in development
+    credentials: true,
+  })
+);
+
+// Rate limiting - prevent brute force and DDoS
+const apiLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100, // Limit each IP to 100 requests per window
+  message: { error: "Too many requests, please try again later." },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 10, // Limit login attempts
+  message: { error: "Too many login attempts, please try again later." },
+});
+
+app.use("/api/", apiLimiter);
+app.use("/api/login", authLimiter);
+app.use("/api/signup", authLimiter);
+
 // ========== SESSION & PASSPORT CONFIGURATION ==========
+
+// Require SESSION_SECRET in production
+if (process.env.NODE_ENV === "production" && !process.env.SESSION_SECRET) {
+  console.error(
+    "FATAL: SESSION_SECRET environment variable must be set in production!"
+  );
+  process.exit(1);
+}
+
 app.use(
   session({
     secret:
-      process.env.SESSION_SECRET || "mdata-oauth-secret-key-change-in-prod",
+      process.env.SESSION_SECRET || crypto.randomBytes(32).toString("hex"),
     resave: false,
     saveUninitialized: false,
     cookie: {
       secure: process.env.NODE_ENV === "production",
+      httpOnly: true,
+      sameSite: "lax",
       maxAge: 24 * 60 * 60 * 1000, // 24 hours
     },
   })
@@ -451,8 +508,19 @@ try {
   console.error("Error connecting to Azure Blob Storage:", error.message);
 }
 
-// Helper: SHA256 Hash
-function hashPassword(password, salt) {
+// Helper: Bcrypt Password Hashing (secure, industry standard)
+const BCRYPT_SALT_ROUNDS = 12;
+
+async function hashPasswordBcrypt(password) {
+  return await bcrypt.hash(password, BCRYPT_SALT_ROUNDS);
+}
+
+async function verifyPassword(password, hash) {
+  return await bcrypt.compare(password, hash);
+}
+
+// Legacy SHA256 hash (for backward compatibility with existing users)
+function hashPasswordLegacy(password, salt) {
   const hash = crypto.createHash("sha256");
   hash.update(password + salt);
   return hash.digest("hex");
@@ -1034,9 +1102,40 @@ app.post("/api/login", async (req, res) => {
 
     const user = items[0];
 
-    // Verify Password
-    const inputHash = hashPassword(password, user.salt);
-    if (inputHash !== user.password_hash) {
+    // Verify Password - support both bcrypt (new) and legacy SHA256 (existing users)
+    let passwordValid = false;
+
+    if (user.password_hash && user.password_hash.startsWith("$2")) {
+      // User has bcrypt hash (new format)
+      passwordValid = await verifyPassword(password, user.password_hash);
+    } else if (user.salt) {
+      // User has legacy SHA256 hash - verify and upgrade to bcrypt
+      const legacyHash = hashPasswordLegacy(password, user.salt);
+      if (legacyHash === user.password_hash) {
+        passwordValid = true;
+        // Upgrade to bcrypt for future logins
+        const newHash = await hashPasswordBcrypt(password);
+        try {
+          if (USE_GOOGLE_CLOUD) {
+            await firestoreDb
+              .collection(role === "agency" ? "Agencies" : "Users")
+              .doc(user.id)
+              .update({ password_hash: newHash, salt: null });
+          } else {
+            await targetContainer.items.upsert({
+              ...user,
+              password_hash: newHash,
+              salt: null,
+            });
+          }
+          console.log(`Upgraded password hash to bcrypt for ${user.email}`);
+        } catch (upgradeErr) {
+          console.error("Failed to upgrade password hash:", upgradeErr.message);
+        }
+      }
+    }
+
+    if (!passwordValid) {
       return res
         .status(401)
         .json({ success: false, error: "Invalid password. Please try again." });
@@ -1105,15 +1204,14 @@ app.post("/api/signup", async (req, res) => {
       });
     }
 
-    // Create Account
-    const salt = crypto.randomBytes(16).toString("hex");
-    const password_hash = hashPassword(password, salt);
+    // Create Account with bcrypt password hash
+    const password_hash = await hashPasswordBcrypt(password);
     const newAccount = {
       id: crypto.randomUUID(),
       name: name || (role === "agency" ? "New Agency" : "New User"),
       email: email,
       password_hash: password_hash,
-      salt: salt,
+      salt: null, // No salt needed for bcrypt (embedded in hash)
       role: accountType,
       balance: 0.0,
       joined_date: new Date().toISOString(),
