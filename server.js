@@ -16,6 +16,9 @@ const helmet = require("helmet");
 const rateLimit = require("express-rate-limit");
 const cors = require("cors");
 
+// Document parsing
+const pdf = require("pdf-parse");
+
 // Azure AI SDKs for file processing
 const { AzureOpenAI } = require("@azure/openai");
 const createImageAnalysisClient =
@@ -179,24 +182,99 @@ async function analyzeImageVision(imageBuffer) {
 }
 
 // Classify content into market category using GPT-4o
-async function classifyContent(description) {
+async function classifyContent(description, filename = "") {
   try {
     const client = getOpenAIClient();
     if (!client) return "General";
+
+    // Get file extension for better classification hints
+    const ext = filename ? path.extname(filename).toLowerCase() : "";
 
     const response = await client.chat.completions.create({
       model: OPENAI_DEPLOYMENT,
       messages: [
         {
           role: "system",
-          content:
-            "Classify this content into exactly ONE of these categories: 'Autonomous Driving', 'Medical Imaging', 'Robotics Training', 'Developer Tools', 'Financial Data', 'General'. Return only the category name.",
+          content: `You are a data marketplace classifier. Based on the file content and name, classify into exactly ONE of these categories:
+
+TECHNICAL/CODE:
+- 'Developer Tools' - Code, scripts, programming resources, APIs, SDKs
+- 'Robotics Training' - Sensor data, motion capture, robotic systems
+- 'Autonomous Driving' - Vehicle data, LIDAR, traffic, navigation
+
+DATA/ANALYTICS:
+- 'Financial Data' - Stock prices, transactions, banking, crypto, trading
+- 'Business Analytics' - Sales data, marketing, CRM, business intelligence
+- 'E-commerce' - Product catalogs, customer data, inventory, shopping
+
+MEDIA/CREATIVE:
+- 'Medical Imaging' - X-rays, MRI, CT scans, medical records
+- 'Image Dataset' - Photos, graphics, visual training data
+- 'Audio Dataset' - Sound files, voice recordings, music
+- 'Video Dataset' - Video clips, footage, motion data
+
+DOCUMENTS:
+- 'Research Papers' - Academic papers, studies, scientific documents
+- 'Legal Documents' - Contracts, agreements, legal text
+- 'Educational Content' - Tutorials, courses, learning materials
+- 'Documentation' - Manuals, guides, technical docs
+
+OTHER:
+- 'General' - Only if nothing else fits
+
+Reply with JUST the category name, nothing else.`,
         },
-        { role: "user", content: description },
+        {
+          role: "user",
+          content: `File: "${filename}" (${ext})\nContent/Description: ${description.substring(
+            0,
+            2000
+          )}`,
+        },
       ],
+      temperature: 0.1, // Low temperature for consistent classification
     });
 
-    return response.choices[0].message.content.trim();
+    const category = response.choices[0].message.content.trim();
+
+    // Validate category is one of the expected ones
+    const validCategories = [
+      "Developer Tools",
+      "Robotics Training",
+      "Autonomous Driving",
+      "Financial Data",
+      "Business Analytics",
+      "E-commerce",
+      "Medical Imaging",
+      "Image Dataset",
+      "Audio Dataset",
+      "Video Dataset",
+      "Research Papers",
+      "Legal Documents",
+      "Educational Content",
+      "Documentation",
+      "General",
+    ];
+
+    if (validCategories.includes(category)) {
+      return category;
+    }
+
+    // If AI returned something unexpected, try to match it
+    const lowerCategory = category.toLowerCase();
+    for (const valid of validCategories) {
+      if (
+        lowerCategory.includes(valid.toLowerCase()) ||
+        valid.toLowerCase().includes(lowerCategory)
+      ) {
+        return valid;
+      }
+    }
+
+    console.log(
+      `Classification returned unknown category: "${category}", defaulting to General`
+    );
+    return "General";
   } catch (e) {
     console.error("Classification failed:", e.message);
     return "General";
@@ -1116,18 +1194,11 @@ app.post("/api/login", async (req, res) => {
         // Upgrade to bcrypt for future logins
         const newHash = await hashPasswordBcrypt(password);
         try {
-          if (USE_GOOGLE_CLOUD) {
-            await firestoreDb
-              .collection(role === "agency" ? "Agencies" : "Users")
-              .doc(user.id)
-              .update({ password_hash: newHash, salt: null });
-          } else {
-            await targetContainer.items.upsert({
-              ...user,
-              password_hash: newHash,
-              salt: null,
-            });
-          }
+          await targetContainer.items.upsert({
+            ...user,
+            password_hash: newHash,
+            salt: null,
+          });
           console.log(`Upgraded password hash to bcrypt for ${user.email}`);
         } catch (upgradeErr) {
           console.error("Failed to upgrade password hash:", upgradeErr.message);
@@ -1642,6 +1713,99 @@ app.post("/api/process-file", async (req, res) => {
     let blobContent = null;
     let contentString = "";
 
+    // Expanded list of supported text/code file extensions
+    const textExtensions = [
+      // Text & Markdown
+      ".txt",
+      ".md",
+      ".markdown",
+      ".rst",
+      ".rtf",
+      // Data files
+      ".json",
+      ".csv",
+      ".xml",
+      ".yaml",
+      ".yml",
+      ".toml",
+      // Web development
+      ".html",
+      ".htm",
+      ".css",
+      ".scss",
+      ".sass",
+      ".less",
+      // JavaScript ecosystem
+      ".js",
+      ".jsx",
+      ".ts",
+      ".tsx",
+      ".mjs",
+      ".cjs",
+      ".vue",
+      ".svelte",
+      // Python
+      ".py",
+      ".pyw",
+      ".pyx",
+      ".pyi",
+      // Java/Kotlin/Scala
+      ".java",
+      ".kt",
+      ".kts",
+      ".scala",
+      ".groovy",
+      // C/C++/C#
+      ".c",
+      ".h",
+      ".cpp",
+      ".hpp",
+      ".cc",
+      ".cs",
+      // Go/Rust/Swift
+      ".go",
+      ".rs",
+      ".swift",
+      // Ruby/PHP/Perl
+      ".rb",
+      ".php",
+      ".pl",
+      ".pm",
+      // Mobile
+      ".dart",
+      ".m",
+      ".mm",
+      // Shell/Scripts
+      ".sh",
+      ".bash",
+      ".zsh",
+      ".ps1",
+      ".bat",
+      ".cmd",
+      // Database/Query
+      ".sql",
+      ".graphql",
+      ".gql",
+      // Config files
+      ".ini",
+      ".cfg",
+      ".conf",
+      ".env",
+      ".properties",
+      // Documentation
+      ".tex",
+      ".bib",
+      ".org",
+      // Other
+      ".r",
+      ".R",
+      ".jl",
+      ".lua",
+      ".vim",
+      ".awk",
+      ".sed",
+    ];
+
     try {
       if (containerClient) {
         const blobClient = containerClient.getBlobClient(blobName);
@@ -1653,21 +1817,7 @@ app.post("/api/process-file", async (req, res) => {
         blobContent = Buffer.concat(chunks);
 
         // For text-based files, decode to string
-        if (
-          [
-            ".txt",
-            ".py",
-            ".dart",
-            ".js",
-            ".md",
-            ".json",
-            ".html",
-            ".css",
-            ".ts",
-            ".jsx",
-            ".tsx",
-          ].includes(fileExtension)
-        ) {
+        if (textExtensions.includes(fileExtension)) {
           contentString = blobContent.toString("utf-8");
         }
       }
@@ -1694,29 +1844,17 @@ app.post("/api/process-file", async (req, res) => {
         metadata.quality_score = score;
         metadata.payout = calculatePayout(score);
 
-        // Classify based on tags
+        // Classify based on tags - pass filename for better classification
         metadata.market_category = await classifyContent(
-          `Image with tags: ${visionResult.tags.join(", ")}`
+          `Image with tags: ${visionResult.tags.join(", ")}`,
+          filename
         );
       } else {
         metadata.quality_score = 50;
         metadata.payout = 10;
       }
-    } else if (
-      [
-        ".txt",
-        ".py",
-        ".dart",
-        ".js",
-        ".md",
-        ".json",
-        ".html",
-        ".css",
-        ".ts",
-        ".jsx",
-        ".tsx",
-      ].includes(fileExtension)
-    ) {
+    } else if (textExtensions.includes(fileExtension)) {
+      // Text/Code file analysis using the expanded textExtensions list
       metadata.analysis_type = "code_or_text";
 
       if (contentString) {
@@ -1728,11 +1866,12 @@ app.post("/api/process-file", async (req, res) => {
         metadata.payout = aiResult.payout;
         metadata.ai_analysis = aiResult.ai_analysis;
 
-        // Classify based on content
+        // Classify based on content - pass filename for better classification
         metadata.market_category = await classifyContent(
-          `Code/Text file named ${filename}. Summary: ${
+          `File: ${filename}. Content summary: ${
             aiResult.ai_analysis?.summary || "N/A"
-          }`
+          }`,
+          filename
         );
       } else {
         metadata.quality_score = 50;
@@ -1741,13 +1880,129 @@ app.post("/api/process-file", async (req, res) => {
           info: "Content could not be read for analysis.",
         };
       }
+    } else if (
+      [".mp3", ".wav", ".ogg", ".flac", ".aac", ".m4a"].includes(fileExtension)
+    ) {
+      // Audio files
+      metadata.analysis_type = "audio";
+      metadata.quality_score = 60;
+      metadata.payout = calculatePayout(60);
+      metadata.market_category = "Audio Dataset";
+      metadata.ai_analysis = {
+        info: "Audio file detected. Quality scoring based on file metadata.",
+        file_size: metadata.size,
+      };
+    } else if (
+      [".mp4", ".mov", ".avi", ".mkv", ".webm", ".wmv"].includes(fileExtension)
+    ) {
+      // Video files
+      metadata.analysis_type = "video";
+      metadata.quality_score = 65;
+      metadata.payout = calculatePayout(65);
+      metadata.market_category = "Video Dataset";
+      metadata.ai_analysis = {
+        info: "Video file detected. Quality scoring based on file metadata.",
+        file_size: metadata.size,
+      };
+    } else if (
+      [
+        ".pdf",
+        ".doc",
+        ".docx",
+        ".xls",
+        ".xlsx",
+        ".ppt",
+        ".pptx",
+        ".odt",
+        ".ods",
+      ].includes(fileExtension)
+    ) {
+      // Document files - handle PDFs with content extraction
+      metadata.analysis_type = "document";
+
+      if (fileExtension === ".pdf" && blobContent) {
+        // Extract text from PDF using pdf-parse
+        try {
+          const pdfData = await pdf(blobContent);
+          const extractedText = pdfData.text || "";
+          const pageCount = pdfData.numpages || 0;
+
+          if (extractedText.length > 100) {
+            // Analyze the extracted PDF content with GPT-4o
+            const aiResult = await analyzeContentQualityGPT4o(
+              extractedText.substring(0, 15000), // Limit to 15k chars
+              filename
+            );
+
+            metadata.quality_score = aiResult.quality_score;
+            metadata.payout = aiResult.payout;
+            metadata.ai_analysis = {
+              ...aiResult.ai_analysis,
+              page_count: pageCount,
+              extracted_chars: extractedText.length,
+              file_size: metadata.size,
+            };
+
+            // Classify based on extracted content
+            metadata.market_category = await classifyContent(
+              `PDF Document: ${filename}. Content summary: ${
+                aiResult.ai_analysis?.summary || extractedText.substring(0, 500)
+              }`,
+              filename
+            );
+          } else {
+            // PDF has very little text (might be scanned/image-based)
+            metadata.quality_score = 45;
+            metadata.payout = calculatePayout(45);
+            metadata.ai_analysis = {
+              info: "PDF appears to be image-based or has minimal text content.",
+              page_count: pageCount,
+              extracted_chars: extractedText.length,
+              file_size: metadata.size,
+            };
+            metadata.market_category = "Documentation";
+          }
+        } catch (pdfErr) {
+          console.error("PDF parsing failed:", pdfErr.message);
+          metadata.quality_score = 50;
+          metadata.payout = calculatePayout(50);
+          metadata.ai_analysis = {
+            info: "PDF parsing failed. File may be encrypted or corrupted.",
+            error: pdfErr.message,
+            file_size: metadata.size,
+          };
+          metadata.market_category = "Documentation";
+        }
+      } else {
+        // Non-PDF documents (Word, Excel, PPT) - basic handling
+        metadata.quality_score = 55;
+        metadata.payout = calculatePayout(55);
+
+        // Classify based on extension
+        if ([".xls", ".xlsx", ".ods"].includes(fileExtension)) {
+          metadata.market_category = "Business Analytics";
+        } else if ([".ppt", ".pptx"].includes(fileExtension)) {
+          metadata.market_category = "Educational Content";
+        } else {
+          metadata.market_category = "Documentation";
+        }
+
+        metadata.ai_analysis = {
+          info: "Office document detected. Text extraction requires additional processing.",
+          note: "For full content analysis, consider exporting as PDF.",
+          file_size: metadata.size,
+        };
+      }
     } else {
       metadata.analysis_type = "other";
       metadata.ai_analysis = {
-        info: "File type not supported for deep AI analysis yet.",
+        info: "Unsupported file type for deep AI analysis.",
+        supported_types:
+          "Text files, code, images, audio, video, PDFs, Office docs",
       };
-      metadata.quality_score = 10;
-      metadata.payout = 0.5;
+      metadata.quality_score = 30;
+      metadata.payout = calculatePayout(30);
+      metadata.market_category = "General";
     }
 
     // Store metadata in Cosmos DB Submissions container

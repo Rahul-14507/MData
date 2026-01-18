@@ -23,11 +23,13 @@ A marketplace where data contributors earn rewards for quality datasets, and AI 
 | -------- | ---------------------------------- |
 | Frontend | HTML, CSS, TailwindCSS, Vanilla JS |
 | Backend  | Node.js 20, Express.js             |
-| Database | Azure Cosmos DB (NoSQL)            |
-| Storage  | Azure Blob Storage                 |
-| AI       | Azure OpenAI (GPT-4o), Vision AI   |
-| Hosting  | Azure App Service (B1 Linux)       |
+| Database | Google Firestore _(temporary)_     |
+| Storage  | Google Cloud Storage _(temporary)_ |
+| AI       | Google Gemini API _(temporary)_    |
+| Hosting  | Google Cloud Run _(temporary)_     |
 | CI/CD    | GitHub Actions                     |
+
+> ⚠️ **Note:** Currently using Google Cloud services temporarily. Migration to Azure is planned.
 
 ---
 
