@@ -9,7 +9,7 @@ __pycache__/
 .env.local
 .env.production
 local.settings.json
-DEPLOY.md
+# DEPLOY.md
 
 # IDE
 .vscode/
@@ -36,3 +36,6 @@ obj/
 # Temporary files
 *.tmp
 *.temp
+
+# Sensitive credentials
+service-account-key.json

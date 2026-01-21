@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 <html class="dark" lang="en">
   <head>
     <meta charset="utf-8" />
@@ -92,11 +92,8 @@
         text-shadow: 0 0 20px rgba(59, 130, 246, 0.5);
       }
       .mesh-gradient {
-        background: radial-gradient(
-            at 0% 0%,
-            hsla(253, 16%, 7%, 1) 0,
-            transparent 50%
-          ),
+        background:
+          radial-gradient(at 0% 0%, hsla(253, 16%, 7%, 1) 0, transparent 50%),
           radial-gradient(at 50% 0%, hsla(225, 39%, 30%, 1) 0, transparent 50%),
           radial-gradient(at 100% 0%, hsla(339, 49%, 30%, 1) 0, transparent 50%);
       }
@@ -938,11 +935,11 @@
 
             <div class="relative z-10">
               <div class="flex items-center gap-3 mb-6">
-                <img
-                  src="./MData.png"
-                  alt="MData Logo"
-                  class="w-12 h-12 rounded-xl object-contain bg-white/10 p-1"
-                />
+                <div
+                  class="w-12 h-12 rounded-xl bg-gradient-to-br from-primary to-blue-600 flex items-center justify-center"
+                >
+                  <span class="text-white font-bold text-xl">M</span>
+                </div>
                 <span class="text-2xl font-heading font-bold text-white"
                   >MData</span
                 >
@@ -993,11 +990,11 @@
 
             <!-- Mobile Logo (shown only on mobile) -->
             <div class="flex items-center gap-2 mb-4 lg:hidden">
-              <img
-                src="./MData.png"
-                alt="MData Logo"
-                class="w-8 h-8 rounded-lg object-contain bg-white/10 p-1"
-              />
+              <div
+                class="w-8 h-8 rounded-lg bg-gradient-to-br from-primary to-blue-600 flex items-center justify-center"
+              >
+                <span class="text-white font-bold text-sm">M</span>
+              </div>
               <span class="text-lg font-heading font-bold text-white"
                 >MData</span
               >
@@ -1099,7 +1096,9 @@
                   />
                   <button
                     type="button"
-                    onclick="togglePasswordVisibility('auth-confirm-password', this)"
+                    onclick="
+                      togglePasswordVisibility('auth-confirm-password', this)
+                    "
                     class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-white transition-colors"
                   >
                     <span class="material-symbols-outlined text-[18px]"
@@ -1301,12 +1300,12 @@
           submitBtn.classList.remove(
             "from-purple-600",
             "to-indigo-600",
-            "shadow-purple-500/25"
+            "shadow-purple-500/25",
           );
           submitBtn.classList.add(
             "from-primary",
             "to-blue-600",
-            "shadow-blue-500/25"
+            "shadow-blue-500/25",
           );
         } else {
           roleAgency.classList.add("bg-accent", "text-white");
@@ -1316,12 +1315,12 @@
           submitBtn.classList.add(
             "from-purple-600",
             "to-indigo-600",
-            "shadow-purple-500/25"
+            "shadow-purple-500/25",
           );
           submitBtn.classList.remove(
             "from-primary",
             "to-blue-600",
-            "shadow-blue-500/25"
+            "shadow-blue-500/25",
           );
         }
 
@@ -1340,7 +1339,7 @@
         // Show/hide name field and confirm password based on mode
         const nameField = document.getElementById("name-field");
         const confirmPasswordField = document.getElementById(
-          "confirm-password-field"
+          "confirm-password-field",
         );
         if (currentMode === "signup") {
           nameField.classList.remove("hidden");
@@ -1501,7 +1500,7 @@
         const email = document.getElementById("auth-email").value;
         const password = document.getElementById("auth-password").value;
         const confirmPassword = document.getElementById(
-          "auth-confirm-password"
+          "auth-confirm-password",
         ).value;
         const name = document.getElementById("signup-name").value;
 
@@ -1549,7 +1548,7 @@
             if (password.length < 6) {
               showError(
                 "Password must be at least 6 characters",
-                "VALIDATION_ERROR"
+                "VALIDATION_ERROR",
               );
               submitBtn.disabled = false;
               submitBtn.textContent = "Get Started";
@@ -1575,7 +1574,7 @@
               const otpData = await otpRes.json();
               showError(
                 otpData.message || "Failed to send OTP. Try again.",
-                "OTP_ERROR"
+                "OTP_ERROR",
               );
             }
           }
@@ -1604,7 +1603,7 @@
               const verifyData = await verifyRes.json();
               showError(
                 verifyData.message || "Invalid OTP. Please try again.",
-                "OTP_INVALID"
+                "OTP_INVALID",
               );
               submitBtn.disabled = false;
               submitBtn.textContent = "Verify OTP";
@@ -1694,14 +1693,14 @@
           type === "success"
             ? "bg-emerald-500/90"
             : type === "error"
-            ? "bg-red-500/90"
-            : "bg-blue-500/90";
+              ? "bg-red-500/90"
+              : "bg-blue-500/90";
         const icon =
           type === "success"
             ? "check_circle"
             : type === "error"
-            ? "error"
-            : "info";
+              ? "error"
+              : "info";
 
         toast.className = `${bgColor} backdrop-blur-lg text-white px-5 py-3 rounded-xl shadow-2xl flex items-center gap-3 animate-slide-up min-w-[280px]`;
         toast.innerHTML = `

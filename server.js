@@ -1,4 +1,71 @@
 require("dotenv").config();
+
+// ========== DUAL-CLOUD TOGGLE ==========
+const USE_GOOGLE_CLOUD = process.env.USE_GOOGLE_CLOUD === "true";
+console.log(
+  `\n🌐 Cloud Provider: ${USE_GOOGLE_CLOUD ? "Google Cloud" : "Azure"}\n`
+);
+
+// Google Cloud SDKs (conditionally loaded)
+let firebaseAdmin, firestoreDb, gcsBucket;
+
+if (USE_GOOGLE_CLOUD) {
+  try {
+    firebaseAdmin = require("firebase-admin");
+    const { Storage } = require("@google-cloud/storage");
+
+    // Try to load service account from JSON file first, fallback to env vars
+    let serviceAccountCredentials;
+    const fs = require("fs");
+
+    if (fs.existsSync("./service-account-key.json")) {
+      // Use JSON file (local development)
+      serviceAccountCredentials = require("./service-account-key.json");
+    } else if (
+      process.env.GOOGLE_PROJECT_ID &&
+      process.env.GOOGLE_CLIENT_EMAIL &&
+      process.env.GOOGLE_PRIVATE_KEY
+    ) {
+      // Use environment variables (production deployment)
+      serviceAccountCredentials = {
+        type: "service_account",
+        project_id: process.env.GOOGLE_PROJECT_ID,
+        private_key: process.env.GOOGLE_PRIVATE_KEY.replace(/\\n/g, "\n"),
+        client_email: process.env.GOOGLE_CLIENT_EMAIL,
+      };
+      console.log("📋 Using service account from environment variables");
+    } else {
+      throw new Error(
+        "No service account credentials found (JSON file or env vars)"
+      );
+    }
+
+    // Initialize Firebase Admin with service account
+    firebaseAdmin.initializeApp({
+      credential: firebaseAdmin.credential.cert(serviceAccountCredentials),
+    });
+    firestoreDb = firebaseAdmin.firestore();
+    console.log("✅ Firebase/Firestore initialized.");
+
+    // Initialize GCS
+    const gcsStorage = new Storage({
+      projectId: serviceAccountCredentials.project_id,
+      credentials: serviceAccountCredentials,
+    });
+    gcsBucket = gcsStorage.bucket(process.env.GCS_BUCKET_NAME);
+    console.log(
+      `✅ Google Cloud Storage initialized (Bucket: ${process.env.GCS_BUCKET_NAME})`
+    );
+
+    console.log("ℹ️  AI Analysis: Using Azure Vision + Azure Gemini");
+  } catch (gcpError) {
+    console.error("❌ Google Cloud initialization failed:", gcpError.message);
+    console.log(
+      "   Make sure service-account-key.json exists OR GOOGLE_PROJECT_ID, GOOGLE_CLIENT_EMAIL, GOOGLE_PRIVATE_KEY are set in .env"
+    );
+  }
+}
+
 const express = require("express");
 const path = require("path");
 const { CosmosClient } = require("@azure/cosmos");
@@ -10,17 +77,7 @@ const passport = require("passport");
 const GoogleStrategy = require("passport-google-oauth20").Strategy;
 const GitHubStrategy = require("passport-github2").Strategy;
 
-// Security packages
-const bcrypt = require("bcrypt");
-const helmet = require("helmet");
-const rateLimit = require("express-rate-limit");
-const cors = require("cors");
-
-// Document parsing
-const pdf = require("pdf-parse");
-
 // Azure AI SDKs for file processing
-const { AzureOpenAI } = require("@azure/openai");
 const createImageAnalysisClient =
   require("@azure-rest/ai-vision-image-analysis").default;
 const { AzureKeyCredential } = require("@azure/core-auth");
@@ -40,12 +97,15 @@ function getOpenAIClient() {
     process.env.AZURE_OPENAI_ENDPOINT &&
     process.env.AZURE_OPENAI_KEY
   ) {
+    // Use the official 'openai' package which provides AzureOpenAI class
+    const { AzureOpenAI } = require("openai");
     openaiClient = new AzureOpenAI({
       endpoint: process.env.AZURE_OPENAI_ENDPOINT,
       apiKey: process.env.AZURE_OPENAI_KEY,
       apiVersion: "2024-02-15-preview",
+      deployment: OPENAI_DEPLOYMENT,
     });
-    console.log("Azure OpenAI client initialized.");
+    console.log("Azure Gemini client initialized.");
   }
   return openaiClient;
 }
@@ -182,99 +242,24 @@ async function analyzeImageVision(imageBuffer) {
 }
 
 // Classify content into market category using GPT-4o
-async function classifyContent(description, filename = "") {
+async function classifyContent(description) {
   try {
     const client = getOpenAIClient();
     if (!client) return "General";
-
-    // Get file extension for better classification hints
-    const ext = filename ? path.extname(filename).toLowerCase() : "";
 
     const response = await client.chat.completions.create({
       model: OPENAI_DEPLOYMENT,
       messages: [
         {
           role: "system",
-          content: `You are a data marketplace classifier. Based on the file content and name, classify into exactly ONE of these categories:
-
-TECHNICAL/CODE:
-- 'Developer Tools' - Code, scripts, programming resources, APIs, SDKs
-- 'Robotics Training' - Sensor data, motion capture, robotic systems
-- 'Autonomous Driving' - Vehicle data, LIDAR, traffic, navigation
-
-DATA/ANALYTICS:
-- 'Financial Data' - Stock prices, transactions, banking, crypto, trading
-- 'Business Analytics' - Sales data, marketing, CRM, business intelligence
-- 'E-commerce' - Product catalogs, customer data, inventory, shopping
-
-MEDIA/CREATIVE:
-- 'Medical Imaging' - X-rays, MRI, CT scans, medical records
-- 'Image Dataset' - Photos, graphics, visual training data
-- 'Audio Dataset' - Sound files, voice recordings, music
-- 'Video Dataset' - Video clips, footage, motion data
-
-DOCUMENTS:
-- 'Research Papers' - Academic papers, studies, scientific documents
-- 'Legal Documents' - Contracts, agreements, legal text
-- 'Educational Content' - Tutorials, courses, learning materials
-- 'Documentation' - Manuals, guides, technical docs
-
-OTHER:
-- 'General' - Only if nothing else fits
-
-Reply with JUST the category name, nothing else.`,
+          content:
+            "Classify this content into exactly ONE of these categories: 'Autonomous Driving', 'Medical Imaging', 'Robotics Training', 'Developer Tools', 'Financial Data', 'General'. Return only the category name.",
         },
-        {
-          role: "user",
-          content: `File: "${filename}" (${ext})\nContent/Description: ${description.substring(
-            0,
-            2000
-          )}`,
-        },
+        { role: "user", content: description },
       ],
-      temperature: 0.1, // Low temperature for consistent classification
     });
 
-    const category = response.choices[0].message.content.trim();
-
-    // Validate category is one of the expected ones
-    const validCategories = [
-      "Developer Tools",
-      "Robotics Training",
-      "Autonomous Driving",
-      "Financial Data",
-      "Business Analytics",
-      "E-commerce",
-      "Medical Imaging",
-      "Image Dataset",
-      "Audio Dataset",
-      "Video Dataset",
-      "Research Papers",
-      "Legal Documents",
-      "Educational Content",
-      "Documentation",
-      "General",
-    ];
-
-    if (validCategories.includes(category)) {
-      return category;
-    }
-
-    // If AI returned something unexpected, try to match it
-    const lowerCategory = category.toLowerCase();
-    for (const valid of validCategories) {
-      if (
-        lowerCategory.includes(valid.toLowerCase()) ||
-        valid.toLowerCase().includes(lowerCategory)
-      ) {
-        return valid;
-      }
-    }
-
-    console.log(
-      `Classification returned unknown category: "${category}", defaulting to General`
-    );
-    return "General";
+    return response.choices[0].message.content.trim();
   } catch (e) {
     console.error("Classification failed:", e.message);
     return "General";
@@ -311,66 +296,15 @@ app.get("/refund", (req, res) =>
   res.sendFile(path.join(__dirname, "refund.html"))
 );
 
-// ========== SECURITY MIDDLEWARE ==========
-
-// Helmet for security headers (XSS, clickjacking protection, etc.)
-app.use(
-  helmet({
-    contentSecurityPolicy: false, // Disable CSP for now (can break inline scripts)
-    crossOriginEmbedderPolicy: false,
-  })
-);
-
-// CORS configuration
-app.use(
-  cors({
-    origin:
-      process.env.NODE_ENV === "production"
-        ? [process.env.ALLOWED_ORIGIN || "https://your-domain.com"]
-        : true, // Allow all origins in development
-    credentials: true,
-  })
-);
-
-// Rate limiting - prevent brute force and DDoS
-const apiLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100, // Limit each IP to 100 requests per window
-  message: { error: "Too many requests, please try again later." },
-  standardHeaders: true,
-  legacyHeaders: false,
-});
-
-const authLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 10, // Limit login attempts
-  message: { error: "Too many login attempts, please try again later." },
-});
-
-app.use("/api/", apiLimiter);
-app.use("/api/login", authLimiter);
-app.use("/api/signup", authLimiter);
-
 // ========== SESSION & PASSPORT CONFIGURATION ==========
-
-// Require SESSION_SECRET in production
-if (process.env.NODE_ENV === "production" && !process.env.SESSION_SECRET) {
-  console.error(
-    "FATAL: SESSION_SECRET environment variable must be set in production!"
-  );
-  process.exit(1);
-}
-
 app.use(
   session({
     secret:
-      process.env.SESSION_SECRET || crypto.randomBytes(32).toString("hex"),
+      process.env.SESSION_SECRET || "mdata-oauth-secret-key-change-in-prod",
     resave: false,
     saveUninitialized: false,
     cookie: {
       secure: process.env.NODE_ENV === "production",
-      httpOnly: true,
-      sameSite: "lax",
       maxAge: 24 * 60 * 60 * 1000, // 24 hours
     },
   })
@@ -586,19 +520,8 @@ try {
   console.error("Error connecting to Azure Blob Storage:", error.message);
 }
 
-// Helper: Bcrypt Password Hashing (secure, industry standard)
-const BCRYPT_SALT_ROUNDS = 12;
-
-async function hashPasswordBcrypt(password) {
-  return await bcrypt.hash(password, BCRYPT_SALT_ROUNDS);
-}
-
-async function verifyPassword(password, hash) {
-  return await bcrypt.compare(password, hash);
-}
-
-// Legacy SHA256 hash (for backward compatibility with existing users)
-function hashPasswordLegacy(password, salt) {
+// Helper: SHA256 Hash
+function hashPassword(password, salt) {
   const hash = crypto.createHash("sha256");
   hash.update(password + salt);
   return hash.digest("hex");
@@ -676,22 +599,79 @@ app.get(
   }
 );
 
-// API: Generate SAS Token for blob download
+// API: Generate SAS Token / GCS Signed URL for blob storage
 app.get("/api/storage/sas", async (req, res) => {
   try {
-    if (!blobServiceClient || !containerClient) {
-      return res.status(500).json({ error: "Storage not configured" });
-    }
-
     const blobName = req.query.blobName;
+    const permissions = req.query.permissions || "r"; // 'r' for read, 'w' for write
 
-    if (!blobName) {
-      // Container-level SAS for uploads (existing behavior)
-      const permissions = new ContainerSASPermissions();
-      permissions.write = true;
-      permissions.create = true;
-      permissions.list = true;
-      permissions.read = true;
+    if (USE_GOOGLE_CLOUD) {
+      // ========== GOOGLE CLOUD STORAGE SIGNED URL ==========
+      if (!gcsBucket) {
+        return res
+          .status(500)
+          .json({ error: "Google Cloud Storage not configured" });
+      }
+
+      const fileName =
+        blobName ||
+        `upload_${Date.now()}_${crypto.randomBytes(4).toString("hex")}`;
+      const file = gcsBucket.file(fileName);
+
+      const options = {
+        version: "v4",
+        action: permissions.includes("w") ? "write" : "read",
+        expires: Date.now() + 30 * 60 * 1000, // 30 minutes
+      };
+
+      // For uploads, set content type
+      if (permissions.includes("w")) {
+        options.contentType = "application/octet-stream";
+      }
+
+      const [url] = await file.getSignedUrl(options);
+
+      return res.json({
+        sasUrl: url,
+        blobName: fileName,
+        provider: "gcs",
+      });
+    } else {
+      // ========== AZURE BLOB STORAGE SAS TOKEN ==========
+      if (!blobServiceClient || !containerClient) {
+        return res.status(500).json({ error: "Azure Storage not configured" });
+      }
+
+      if (!blobName) {
+        // Container-level SAS for uploads (existing behavior)
+        const containerPermissions = new ContainerSASPermissions();
+        containerPermissions.write = true;
+        containerPermissions.create = true;
+        containerPermissions.list = true;
+        containerPermissions.read = true;
+
+        const expiryDate = new Date();
+        expiryDate.setMinutes(expiryDate.getMinutes() + 30);
+
+        const sasToken = generateBlobSASQueryParameters(
+          {
+            containerName: "uploads",
+            permissions: containerPermissions,
+            expiresOn: expiryDate,
+          },
+          blobServiceClient.credential
+        ).toString();
+
+        const sasUrl = `${containerClient.url}?${sasToken}`;
+        return res.json({ sasUrl, provider: "azure" });
+      }
+
+      // Blob-specific SAS for downloads
+      const { BlobSASPermissions } = require("@azure/storage-blob");
+      const blobClient = containerClient.getBlobClient(blobName);
+
+      const blobPermissions = new BlobSASPermissions();
+      blobPermissions.read = true;
 
       const expiryDate = new Date();
       expiryDate.setMinutes(expiryDate.getMinutes() + 30);
@@ -699,40 +679,18 @@ app.get("/api/storage/sas", async (req, res) => {
       const sasToken = generateBlobSASQueryParameters(
         {
           containerName: "uploads",
-          permissions: permissions,
+          blobName: blobName,
+          permissions: blobPermissions,
           expiresOn: expiryDate,
         },
         blobServiceClient.credential
       ).toString();
 
-      const sasUrl = `${containerClient.url}?${sasToken}`;
-      return res.json({ sasUrl });
+      const sasUrl = `${blobClient.url}?${sasToken}`;
+      res.json({ sasUrl, provider: "azure" });
     }
-
-    // Blob-specific SAS for downloads
-    const { BlobSASPermissions } = require("@azure/storage-blob");
-    const blobClient = containerClient.getBlobClient(blobName);
-
-    const permissions = new BlobSASPermissions();
-    permissions.read = true;
-
-    const expiryDate = new Date();
-    expiryDate.setMinutes(expiryDate.getMinutes() + 30);
-
-    const sasToken = generateBlobSASQueryParameters(
-      {
-        containerName: "uploads",
-        blobName: blobName,
-        permissions: permissions,
-        expiresOn: expiryDate,
-      },
-      blobServiceClient.credential
-    ).toString();
-
-    const sasUrl = `${blobClient.url}?${sasToken}`;
-    res.json({ sasUrl });
   } catch (error) {
-    console.error("SAS Gen Error:", error);
+    console.error("SAS/Signed URL Gen Error:", error);
     res.status(500).json({ error: error.message });
   }
 });
@@ -745,18 +703,29 @@ app.get("/api/stats", async (req, res) => {
   }
 
   try {
-    const submissionsContainer = database.container("Submissions");
-    // Ensure container exists logic is handled in Function App usually, but for reading we assume it exists or fail gracefully
+    let items = [];
 
-    const querySpec = {
-      query:
-        "SELECT c.id, c.payout, c.quality_score, c.original_name, c.upload_timestamp, c.sold_to, c.transaction_date FROM c WHERE c.userId = @userId ORDER BY c.upload_timestamp DESC",
-      parameters: [{ name: "@userId", value: userId }],
-    };
-
-    const { resources: items } = await submissionsContainer.items
-      .query(querySpec)
-      .fetchAll();
+    if (USE_GOOGLE_CLOUD) {
+      // ========== FIRESTORE QUERY ==========
+      const snapshot = await firestoreDb
+        .collection("Submissions")
+        .where("userId", "==", userId)
+        .orderBy("upload_timestamp", "desc")
+        .get();
+      items = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+    } else {
+      // ========== COSMOS DB QUERY ==========
+      const submissionsContainer = database.container("Submissions");
+      const querySpec = {
+        query:
+          "SELECT c.id, c.payout, c.quality_score, c.original_name, c.upload_timestamp, c.sold_to, c.transaction_date FROM c WHERE c.userId = @userId ORDER BY c.upload_timestamp DESC",
+        parameters: [{ name: "@userId", value: userId }],
+      };
+      const { resources } = await submissionsContainer.items
+        .query(querySpec)
+        .fetchAll();
+      items = resources;
+    }
 
     let totalEarnings = 0.0;
     let totalScore = 0;
@@ -771,7 +740,7 @@ app.get("/api/stats", async (req, res) => {
       const yyyy = d.getFullYear();
       const mm = String(d.getMonth() + 1).padStart(2, "0");
       const dd = String(d.getDate()).padStart(2, "0");
-      dailyMap[`${yyyy}-${mm}-${dd}`] = 0; // Initialize with 0
+      dailyMap[`${yyyy}-${mm}-${dd}`] = 0;
     }
 
     items.forEach((item) => {
@@ -783,7 +752,6 @@ app.get("/api/stats", async (req, res) => {
       if (isSold) {
         totalEarnings += userShare;
 
-        // Populate chart data
         if (item.transaction_date) {
           const tDate = item.transaction_date.split("T")[0];
           if (dailyMap.hasOwnProperty(tDate)) {
@@ -806,13 +774,13 @@ app.get("/api/stats", async (req, res) => {
         earnings: isSold ? `₹${userShare.toFixed(2)}` : "₹0.00",
         status: isSold ? "Sold" : item.status || "Pending",
         sold_to: item.sold_to || null,
+        sold_price: item.sold_price || 0,
       });
     });
 
     const avgQuality =
       items.length > 0 ? (totalScore / items.length).toFixed(1) : 0;
 
-    // Convert dailyMap to sorted arrays for chart
     const sortedDates = Object.keys(dailyMap).sort();
     const chartData = sortedDates.map((date) => ({
       date,
@@ -828,7 +796,6 @@ app.get("/api/stats", async (req, res) => {
     });
   } catch (error) {
     console.error("Stats Error:", error);
-    // Fallback for demo if DB read fails (avoiding empty screen in dev)
     res.json({
       earnings: "₹0.00",
       quality: "0%",
@@ -844,19 +811,31 @@ app.get("/api/files", async (req, res) => {
   const userId = req.query.userId;
   if (!userId) return res.status(400).json({ error: "Missing userId" });
 
-  // Re-use logic or call stats logic? Let's just quick query for now.
-  // Actually, the Stats API returns history, so we can probably reuse that or just specific query.
-  // Let's implement a specific one for the history page to potentially support pagination later.
   try {
-    const submissionsContainer = database.container("Submissions");
-    const querySpec = {
-      query:
-        "SELECT * FROM c WHERE c.userId = @userId ORDER BY c.upload_timestamp DESC",
-      parameters: [{ name: "@userId", value: userId }],
-    };
-    const { resources: items } = await submissionsContainer.items
-      .query(querySpec)
-      .fetchAll();
+    let items = [];
+
+    if (USE_GOOGLE_CLOUD) {
+      // ========== FIRESTORE QUERY ==========
+      const snapshot = await firestoreDb
+        .collection("Submissions")
+        .where("userId", "==", userId)
+        .orderBy("upload_timestamp", "desc")
+        .get();
+      items = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+    } else {
+      // ========== COSMOS DB QUERY ==========
+      const submissionsContainer = database.container("Submissions");
+      const querySpec = {
+        query:
+          "SELECT * FROM c WHERE c.userId = @userId ORDER BY c.upload_timestamp DESC",
+        parameters: [{ name: "@userId", value: userId }],
+      };
+      const { resources } = await submissionsContainer.items
+        .query(querySpec)
+        .fetchAll();
+      items = resources;
+    }
+
     res.json(items);
   } catch (err) {
     console.error("Files Error:", err);
@@ -874,51 +853,88 @@ app.delete("/api/files/:fileId", async (req, res) => {
   }
 
   try {
-    const submissionsContainer = database.container("Submissions");
+    let item = null;
 
-    // Query for the file by id and userId to get the item and verify ownership
-    const querySpec = {
-      query: "SELECT * FROM c WHERE c.id = @fileId AND c.userId = @userId",
-      parameters: [
-        { name: "@fileId", value: fileId },
-        { name: "@userId", value: userId },
-      ],
-    };
+    if (USE_GOOGLE_CLOUD) {
+      // ========== FIRESTORE QUERY & DELETE ==========
+      const docRef = firestoreDb.collection("Submissions").doc(fileId);
+      const doc = await docRef.get();
 
-    const { resources: items } = await submissionsContainer.items
-      .query(querySpec)
-      .fetchAll();
+      if (!doc.exists) {
+        return res.status(404).json({
+          error: "File not found or you don't have permission to delete it",
+        });
+      }
 
-    if (!items || items.length === 0) {
-      return res.status(404).json({
-        error: "File not found or you don't have permission to delete it",
-      });
-    }
+      item = doc.data();
 
-    const item = items[0];
+      if (item.userId !== userId) {
+        return res.status(403).json({ error: "Permission denied" });
+      }
 
-    // Check if already sold
-    if (item.sold_to) {
-      return res
-        .status(400)
-        .json({ error: "Cannot delete a file that has already been sold" });
-    }
+      if (item.sold_to) {
+        return res
+          .status(400)
+          .json({ error: "Cannot delete a file that has already been sold" });
+      }
 
-    // Delete the item from Cosmos DB - use userId as partition key
-    await submissionsContainer.item(fileId, userId).delete();
+      // Delete from Firestore
+      await docRef.delete();
+      console.log(`Deleted from Firestore: ${fileId}`);
 
-    // Optionally delete from Blob Storage as well
-    if (blobServiceClient && item.blob_url) {
-      try {
-        const blobName = item.blob_url.split("/").pop().split("?")[0];
-        const blobClient = containerClient.getBlobClient(blobName);
-        await blobClient.deleteIfExists();
-        console.log(`Deleted blob: ${blobName}`);
-      } catch (blobErr) {
-        console.warn(
-          "Failed to delete blob, but database record was removed:",
-          blobErr.message
-        );
+      // Delete from GCS
+      if (gcsBucket) {
+        try {
+          const file = gcsBucket.file(fileId);
+          await file.delete();
+          console.log(`Deleted from GCS: ${fileId}`);
+        } catch (gcsErr) {
+          console.warn("Failed to delete from GCS:", gcsErr.message);
+        }
+      }
+    } else {
+      // ========== COSMOS DB QUERY & DELETE ==========
+      const submissionsContainer = database.container("Submissions");
+
+      const querySpec = {
+        query: "SELECT * FROM c WHERE c.id = @fileId AND c.userId = @userId",
+        parameters: [
+          { name: "@fileId", value: fileId },
+          { name: "@userId", value: userId },
+        ],
+      };
+
+      const { resources: items } = await submissionsContainer.items
+        .query(querySpec)
+        .fetchAll();
+
+      if (!items || items.length === 0) {
+        return res.status(404).json({
+          error: "File not found or you don't have permission to delete it",
+        });
+      }
+
+      item = items[0];
+
+      if (item.sold_to) {
+        return res
+          .status(400)
+          .json({ error: "Cannot delete a file that has already been sold" });
+      }
+
+      // Delete from Cosmos DB
+      await submissionsContainer.item(fileId, userId).delete();
+
+      // Delete from Azure Blob Storage
+      if (blobServiceClient && item.blob_url) {
+        try {
+          const blobName = item.blob_url.split("/").pop().split("?")[0];
+          const blobClient = containerClient.getBlobClient(blobName);
+          await blobClient.deleteIfExists();
+          console.log(`Deleted blob: ${blobName}`);
+        } catch (blobErr) {
+          console.warn("Failed to delete blob:", blobErr.message);
+        }
       }
     }
 
@@ -932,14 +948,21 @@ app.delete("/api/files/:fileId", async (req, res) => {
 // API: Market Summaries
 app.get("/api/market/summaries", async (req, res) => {
   try {
-    const container = database.container("Submissions");
-    const querySpec = {
-      query: "SELECT c.market_category, c.quality_score, c.sold_to FROM c",
-    };
+    let items = [];
 
-    const { resources: items } = await container.items
-      .query(querySpec)
-      .fetchAll();
+    if (USE_GOOGLE_CLOUD) {
+      // ========== FIRESTORE QUERY ==========
+      const snapshot = await firestoreDb.collection("Submissions").get();
+      items = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+    } else {
+      // ========== COSMOS DB QUERY ==========
+      const container = database.container("Submissions");
+      const querySpec = {
+        query: "SELECT c.market_category, c.quality_score, c.sold_to FROM c",
+      };
+      const { resources } = await container.items.query(querySpec).fetchAll();
+      items = resources;
+    }
 
     const marketStats = {};
     items.forEach((item) => {
@@ -963,8 +986,6 @@ app.get("/api/market/summaries", async (req, res) => {
       ).toFixed(1),
     }));
 
-    // Mock if empty (for demo)
-
     res.json(result);
   } catch (err) {
     console.error("Market Summaries Error:", err);
@@ -978,28 +999,53 @@ app.get("/api/agency/purchases", async (req, res) => {
     const agencyId = req.query.agencyId;
     if (!agencyId) return res.status(400).json({ error: "Missing agencyId" });
 
-    const container = database.container("Submissions");
-    const querySpec = {
-      query:
-        "SELECT c.id, c.original_name, c.market_category, c.sold_price, c.transaction_date, c.quality_score FROM c WHERE c.sold_to = @agencyId ORDER BY c.transaction_date DESC",
-      parameters: [{ name: "@agencyId", value: agencyId }],
-    };
+    let items = [];
+    let totalSpent = 0;
 
-    const { resources: items } = await container.items
-      .query(querySpec)
-      .fetchAll();
+    if (USE_GOOGLE_CLOUD) {
+      // ========== FIRESTORE QUERY ==========
+      const submissionsSnap = await firestoreDb
+        .collection("Submissions")
+        .where("sold_to", "==", agencyId)
+        .orderBy("transaction_date", "desc")
+        .get();
+      items = submissionsSnap.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
 
-    // Calculate Total Spend from Orders (more accurate than summing items)
-    const ordersContainer = await getOrdersContainer();
-    const { resources: orders } = await ordersContainer.items
-      .query({
+      // Get total spent from Orders
+      const ordersSnap = await firestoreDb
+        .collection("Orders")
+        .where("agencyId", "==", agencyId)
+        .where("status", "==", "paid")
+        .get();
+      totalSpent = ordersSnap.docs.reduce(
+        (sum, doc) => sum + (doc.data().totalAmount || 0),
+        0
+      );
+    } else {
+      // ========== COSMOS DB QUERY ==========
+      const container = database.container("Submissions");
+      const querySpec = {
         query:
-          "SELECT c.totalAmount FROM c WHERE c.agencyId = @agencyId AND c.status = 'paid'",
+          "SELECT c.id, c.original_name, c.market_category, c.sold_price, c.transaction_date, c.quality_score FROM c WHERE c.sold_to = @agencyId ORDER BY c.transaction_date DESC",
         parameters: [{ name: "@agencyId", value: agencyId }],
-      })
-      .fetchAll();
+      };
+      const { resources } = await container.items.query(querySpec).fetchAll();
+      items = resources;
 
-    const totalSpent = orders.reduce((sum, o) => sum + (o.totalAmount || 0), 0);
+      // Get total spent from Orders
+      const ordersContainer = await getOrdersContainer();
+      const { resources: orders } = await ordersContainer.items
+        .query({
+          query:
+            "SELECT c.totalAmount FROM c WHERE c.agencyId = @agencyId AND c.status = 'paid'",
+          parameters: [{ name: "@agencyId", value: agencyId }],
+        })
+        .fetchAll();
+      totalSpent = orders.reduce((sum, o) => sum + (o.totalAmount || 0), 0);
+    }
 
     res.json({ items, totalSpent });
   } catch (err) {
@@ -1140,31 +1186,66 @@ app.post("/api/market/checkout", async (req, res) => {
 // API: Login
 app.post("/api/login", async (req, res) => {
   const { email, password, role } = req.body;
-
-  // Determine which container to use based on role
-  const targetContainer =
-    role === "agency" ? agenciesContainer : usersContainer;
   const accountType = role === "agency" ? "agency" : "user";
 
-  if (!targetContainer) {
-    return res
-      .status(500)
-      .json({ success: false, error: "Database not connected" });
-  }
-
   try {
-    // Query account by email in the appropriate container
-    const querySpec = {
-      query: "SELECT * FROM c WHERE c.email = @email",
-      parameters: [{ name: "@email", value: email }],
-    };
+    let user = null;
 
-    const { resources: items } = await targetContainer.items
-      .query(querySpec)
-      .fetchAll();
+    if (USE_GOOGLE_CLOUD) {
+      // ========== FIRESTORE QUERY ==========
+      const collectionName = role === "agency" ? "Agencies" : "Users";
+      const snapshot = await firestoreDb
+        .collection(collectionName)
+        .where("email", "==", email)
+        .limit(1)
+        .get();
 
-    if (items.length === 0) {
-      // Account not found in the target container
+      if (snapshot.empty) {
+        const errorMessage =
+          role === "agency"
+            ? "Agency account not found."
+            : "User account not found.";
+        return res.status(404).json({
+          success: false,
+          error: errorMessage,
+          errorType: "ACCOUNT_NOT_FOUND",
+          accountType: accountType,
+        });
+      }
+
+      const doc = snapshot.docs[0];
+      user = { id: doc.id, ...doc.data() };
+      console.log(
+        `${role === "agency" ? "Agency" : "User"} ${user.name} logged in. ID: ${
+          user.id
+        }`
+      );
+    } else {
+      // ========== COSMOS DB QUERY ==========
+      const targetContainer =
+        role === "agency" ? agenciesContainer : usersContainer;
+
+      if (!targetContainer) {
+        return res
+          .status(500)
+          .json({ success: false, error: "Database not connected" });
+      }
+
+      const querySpec = {
+        query: "SELECT * FROM c WHERE c.email = @email",
+        parameters: [{ name: "@email", value: email }],
+      };
+
+      const { resources: items } = await targetContainer.items
+        .query(querySpec)
+        .fetchAll();
+
+      if (items.length > 0) {
+        user = items[0];
+      }
+    }
+
+    if (!user) {
       const errorMessage =
         role === "agency"
           ? "No agency account found with this email. Please create an agency account to access the marketplace."
@@ -1178,35 +1259,9 @@ app.post("/api/login", async (req, res) => {
       });
     }
 
-    const user = items[0];
-
-    // Verify Password - support both bcrypt (new) and legacy SHA256 (existing users)
-    let passwordValid = false;
-
-    if (user.password_hash && user.password_hash.startsWith("$2")) {
-      // User has bcrypt hash (new format)
-      passwordValid = await verifyPassword(password, user.password_hash);
-    } else if (user.salt) {
-      // User has legacy SHA256 hash - verify and upgrade to bcrypt
-      const legacyHash = hashPasswordLegacy(password, user.salt);
-      if (legacyHash === user.password_hash) {
-        passwordValid = true;
-        // Upgrade to bcrypt for future logins
-        const newHash = await hashPasswordBcrypt(password);
-        try {
-          await targetContainer.items.upsert({
-            ...user,
-            password_hash: newHash,
-            salt: null,
-          });
-          console.log(`Upgraded password hash to bcrypt for ${user.email}`);
-        } catch (upgradeErr) {
-          console.error("Failed to upgrade password hash:", upgradeErr.message);
-        }
-      }
-    }
-
-    if (!passwordValid) {
+    // Verify Password
+    const inputHash = hashPassword(password, user.salt);
+    if (inputHash !== user.password_hash) {
       return res
         .status(401)
         .json({ success: false, error: "Invalid password. Please try again." });
@@ -1241,29 +1296,48 @@ app.post("/api/login", async (req, res) => {
 // API: Signup
 app.post("/api/signup", async (req, res) => {
   const { email, password, name, role } = req.body;
-
-  // Determine which container to use based on role
-  const targetContainer =
-    role === "agency" ? agenciesContainer : usersContainer;
   const accountType = role === "agency" ? "agency" : "contributor";
-
-  if (!targetContainer) {
-    return res
-      .status(500)
-      .json({ success: false, error: "Database not connected" });
-  }
+  const collectionName = role === "agency" ? "Agencies" : "Users";
 
   try {
-    // Check if email already exists in target container
-    const querySpec = {
-      query: "SELECT * FROM c WHERE c.email = @email",
-      parameters: [{ name: "@email", value: email }],
-    };
-    const { resources: existing } = await targetContainer.items
-      .query(querySpec)
-      .fetchAll();
+    let existingUser = null;
 
-    if (existing.length > 0) {
+    if (USE_GOOGLE_CLOUD) {
+      // ========== FIRESTORE CHECK ==========
+      const snapshot = await firestoreDb
+        .collection(collectionName)
+        .where("email", "==", email)
+        .limit(1)
+        .get();
+
+      if (!snapshot.empty) {
+        existingUser = snapshot.docs[0].data();
+      }
+    } else {
+      // ========== COSMOS DB CHECK ==========
+      const targetContainer =
+        role === "agency" ? agenciesContainer : usersContainer;
+
+      if (!targetContainer) {
+        return res
+          .status(500)
+          .json({ success: false, error: "Database not connected" });
+      }
+
+      const querySpec = {
+        query: "SELECT * FROM c WHERE c.email = @email",
+        parameters: [{ name: "@email", value: email }],
+      };
+      const { resources: existing } = await targetContainer.items
+        .query(querySpec)
+        .fetchAll();
+
+      if (existing.length > 0) {
+        existingUser = existing[0];
+      }
+    }
+
+    if (existingUser) {
       const errorMessage =
         role === "agency"
           ? "An agency account already exists with this email. Please sign in instead."
@@ -1275,24 +1349,39 @@ app.post("/api/signup", async (req, res) => {
       });
     }
 
-    // Create Account with bcrypt password hash
-    const password_hash = await hashPasswordBcrypt(password);
+    // Create Account
+    const salt = crypto.randomBytes(16).toString("hex");
+    const password_hash = hashPassword(password, salt);
     const newAccount = {
       id: crypto.randomUUID(),
       name: name || (role === "agency" ? "New Agency" : "New User"),
       email: email,
       password_hash: password_hash,
-      salt: null, // No salt needed for bcrypt (embedded in hash)
+      salt: salt,
       role: accountType,
       balance: 0.0,
       joined_date: new Date().toISOString(),
     };
 
-    await targetContainer.items.create(newAccount);
+    if (USE_GOOGLE_CLOUD) {
+      // ========== FIRESTORE CREATE ==========
+      await firestoreDb
+        .collection(collectionName)
+        .doc(newAccount.id)
+        .set(newAccount);
+    } else {
+      // ========== COSMOS DB CREATE ==========
+      const targetContainer =
+        role === "agency" ? agenciesContainer : usersContainer;
+      await targetContainer.items.create(newAccount);
+    }
+
     console.log(
       `${accountType.charAt(0).toUpperCase() + accountType.slice(1)} ${
         newAccount.name
-      } created in ${role === "agency" ? "Agencies" : "Users"} container.`
+      } created in ${collectionName} [${
+        USE_GOOGLE_CLOUD ? "Firestore" : "Cosmos DB"
+      }].`
     );
 
     const redirectUrl =
@@ -1322,9 +1411,17 @@ app.get("/api/agency/cart", async (req, res) => {
     const agencyId = req.query.agencyId;
     if (!agencyId) return res.status(400).json({ error: "Missing agencyId" });
 
-    const { resource: agency } = await agenciesContainer
-      .item(agencyId, agencyId)
-      .read();
+    let agency = null;
+
+    if (USE_GOOGLE_CLOUD) {
+      const doc = await firestoreDb.collection("Agencies").doc(agencyId).get();
+      agency = doc.exists ? doc.data() : null;
+    } else {
+      const { resource } = await agenciesContainer
+        .item(agencyId, agencyId)
+        .read();
+      agency = resource;
+    }
 
     if (!agency) {
       return res.json({ cart: [] });
@@ -1347,39 +1444,66 @@ app.post("/api/agency/cart", async (req, res) => {
     if (!agencyId || !item)
       return res.status(400).json({ error: "Missing agencyId or item" });
 
-    // Get current agency
-    let agency;
-    try {
+    let agency = null;
+
+    if (USE_GOOGLE_CLOUD) {
+      const docRef = firestoreDb.collection("Agencies").doc(agencyId);
+      const doc = await docRef.get();
+      if (!doc.exists) {
+        return res.status(404).json({ error: "Agency not found" });
+      }
+      agency = doc.data();
+
+      // Initialize cart if not exists
+      if (!agency.cart) agency.cart = [];
+
+      // Check for duplicates
+      const existing = agency.cart.find((c) => c.category === item.category);
+      if (existing) {
+        return res
+          .status(409)
+          .json({ error: `${item.category} Bundle is already in your cart.` });
+      }
+
+      // Add item
+      agency.cart.push({
+        id: crypto.randomUUID(),
+        ...item,
+        addedAt: new Date().toISOString(),
+      });
+
+      await docRef.set(agency, { merge: true });
+    } else {
       const { resource } = await agenciesContainer
         .item(agencyId, agencyId)
         .read();
       agency = resource;
-    } catch (e) {
-      if (e.code === 404) {
+
+      if (!agency) {
         return res.status(404).json({ error: "Agency not found" });
       }
-      throw e;
+
+      // Initialize cart if not exists
+      if (!agency.cart) agency.cart = [];
+
+      // Check for duplicates
+      const existing = agency.cart.find((c) => c.category === item.category);
+      if (existing) {
+        return res
+          .status(409)
+          .json({ error: `${item.category} Bundle is already in your cart.` });
+      }
+
+      // Add item
+      agency.cart.push({
+        id: crypto.randomUUID(),
+        ...item,
+        addedAt: new Date().toISOString(),
+      });
+
+      await agenciesContainer.items.upsert(agency);
     }
 
-    // Initialize cart if not exists
-    if (!agency.cart) agency.cart = [];
-
-    // Check for duplicates
-    const existing = agency.cart.find((c) => c.category === item.category);
-    if (existing) {
-      return res
-        .status(409)
-        .json({ error: `${item.category} Bundle is already in your cart.` });
-    }
-
-    // Add item
-    agency.cart.push({
-      id: crypto.randomUUID(),
-      ...item,
-      addedAt: new Date().toISOString(),
-    });
-
-    await agenciesContainer.items.upsert(agency);
     res.json({ success: true, cart: agency.cart });
   } catch (err) {
     console.error("Add to Cart Error:", err);
@@ -1394,18 +1518,36 @@ app.delete("/api/agency/cart/:itemId", async (req, res) => {
     const itemId = req.params.itemId;
     if (!agencyId) return res.status(400).json({ error: "Missing agencyId" });
 
-    const { resource: agency } = await agenciesContainer
-      .item(agencyId, agencyId)
-      .read();
+    let agency = null;
 
-    if (!agency || !agency.cart) {
-      return res.json({ success: true, cart: [] });
+    if (USE_GOOGLE_CLOUD) {
+      const docRef = firestoreDb.collection("Agencies").doc(agencyId);
+      const doc = await docRef.get();
+      agency = doc.exists ? doc.data() : null;
+
+      if (!agency || !agency.cart) {
+        return res.json({ success: true, cart: [] });
+      }
+
+      agency.cart = agency.cart.filter(
+        (c) => c.id !== itemId && c.category !== itemId
+      );
+      await docRef.set(agency, { merge: true });
+    } else {
+      const { resource } = await agenciesContainer
+        .item(agencyId, agencyId)
+        .read();
+      agency = resource;
+
+      if (!agency || !agency.cart) {
+        return res.json({ success: true, cart: [] });
+      }
+
+      agency.cart = agency.cart.filter(
+        (c) => c.id !== itemId && c.category !== itemId
+      );
+      await agenciesContainer.items.upsert(agency);
     }
-
-    agency.cart = agency.cart.filter(
-      (c) => c.id !== itemId && c.category !== itemId
-    );
-    await agenciesContainer.items.upsert(agency);
 
     res.json({ success: true, cart: agency.cart });
   } catch (err) {
@@ -1420,13 +1562,20 @@ app.delete("/api/agency/cart", async (req, res) => {
     const agencyId = req.query.agencyId;
     if (!agencyId) return res.status(400).json({ error: "Missing agencyId" });
 
-    const { resource: agency } = await agenciesContainer
-      .item(agencyId, agencyId)
-      .read();
-
-    if (agency) {
-      agency.cart = [];
-      await agenciesContainer.items.upsert(agency);
+    if (USE_GOOGLE_CLOUD) {
+      const docRef = firestoreDb.collection("Agencies").doc(agencyId);
+      const doc = await docRef.get();
+      if (doc.exists) {
+        await docRef.set({ cart: [] }, { merge: true });
+      }
+    } else {
+      const { resource: agency } = await agenciesContainer
+        .item(agencyId, agencyId)
+        .read();
+      if (agency) {
+        agency.cart = [];
+        await agenciesContainer.items.upsert(agency);
+      }
     }
 
     res.json({ success: true });
@@ -1436,79 +1585,8 @@ app.delete("/api/agency/cart", async (req, res) => {
   }
 });
 
-// ========== AGENCY PROFILE APIs ==========
-
-// GET agency profile
-app.get("/api/agency/profile", async (req, res) => {
-  try {
-    const agencyId = req.query.agencyId;
-    if (!agencyId) return res.status(400).json({ error: "Missing agencyId" });
-
-    const { resource: agency } = await agenciesContainer
-      .item(agencyId, agencyId)
-      .read();
-
-    if (!agency) {
-      return res.status(404).json({ error: "Agency not found" });
-    }
-
-    res.json({
-      id: agency.id,
-      name: agency.name,
-      email: agency.email,
-      phone: agency.phone || "",
-      website: agency.website || "",
-      description: agency.description || "",
-      avatar: agency.avatar || null,
-      joined_date: agency.joined_date,
-    });
-  } catch (err) {
-    console.error("Get Profile Error:", err);
-    res.status(500).json({ error: err.message });
-  }
-});
-
-// UPDATE agency profile
-app.put("/api/agency/profile", async (req, res) => {
-  try {
-    const { agencyId, name, phone, website, description, avatar } = req.body;
-    if (!agencyId) return res.status(400).json({ error: "Missing agencyId" });
-
-    const { resource: agency } = await agenciesContainer
-      .item(agencyId, agencyId)
-      .read();
-
-    if (!agency) {
-      return res.status(404).json({ error: "Agency not found" });
-    }
-
-    // Update fields
-    if (name !== undefined) agency.name = name;
-    if (phone !== undefined) agency.phone = phone;
-    if (website !== undefined) agency.website = website;
-    if (description !== undefined) agency.description = description;
-    if (avatar !== undefined) agency.avatar = avatar;
-
-    await agenciesContainer.items.upsert(agency);
-
-    res.json({
-      success: true,
-      message: "Profile updated successfully",
-      profile: {
-        id: agency.id,
-        name: agency.name,
-        email: agency.email,
-        phone: agency.phone,
-        website: agency.website,
-        description: agency.description,
-        avatar: agency.avatar,
-      },
-    });
-  } catch (err) {
-    console.error("Update Profile Error:", err);
-    res.status(500).json({ error: err.message });
-  }
-});
+// NOTE: Agency profile GET/PUT endpoints moved to end of file to support dual-cloud (Firestore + CosmosDB)
+// See lines ~2934+ for the updated /api/agency/profile endpoints
 
 // ===========================================
 // In-House OTP System with Nodemailer
@@ -1679,22 +1757,53 @@ app.post("/api/otp/verify", async (req, res) => {
 
 app.post("/api/process-file", async (req, res) => {
   try {
-    const { blobName, userId, originalName, fileSize } = req.body;
+    const {
+      blobName,
+      userId,
+      originalName,
+      fileSize,
+      title,
+      description,
+      userTags,
+    } = req.body;
 
     if (!blobName || !userId) {
       return res.status(400).json({ error: "Missing blobName or userId" });
     }
 
-    console.log(`Processing file: ${blobName} for user: ${userId}`);
+    console.log(
+      `Processing file: ${blobName} for user: ${userId} [${
+        USE_GOOGLE_CLOUD ? "GCP" : "Azure"
+      }]`
+    );
 
     const filename = originalName || blobName;
     const fileExtension = path.extname(filename).toLowerCase();
+    const isImage = [".jpg", ".jpeg", ".png", ".gif", ".webp"].includes(
+      fileExtension
+    );
+    const isText = [
+      ".txt",
+      ".py",
+      ".dart",
+      ".js",
+      ".md",
+      ".json",
+      ".html",
+      ".css",
+      ".ts",
+      ".jsx",
+      ".tsx",
+    ].includes(fileExtension);
 
-    // Initialize metadata
+    // Initialize metadata with user-provided fields
     const metadata = {
       id: blobName,
       userId: userId,
       original_name: filename,
+      title: title || filename,
+      description: description || "",
+      user_tags: userTags || [],
       size: fileSize || 0,
       upload_timestamp: new Date().toISOString(),
       processed: true,
@@ -1713,305 +1822,171 @@ app.post("/api/process-file", async (req, res) => {
     let blobContent = null;
     let contentString = "";
 
-    // Expanded list of supported text/code file extensions
-    const textExtensions = [
-      // Text & Markdown
-      ".txt",
-      ".md",
-      ".markdown",
-      ".rst",
-      ".rtf",
-      // Data files
-      ".json",
-      ".csv",
-      ".xml",
-      ".yaml",
-      ".yml",
-      ".toml",
-      // Web development
-      ".html",
-      ".htm",
-      ".css",
-      ".scss",
-      ".sass",
-      ".less",
-      // JavaScript ecosystem
-      ".js",
-      ".jsx",
-      ".ts",
-      ".tsx",
-      ".mjs",
-      ".cjs",
-      ".vue",
-      ".svelte",
-      // Python
-      ".py",
-      ".pyw",
-      ".pyx",
-      ".pyi",
-      // Java/Kotlin/Scala
-      ".java",
-      ".kt",
-      ".kts",
-      ".scala",
-      ".groovy",
-      // C/C++/C#
-      ".c",
-      ".h",
-      ".cpp",
-      ".hpp",
-      ".cc",
-      ".cs",
-      // Go/Rust/Swift
-      ".go",
-      ".rs",
-      ".swift",
-      // Ruby/PHP/Perl
-      ".rb",
-      ".php",
-      ".pl",
-      ".pm",
-      // Mobile
-      ".dart",
-      ".m",
-      ".mm",
-      // Shell/Scripts
-      ".sh",
-      ".bash",
-      ".zsh",
-      ".ps1",
-      ".bat",
-      ".cmd",
-      // Database/Query
-      ".sql",
-      ".graphql",
-      ".gql",
-      // Config files
-      ".ini",
-      ".cfg",
-      ".conf",
-      ".env",
-      ".properties",
-      // Documentation
-      ".tex",
-      ".bib",
-      ".org",
-      // Other
-      ".r",
-      ".R",
-      ".jl",
-      ".lua",
-      ".vim",
-      ".awk",
-      ".sed",
-    ];
+    if (USE_GOOGLE_CLOUD) {
+      // ========== GOOGLE CLOUD STORAGE DOWNLOAD ==========
+      try {
+        if (gcsBucket) {
+          const file = gcsBucket.file(blobName);
+          const [contents] = await file.download();
+          blobContent = contents;
 
-    try {
-      if (containerClient) {
-        const blobClient = containerClient.getBlobClient(blobName);
-        const downloadResponse = await blobClient.download();
-        const chunks = [];
-        for await (const chunk of downloadResponse.readableStreamBody) {
-          chunks.push(chunk);
-        }
-        blobContent = Buffer.concat(chunks);
-
-        // For text-based files, decode to string
-        if (textExtensions.includes(fileExtension)) {
-          contentString = blobContent.toString("utf-8");
-        }
-      }
-    } catch (downloadErr) {
-      console.error(
-        "Failed to download blob for analysis:",
-        downloadErr.message
-      );
-      // Continue with default analysis if download fails
-    }
-
-    // Perform AI Analysis based on file type
-    if ([".jpg", ".jpeg", ".png", ".gif", ".webp"].includes(fileExtension)) {
-      metadata.analysis_type = "image";
-
-      if (blobContent) {
-        const visionResult = await analyzeImageVision(blobContent);
-        metadata.tags = visionResult.tags;
-        metadata.caption = visionResult.caption;
-        metadata.ai_analysis = visionResult.ai_analysis;
-
-        // Score based on richness of tags
-        const score = Math.min(visionResult.tags.length * 10, 100);
-        metadata.quality_score = score;
-        metadata.payout = calculatePayout(score);
-
-        // Classify based on tags - pass filename for better classification
-        metadata.market_category = await classifyContent(
-          `Image with tags: ${visionResult.tags.join(", ")}`,
-          filename
-        );
-      } else {
-        metadata.quality_score = 50;
-        metadata.payout = 10;
-      }
-    } else if (textExtensions.includes(fileExtension)) {
-      // Text/Code file analysis using the expanded textExtensions list
-      metadata.analysis_type = "code_or_text";
-
-      if (contentString) {
-        const aiResult = await analyzeContentQualityGPT4o(
-          contentString,
-          filename
-        );
-        metadata.quality_score = aiResult.quality_score;
-        metadata.payout = aiResult.payout;
-        metadata.ai_analysis = aiResult.ai_analysis;
-
-        // Classify based on content - pass filename for better classification
-        metadata.market_category = await classifyContent(
-          `File: ${filename}. Content summary: ${
-            aiResult.ai_analysis?.summary || "N/A"
-          }`,
-          filename
-        );
-      } else {
-        metadata.quality_score = 50;
-        metadata.payout = 10;
-        metadata.ai_analysis = {
-          info: "Content could not be read for analysis.",
-        };
-      }
-    } else if (
-      [".mp3", ".wav", ".ogg", ".flac", ".aac", ".m4a"].includes(fileExtension)
-    ) {
-      // Audio files
-      metadata.analysis_type = "audio";
-      metadata.quality_score = 60;
-      metadata.payout = calculatePayout(60);
-      metadata.market_category = "Audio Dataset";
-      metadata.ai_analysis = {
-        info: "Audio file detected. Quality scoring based on file metadata.",
-        file_size: metadata.size,
-      };
-    } else if (
-      [".mp4", ".mov", ".avi", ".mkv", ".webm", ".wmv"].includes(fileExtension)
-    ) {
-      // Video files
-      metadata.analysis_type = "video";
-      metadata.quality_score = 65;
-      metadata.payout = calculatePayout(65);
-      metadata.market_category = "Video Dataset";
-      metadata.ai_analysis = {
-        info: "Video file detected. Quality scoring based on file metadata.",
-        file_size: metadata.size,
-      };
-    } else if (
-      [
-        ".pdf",
-        ".doc",
-        ".docx",
-        ".xls",
-        ".xlsx",
-        ".ppt",
-        ".pptx",
-        ".odt",
-        ".ods",
-      ].includes(fileExtension)
-    ) {
-      // Document files - handle PDFs with content extraction
-      metadata.analysis_type = "document";
-
-      if (fileExtension === ".pdf" && blobContent) {
-        // Extract text from PDF using pdf-parse
-        try {
-          const pdfData = await pdf(blobContent);
-          const extractedText = pdfData.text || "";
-          const pageCount = pdfData.numpages || 0;
-
-          if (extractedText.length > 100) {
-            // Analyze the extracted PDF content with GPT-4o
-            const aiResult = await analyzeContentQualityGPT4o(
-              extractedText.substring(0, 15000), // Limit to 15k chars
-              filename
-            );
-
-            metadata.quality_score = aiResult.quality_score;
-            metadata.payout = aiResult.payout;
-            metadata.ai_analysis = {
-              ...aiResult.ai_analysis,
-              page_count: pageCount,
-              extracted_chars: extractedText.length,
-              file_size: metadata.size,
-            };
-
-            // Classify based on extracted content
-            metadata.market_category = await classifyContent(
-              `PDF Document: ${filename}. Content summary: ${
-                aiResult.ai_analysis?.summary || extractedText.substring(0, 500)
-              }`,
-              filename
-            );
-          } else {
-            // PDF has very little text (might be scanned/image-based)
-            metadata.quality_score = 45;
-            metadata.payout = calculatePayout(45);
-            metadata.ai_analysis = {
-              info: "PDF appears to be image-based or has minimal text content.",
-              page_count: pageCount,
-              extracted_chars: extractedText.length,
-              file_size: metadata.size,
-            };
-            metadata.market_category = "Documentation";
+          if (isText) {
+            contentString = blobContent.toString("utf-8");
           }
-        } catch (pdfErr) {
-          console.error("PDF parsing failed:", pdfErr.message);
+          console.log(
+            `Downloaded ${blobName} from GCS (${blobContent.length} bytes)`
+          );
+        }
+      } catch (downloadErr) {
+        console.error("Failed to download from GCS:", downloadErr.message);
+      }
+
+      // ========== AZURE AI ANALYSIS (used with GCS storage) ==========
+      if (isImage) {
+        metadata.analysis_type = "image";
+
+        if (blobContent) {
+          const visionResult = await analyzeImageVision(blobContent);
+          metadata.tags = visionResult.tags;
+          metadata.caption = visionResult.caption;
+          metadata.ai_analysis = visionResult.ai_analysis;
+
+          const score = Math.min(visionResult.tags.length * 10, 100);
+          metadata.quality_score = score;
+          metadata.payout = calculatePayout(score);
+
+          metadata.market_category = await classifyContent(
+            `Image with tags: ${visionResult.tags.join(", ")}`
+          );
+        } else {
           metadata.quality_score = 50;
-          metadata.payout = calculatePayout(50);
+          metadata.payout = 10;
+        }
+      } else if (isText) {
+        metadata.analysis_type = "code_or_text";
+
+        if (contentString) {
+          const aiResult = await analyzeContentQualityGPT4o(
+            contentString,
+            filename
+          );
+          metadata.quality_score = aiResult.quality_score;
+          metadata.payout = aiResult.payout;
+          metadata.ai_analysis = aiResult.ai_analysis;
+
+          metadata.market_category = await classifyContent(
+            `Code/Text file named ${filename}. Summary: ${
+              aiResult.ai_analysis?.summary || "N/A"
+            }`
+          );
+        } else {
+          metadata.quality_score = 50;
+          metadata.payout = 10;
           metadata.ai_analysis = {
-            info: "PDF parsing failed. File may be encrypted or corrupted.",
-            error: pdfErr.message,
-            file_size: metadata.size,
+            info: "Content could not be read for analysis.",
           };
-          metadata.market_category = "Documentation";
         }
       } else {
-        // Non-PDF documents (Word, Excel, PPT) - basic handling
-        metadata.quality_score = 55;
-        metadata.payout = calculatePayout(55);
-
-        // Classify based on extension
-        if ([".xls", ".xlsx", ".ods"].includes(fileExtension)) {
-          metadata.market_category = "Business Analytics";
-        } else if ([".ppt", ".pptx"].includes(fileExtension)) {
-          metadata.market_category = "Educational Content";
-        } else {
-          metadata.market_category = "Documentation";
-        }
-
+        metadata.analysis_type = "other";
         metadata.ai_analysis = {
-          info: "Office document detected. Text extraction requires additional processing.",
-          note: "For full content analysis, consider exporting as PDF.",
-          file_size: metadata.size,
+          info: "File type not supported for deep AI analysis yet.",
         };
+        metadata.quality_score = 10;
+        metadata.payout = 0.5;
       }
+
+      // ========== STORE IN FIRESTORE ==========
+      await firestoreDb
+        .collection("Submissions")
+        .doc(blobName)
+        .set(metadata, { merge: true });
+      console.log(
+        `SUCCESS [GCP]: File ${filename} processed with Score: ${metadata.quality_score}`
+      );
     } else {
-      metadata.analysis_type = "other";
-      metadata.ai_analysis = {
-        info: "Unsupported file type for deep AI analysis.",
-        supported_types:
-          "Text files, code, images, audio, video, PDFs, Office docs",
-      };
-      metadata.quality_score = 30;
-      metadata.payout = calculatePayout(30);
-      metadata.market_category = "General";
+      // ========== AZURE BLOB STORAGE DOWNLOAD ==========
+      try {
+        if (containerClient) {
+          const blobClient = containerClient.getBlobClient(blobName);
+          const downloadResponse = await blobClient.download();
+          const chunks = [];
+          for await (const chunk of downloadResponse.readableStreamBody) {
+            chunks.push(chunk);
+          }
+          blobContent = Buffer.concat(chunks);
+
+          if (isText) {
+            contentString = blobContent.toString("utf-8");
+          }
+        }
+      } catch (downloadErr) {
+        console.error(
+          "Failed to download blob for analysis:",
+          downloadErr.message
+        );
+      }
+
+      // ========== AZURE AI ANALYSIS ==========
+      if (isImage) {
+        metadata.analysis_type = "image";
+
+        if (blobContent) {
+          const visionResult = await analyzeImageVision(blobContent);
+          metadata.tags = visionResult.tags;
+          metadata.caption = visionResult.caption;
+          metadata.ai_analysis = visionResult.ai_analysis;
+
+          const score = Math.min(visionResult.tags.length * 10, 100);
+          metadata.quality_score = score;
+          metadata.payout = calculatePayout(score);
+
+          metadata.market_category = await classifyContent(
+            `Image with tags: ${visionResult.tags.join(", ")}`
+          );
+        } else {
+          metadata.quality_score = 50;
+          metadata.payout = 10;
+        }
+      } else if (isText) {
+        metadata.analysis_type = "code_or_text";
+
+        if (contentString) {
+          const aiResult = await analyzeContentQualityGPT4o(
+            contentString,
+            filename
+          );
+          metadata.quality_score = aiResult.quality_score;
+          metadata.payout = aiResult.payout;
+          metadata.ai_analysis = aiResult.ai_analysis;
+
+          metadata.market_category = await classifyContent(
+            `Code/Text file named ${filename}. Summary: ${
+              aiResult.ai_analysis?.summary || "N/A"
+            }`
+          );
+        } else {
+          metadata.quality_score = 50;
+          metadata.payout = 10;
+          metadata.ai_analysis = {
+            info: "Content could not be read for analysis.",
+          };
+        }
+      } else {
+        metadata.analysis_type = "other";
+        metadata.ai_analysis = {
+          info: "File type not supported for deep AI analysis yet.",
+        };
+        metadata.quality_score = 10;
+        metadata.payout = 0.5;
+      }
+
+      // ========== STORE IN COSMOS DB ==========
+      const submissionsContainer = database.container("Submissions");
+      await submissionsContainer.items.upsert(metadata);
+      console.log(
+        `SUCCESS [Azure]: File ${filename} processed with Score: ${metadata.quality_score}`
+      );
     }
-
-    // Store metadata in Cosmos DB Submissions container
-    const submissionsContainer = database.container("Submissions");
-    await submissionsContainer.items.upsert(metadata);
-
-    console.log(
-      `SUCCESS: File ${filename} processed with Score: ${metadata.quality_score}`
-    );
 
     res.json({
       success: true,
@@ -2098,8 +2073,7 @@ app.post("/api/checkout/create-payment", async (req, res) => {
 
     console.log("Razorpay Order Created:", razorpayOrder.id);
 
-    // Store pending order in Cosmos DB
-    const ordersContainer = await getOrdersContainer();
+    // Store pending order
     const order = {
       id: orderId,
       agencyId,
@@ -2109,7 +2083,15 @@ app.post("/api/checkout/create-payment", async (req, res) => {
       status: "pending",
       createdAt: new Date().toISOString(),
     };
-    await ordersContainer.items.create(order);
+
+    if (USE_GOOGLE_CLOUD) {
+      // ========== FIRESTORE ==========
+      await firestoreDb.collection("Orders").doc(orderId).set(order);
+    } else {
+      // ========== COSMOS DB ==========
+      const ordersContainer = await getOrdersContainer();
+      await ordersContainer.items.create(order);
+    }
 
     // Return order details for frontend Razorpay checkout
     res.json({
@@ -2163,144 +2145,239 @@ app.post("/api/checkout/verify-payment", async (req, res) => {
   console.log("Payment signature verified successfully");
 
   try {
-    const ordersContainer = await getOrdersContainer();
+    let order = null;
 
-    // Find order by razorpay_order_id
-    const { resources: orders } = await ordersContainer.items
-      .query({
-        query: "SELECT * FROM c WHERE c.razorpayOrderId = @rozId",
-        parameters: [{ name: "@rozId", value: razorpay_order_id }],
-      })
-      .fetchAll();
+    if (USE_GOOGLE_CLOUD) {
+      // ========== FIRESTORE: Find and update order ==========
+      const ordersSnap = await firestoreDb
+        .collection("Orders")
+        .where("razorpayOrderId", "==", razorpay_order_id)
+        .limit(1)
+        .get();
 
-    if (orders.length === 0) {
-      console.warn("Order not found for Razorpay order:", razorpay_order_id);
-      return res.status(404).json({ error: "Order not found" });
-    }
+      if (ordersSnap.empty) {
+        console.warn("Order not found for Razorpay order:", razorpay_order_id);
+        return res.status(404).json({ error: "Order not found" });
+      }
 
-    const order = orders[0];
+      order = ordersSnap.docs[0].data();
+      order.status = "paid";
+      order.razorpayPaymentId = razorpay_payment_id;
+      order.razorpaySignature = razorpay_signature;
+      order.paidAt = new Date().toISOString();
 
-    // Update order with payment details
-    order.status = "paid";
-    order.razorpayPaymentId = razorpay_payment_id;
-    order.razorpaySignature = razorpay_signature;
-    order.paidAt = new Date().toISOString();
+      await firestoreDb
+        .collection("Orders")
+        .doc(order.id)
+        .set(order, { merge: true });
 
-    // Update order - use upsert for reliability
-    await ordersContainer.items.upsert(order);
+      // Get agency cart to find purchased categories
+      console.log("Processing purchased items:", order.items);
+      let purchasedCategories = [];
 
-    // Mark datasets as purchased and credit seller wallets
-    // First, get the actual cart items from agency to find categories
-    const agenciesContainer = database.container("Agencies");
-    const submissionsContainer = database.container("Submissions");
-
-    console.log("Processing purchased items:", order.items);
-
-    // Get the agency's cart to find the categories for each cart item
-    let purchasedCategories = [];
-    try {
-      const { resources: agencies } = await agenciesContainer.items
-        .query({
-          query: "SELECT * FROM c WHERE c.id = @id",
-          parameters: [{ name: "@id", value: order.agencyId }],
-        })
-        .fetchAll();
-
-      if (agencies.length > 0 && agencies[0].cart) {
-        const cart = agencies[0].cart;
-        // Map cart item IDs to categories
-        for (const itemId of order.items) {
-          const cartItem = cart.find((c) => c.id === itemId);
-          if (cartItem && cartItem.category) {
-            purchasedCategories.push(cartItem.category);
-            console.log(
-              "Found category for cart item:",
-              itemId,
-              "->",
-              cartItem.category
-            );
-          } else {
-            // If the itemId IS the category (fallback for older cart format)
-            purchasedCategories.push(itemId);
-            console.log("Using itemId as category:", itemId);
+      const agencyDoc = await firestoreDb
+        .collection("Agencies")
+        .doc(order.agencyId)
+        .get();
+      if (agencyDoc.exists) {
+        const agency = agencyDoc.data();
+        if (agency.cart) {
+          for (const itemId of order.items) {
+            const cartItem = agency.cart.find((c) => c.id === itemId);
+            if (cartItem && cartItem.category) {
+              purchasedCategories.push(cartItem.category);
+              console.log(
+                "Found category for cart item:",
+                itemId,
+                "->",
+                cartItem.category
+              );
+            } else {
+              purchasedCategories.push(itemId);
+              console.log("Using itemId as category:", itemId);
+            }
           }
         }
       }
-    } catch (cartLookupErr) {
-      console.error("Error fetching agency cart:", cartLookupErr.message);
-      // Fallback: assume cart items are category names
-      purchasedCategories = order.items;
-    }
 
-    console.log("Purchased categories:", purchasedCategories);
+      console.log("Purchased categories:", purchasedCategories);
 
-    // Now update all submissions in these categories
-    for (const category of purchasedCategories) {
+      // Update submissions in purchased categories
+      for (const category of purchasedCategories) {
+        try {
+          console.log("Looking for submissions in category:", category);
+          const submissionsSnap = await firestoreDb
+            .collection("Submissions")
+            .where("market_category", "==", category)
+            .get();
+
+          for (const doc of submissionsSnap.docs) {
+            const submission = doc.data();
+            if (!submission.sold_to) {
+              console.log(
+                "Updating submission:",
+                submission.id,
+                "from user:",
+                submission.userId
+              );
+              await firestoreDb
+                .collection("Submissions")
+                .doc(submission.id)
+                .update({
+                  sold_to: order.agencyId,
+                  sold_price: submission.payout || 25,
+                  transaction_date: new Date().toISOString(),
+                  status: "Purchased",
+                });
+              console.log("Submission updated successfully:", submission.id);
+
+              // Credit user balance
+              const userDoc = await firestoreDb
+                .collection("Users")
+                .doc(submission.userId)
+                .get();
+              if (userDoc.exists) {
+                const currentBalance = userDoc.data().balance || 0;
+                await firestoreDb
+                  .collection("Users")
+                  .doc(submission.userId)
+                  .update({
+                    balance: currentBalance + (submission.payout || 25),
+                  });
+                console.log(
+                  "User",
+                  submission.userId,
+                  "credited:",
+                  submission.payout || 25
+                );
+              }
+            }
+          }
+        } catch (queryErr) {
+          console.error(
+            "Error processing category:",
+            category,
+            queryErr.message
+          );
+        }
+      }
+
+      // Clear agency cart
+      await firestoreDb
+        .collection("Agencies")
+        .doc(order.agencyId)
+        .update({ cart: [] });
+    } else {
+      // ========== COSMOS DB: Original implementation ==========
+      const ordersContainer = await getOrdersContainer();
+
+      const { resources: orders } = await ordersContainer.items
+        .query({
+          query: "SELECT * FROM c WHERE c.razorpayOrderId = @rozId",
+          parameters: [{ name: "@rozId", value: razorpay_order_id }],
+        })
+        .fetchAll();
+
+      if (orders.length === 0) {
+        console.warn("Order not found for Razorpay order:", razorpay_order_id);
+        return res.status(404).json({ error: "Order not found" });
+      }
+
+      order = orders[0];
+      order.status = "paid";
+      order.razorpayPaymentId = razorpay_payment_id;
+      order.razorpaySignature = razorpay_signature;
+      order.paidAt = new Date().toISOString();
+
+      await ordersContainer.items.upsert(order);
+
+      const agenciesContainer = database.container("Agencies");
+      const submissionsContainer = database.container("Submissions");
+
+      console.log("Processing purchased items:", order.items);
+
+      let purchasedCategories = [];
       try {
-        console.log("Looking for submissions in category:", category);
-        const { resources: allSubmissions } = await submissionsContainer.items
+        const { resources: agencies } = await agenciesContainer.items
           .query({
-            query: "SELECT * FROM c WHERE c.market_category = @cat",
-            parameters: [{ name: "@cat", value: category }],
+            query: "SELECT * FROM c WHERE c.id = @id",
+            parameters: [{ name: "@id", value: order.agencyId }],
           })
           .fetchAll();
 
-        // Filter to only unsold items
-        const submissions = allSubmissions.filter((s) => !s.sold_to);
-
-        console.log("Found submissions in category:", submissions.length);
-
-        for (const submission of submissions) {
-          try {
-            console.log(
-              "Updating submission:",
-              submission.id,
-              "from user:",
-              submission.userId
-            );
-            submission.sold_to = order.agencyId;
-            submission.sold_price = submission.payout || 25;
-            submission.transaction_date = new Date().toISOString();
-            submission.status = "Purchased";
-
-            await submissionsContainer
-              .item(submission.id, submission.userId)
-              .replace(submission);
-            console.log("Submission updated successfully:", submission.id);
-          } catch (updateErr) {
-            console.error(
-              "Error updating submission:",
-              submission.id,
-              updateErr.message
-            );
+        if (agencies.length > 0 && agencies[0].cart) {
+          const cart = agencies[0].cart;
+          for (const itemId of order.items) {
+            const cartItem = cart.find((c) => c.id === itemId);
+            if (cartItem && cartItem.category) {
+              purchasedCategories.push(cartItem.category);
+            } else {
+              purchasedCategories.push(itemId);
+            }
           }
         }
-      } catch (queryErr) {
-        console.error(
-          "Error querying submissions for category:",
-          category,
-          queryErr.message
-        );
+      } catch (cartLookupErr) {
+        console.error("Error fetching agency cart:", cartLookupErr.message);
+        purchasedCategories = order.items;
       }
-    }
 
-    // Clear agency cart
-    try {
-      const agenciesContainer = database.container("Agencies");
-      const { resources: agencies } = await agenciesContainer.items
-        .query({
-          query: "SELECT * FROM c WHERE c.id = @id",
-          parameters: [{ name: "@id", value: order.agencyId }],
-        })
-        .fetchAll();
+      console.log("Purchased categories:", purchasedCategories);
 
-      if (agencies.length > 0) {
-        const agency = agencies[0];
-        agency.cart = [];
-        await agenciesContainer.item(agency.id, agency.id).replace(agency);
+      for (const category of purchasedCategories) {
+        try {
+          const { resources: allSubmissions } = await submissionsContainer.items
+            .query({
+              query: "SELECT * FROM c WHERE c.market_category = @cat",
+              parameters: [{ name: "@cat", value: category }],
+            })
+            .fetchAll();
+
+          const submissions = allSubmissions.filter((s) => !s.sold_to);
+
+          for (const submission of submissions) {
+            try {
+              submission.sold_to = order.agencyId;
+              submission.sold_price = submission.payout || 25;
+              submission.transaction_date = new Date().toISOString();
+              submission.status = "Purchased";
+
+              await submissionsContainer
+                .item(submission.id, submission.userId)
+                .replace(submission);
+            } catch (updateErr) {
+              console.error(
+                "Error updating submission:",
+                submission.id,
+                updateErr.message
+              );
+            }
+          }
+        } catch (queryErr) {
+          console.error(
+            "Error querying submissions for category:",
+            category,
+            queryErr.message
+          );
+        }
       }
-    } catch (cartErr) {
-      console.warn("Error clearing cart:", cartErr);
+
+      // Clear agency cart
+      try {
+        const { resources: agencies } = await agenciesContainer.items
+          .query({
+            query: "SELECT * FROM c WHERE c.id = @id",
+            parameters: [{ name: "@id", value: order.agencyId }],
+          })
+          .fetchAll();
+
+        if (agencies.length > 0) {
+          const agency = agencies[0];
+          agency.cart = [];
+          await agenciesContainer.item(agency.id, agency.id).replace(agency);
+        }
+      } catch (cartErr) {
+        console.warn("Error clearing cart:", cartErr);
+      }
     }
 
     console.log(
@@ -2375,31 +2452,63 @@ app.post("/api/user/withdraw-request", async (req, res) => {
   }
 
   try {
-    // Get user balance from submissions
-    const submissionsContainer = database.container("Submissions");
-    const { resources: items } = await submissionsContainer.items
-      .query({
-        query: "SELECT * FROM c WHERE c.userId = @userId AND c.sold_to != null",
-        parameters: [{ name: "@userId", value: userId }],
-      })
-      .fetchAll();
+    let totalEarnings = 0;
+    let withdrawnAmount = 0;
 
-    const totalEarnings = items.reduce((sum, item) => {
-      const payout = item.payout || 0;
-      return sum + payout * 0.8; // 80% to user
-    }, 0);
+    if (USE_GOOGLE_CLOUD) {
+      // ========== FIRESTORE ==========
+      // Calculate total earnings from sold submissions
+      const submissionsSnap = await firestoreDb
+        .collection("Submissions")
+        .where("userId", "==", userId)
+        .where("status", "==", "Purchased")
+        .get();
 
-    // Get already withdrawn/pending amounts
-    const withdrawalsContainer = await getWithdrawalsContainer();
-    const { resources: withdrawals } = await withdrawalsContainer.items
-      .query({
-        query:
-          "SELECT * FROM c WHERE c.userId = @userId AND c.status IN ('pending', 'processing', 'completed')",
-        parameters: [{ name: "@userId", value: userId }],
-      })
-      .fetchAll();
+      totalEarnings = submissionsSnap.docs.reduce((sum, doc) => {
+        const item = doc.data();
+        return sum + (item.payout || 0) * 0.8; // 80% to user
+      }, 0);
 
-    const withdrawnAmount = withdrawals.reduce((sum, w) => sum + w.amount, 0);
+      // Calculate withdrawn amount
+      const withdrawalsSnap = await firestoreDb
+        .collection("Withdrawals")
+        .where("userId", "==", userId)
+        .get();
+
+      withdrawnAmount = withdrawalsSnap.docs
+        .map((d) => d.data())
+        .filter((w) =>
+          ["pending", "processing", "completed"].includes(w.status)
+        )
+        .reduce((sum, w) => sum + w.amount, 0);
+    } else {
+      // ========== COSMOS DB ==========
+      const submissionsContainer = database.container("Submissions");
+      const { resources: items } = await submissionsContainer.items
+        .query({
+          query:
+            "SELECT * FROM c WHERE c.userId = @userId AND c.sold_to != null",
+          parameters: [{ name: "@userId", value: userId }],
+        })
+        .fetchAll();
+
+      totalEarnings = items.reduce((sum, item) => {
+        const payout = item.payout || 0;
+        return sum + payout * 0.8; // 80% to user
+      }, 0);
+
+      const withdrawalsContainer = await getWithdrawalsContainer();
+      const { resources: withdrawals } = await withdrawalsContainer.items
+        .query({
+          query:
+            "SELECT * FROM c WHERE c.userId = @userId AND c.status IN ('pending', 'processing', 'completed')",
+          parameters: [{ name: "@userId", value: userId }],
+        })
+        .fetchAll();
+
+      withdrawnAmount = withdrawals.reduce((sum, w) => sum + w.amount, 0);
+    }
+
     const availableBalance = totalEarnings - withdrawnAmount;
 
     if (amount > availableBalance) {
@@ -2427,7 +2536,15 @@ app.post("/api/user/withdraw-request", async (req, res) => {
       processedAt: null,
     };
 
-    await withdrawalsContainer.items.create(withdrawal);
+    if (USE_GOOGLE_CLOUD) {
+      await firestoreDb
+        .collection("Withdrawals")
+        .doc(withdrawalId)
+        .set(withdrawal);
+    } else {
+      const withdrawalsContainer = await getWithdrawalsContainer();
+      await withdrawalsContainer.items.create(withdrawal);
+    }
 
     res.json({
       success: true,
@@ -2451,29 +2568,55 @@ app.get("/api/user/withdrawals", async (req, res) => {
   }
 
   try {
-    const withdrawalsContainer = await getWithdrawalsContainer();
-    const { resources: withdrawals } = await withdrawalsContainer.items
-      .query({
-        query:
-          "SELECT * FROM c WHERE c.userId = @userId ORDER BY c.createdAt DESC",
-        parameters: [{ name: "@userId", value: userId }],
-      })
-      .fetchAll();
+    let withdrawals = [];
+    let totalEarnings = 0;
+    let withdrawnAmount = 0;
 
-    // Calculate available balance
-    const submissionsContainer = database.container("Submissions");
-    const { resources: items } = await submissionsContainer.items
-      .query({
-        query: "SELECT * FROM c WHERE c.userId = @userId AND c.sold_to != null",
-        parameters: [{ name: "@userId", value: userId }],
-      })
-      .fetchAll();
+    if (USE_GOOGLE_CLOUD) {
+      // ========== FIRESTORE ==========
+      const withdrawalsSnap = await firestoreDb
+        .collection("Withdrawals")
+        .where("userId", "==", userId)
+        .orderBy("createdAt", "desc")
+        .get();
+      withdrawals = withdrawalsSnap.docs.map((d) => d.data());
 
-    const totalEarnings = items.reduce((sum, item) => {
-      return sum + (item.payout || 0) * 0.8;
-    }, 0);
+      const submissionsSnap = await firestoreDb
+        .collection("Submissions")
+        .where("userId", "==", userId)
+        .where("status", "==", "Purchased")
+        .get();
 
-    const withdrawnAmount = withdrawals
+      totalEarnings = submissionsSnap.docs.reduce((sum, doc) => {
+        return sum + (doc.data().payout || 0) * 0.8;
+      }, 0);
+    } else {
+      // ========== COSMOS DB ==========
+      const withdrawalsContainer = await getWithdrawalsContainer();
+      const { resources: w } = await withdrawalsContainer.items
+        .query({
+          query:
+            "SELECT * FROM c WHERE c.userId = @userId ORDER BY c.createdAt DESC",
+          parameters: [{ name: "@userId", value: userId }],
+        })
+        .fetchAll();
+      withdrawals = w;
+
+      const submissionsContainer = database.container("Submissions");
+      const { resources: items } = await submissionsContainer.items
+        .query({
+          query:
+            "SELECT * FROM c WHERE c.userId = @userId AND c.sold_to != null",
+          parameters: [{ name: "@userId", value: userId }],
+        })
+        .fetchAll();
+
+      totalEarnings = items.reduce((sum, item) => {
+        return sum + (item.payout || 0) * 0.8;
+      }, 0);
+    }
+
+    withdrawnAmount = withdrawals
       .filter((w) => w.status !== "rejected")
       .reduce((sum, w) => sum + w.amount, 0);
 
@@ -2498,17 +2641,32 @@ app.get("/api/user/balance", async (req, res) => {
   }
 
   try {
-    const submissionsContainer = database.container("Submissions");
-    const { resources: items } = await submissionsContainer.items
-      .query({
-        query: "SELECT * FROM c WHERE c.userId = @userId AND c.sold_to != null",
-        parameters: [{ name: "@userId", value: userId }],
-      })
-      .fetchAll();
+    let totalEarnings = 0;
 
-    const totalEarnings = items.reduce((sum, item) => {
-      return sum + (item.payout || 0) * 0.8;
-    }, 0);
+    if (USE_GOOGLE_CLOUD) {
+      const submissionsSnap = await firestoreDb
+        .collection("Submissions")
+        .where("userId", "==", userId)
+        .where("status", "==", "Purchased")
+        .get();
+
+      totalEarnings = submissionsSnap.docs.reduce((sum, doc) => {
+        return sum + (doc.data().payout || 0) * 0.8;
+      }, 0);
+    } else {
+      const submissionsContainer = database.container("Submissions");
+      const { resources: items } = await submissionsContainer.items
+        .query({
+          query:
+            "SELECT * FROM c WHERE c.userId = @userId AND c.sold_to != null",
+          parameters: [{ name: "@userId", value: userId }],
+        })
+        .fetchAll();
+
+      totalEarnings = items.reduce((sum, item) => {
+        return sum + (item.payout || 0) * 0.8;
+      }, 0);
+    }
 
     const withdrawalsContainer = await getWithdrawalsContainer();
     const { resources: withdrawals } = await withdrawalsContainer.items
@@ -2623,25 +2781,38 @@ app.post("/api/agency/change-password", async (req, res) => {
       return res.status(400).json({ error: "Invalid OTP" });
     }
 
-    // Hash the new password
+    // Update password
     const hashedPassword = crypto
       .createHash("sha256")
       .update(newPassword)
       .digest("hex");
 
-    // Update password in Agencies container
-    const { resource: agency } = await agenciesContainer
-      .item(agencyId, agencyId)
-      .read();
+    if (USE_GOOGLE_CLOUD) {
+      const agencyRef = firestoreDb.collection("Agencies").doc(agencyId);
+      const doc = await agencyRef.get();
+      if (!doc.exists) {
+        return res.status(404).json({ error: "Agency not found" });
+      }
 
-    if (!agency) {
-      return res.status(404).json({ error: "Agency not found" });
+      await agencyRef.update({
+        password: hashedPassword,
+        passwordChangedAt: new Date().toISOString(),
+      });
+    } else {
+      // Update password in Agencies container
+      const { resource: agency } = await agenciesContainer
+        .item(agencyId, agencyId)
+        .read();
+
+      if (!agency) {
+        return res.status(404).json({ error: "Agency not found" });
+      }
+
+      agency.password = hashedPassword;
+      agency.passwordChangedAt = new Date().toISOString();
+
+      await agenciesContainer.item(agencyId, agencyId).replace(agency);
     }
-
-    agency.password = hashedPassword;
-    agency.passwordChangedAt = new Date().toISOString();
-
-    await agenciesContainer.item(agencyId, agencyId).replace(agency);
 
     // Clear OTP from store
     passwordOtpStore.delete(agencyId);
@@ -2651,6 +2822,301 @@ app.post("/api/agency/change-password", async (req, res) => {
   } catch (error) {
     console.error("Change password error:", error);
     res.status(500).json({ error: "Failed to change password" });
+  }
+});
+
+// API: Get Agency Profile
+app.get("/api/agency/profile", async (req, res) => {
+  const { agencyId } = req.query;
+  if (!agencyId) return res.status(400).json({ error: "Missing agencyId" });
+
+  console.log(
+    `[GET Profile] Fetching for ${agencyId} (Cloud: ${USE_GOOGLE_CLOUD})`
+  );
+
+  try {
+    let agency = null;
+
+    if (USE_GOOGLE_CLOUD) {
+      // Try 1: Direct document lookup by key in Agencies
+      let doc = await firestoreDb.collection("Agencies").doc(agencyId).get();
+      console.log(`[GET Profile] Direct lookup in Agencies: ${doc.exists}`);
+
+      // Try 2: If not found, query by 'id' field in Agencies
+      if (!doc.exists) {
+        console.log(`[GET Profile] Trying id field query in Agencies...`);
+        const snapshot = await firestoreDb
+          .collection("Agencies")
+          .where("id", "==", agencyId)
+          .limit(1)
+          .get();
+
+        if (!snapshot.empty) {
+          doc = snapshot.docs[0];
+          console.log(
+            `[GET Profile] Found in Agencies by id! Doc key: ${doc.id}`
+          );
+        }
+      }
+
+      // Try 3: Search in Users collection as fallback
+      if (!doc.exists) {
+        console.log(`[GET Profile] Searching Users collection...`);
+        let userDoc = await firestoreDb.collection("Users").doc(agencyId).get();
+
+        if (!userDoc.exists) {
+          const userSnapshot = await firestoreDb
+            .collection("Users")
+            .where("id", "==", agencyId)
+            .limit(1)
+            .get();
+
+          if (!userSnapshot.empty) {
+            userDoc = userSnapshot.docs[0];
+          }
+        }
+
+        if (userDoc.exists) {
+          doc = userDoc;
+          console.log(`[GET Profile] Found in Users! Doc key: ${doc.id}`);
+        }
+      }
+
+      agency = doc.exists ? { id: doc.id, ...doc.data() } : null;
+    } else {
+      const { resource } = await agenciesContainer
+        .item(agencyId, agencyId)
+        .read();
+      agency = resource;
+    }
+
+    if (!agency) return res.status(404).json({ error: "Agency not found" });
+
+    // Remove sensitive data
+    const { password, password_hash, salt, ...safeAgency } = agency;
+    res.json(safeAgency);
+  } catch (err) {
+    console.error("Get Profile Error:", err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// API: Update Agency Profile
+app.put("/api/agency/profile", async (req, res) => {
+  const {
+    agencyId,
+    name,
+    email,
+    description,
+    website,
+    location,
+    language,
+    timezone,
+    logo,
+  } = req.body;
+  if (!agencyId) return res.status(400).json({ error: "Missing agencyId" });
+
+  console.log(
+    `[PUT Profile] Updating agencyId: ${agencyId} (Cloud: ${USE_GOOGLE_CLOUD})`
+  );
+
+  try {
+    if (USE_GOOGLE_CLOUD) {
+      const agencyRef = firestoreDb.collection("Agencies").doc(agencyId);
+      let doc = await agencyRef.get();
+
+      console.log(`[PUT Profile] Direct doc lookup: ${doc.exists}`);
+
+      // Fallback: If doc not found by ID, try to find by querying Agencies
+      if (!doc.exists) {
+        console.log(`[PUT Profile] Trying Agencies id field query...`);
+        const snapshot = await firestoreDb
+          .collection("Agencies")
+          .where("id", "==", agencyId)
+          .limit(1)
+          .get();
+
+        if (!snapshot.empty) {
+          doc = snapshot.docs[0];
+          console.log(
+            `[PUT Profile] Found in Agencies by id! Doc key: ${doc.id}`
+          );
+        }
+      }
+
+      // Fallback 2: Search Users collection
+      if (!doc.exists) {
+        console.log(`[PUT Profile] Searching Users collection...`);
+        let userDoc = await firestoreDb.collection("Users").doc(agencyId).get();
+
+        if (!userDoc.exists) {
+          const userSnapshot = await firestoreDb
+            .collection("Users")
+            .where("id", "==", agencyId)
+            .limit(1)
+            .get();
+
+          if (!userSnapshot.empty) {
+            userDoc = userSnapshot.docs[0];
+          }
+        }
+
+        if (userDoc.exists) {
+          doc = userDoc;
+          console.log(`[PUT Profile] Found in Users! Doc key: ${doc.id}`);
+        }
+      }
+
+      if (!doc.exists)
+        return res.status(404).json({ error: "Agency not found" });
+
+      // Use the correct document reference (either original or from fallback)
+      const updateRef = doc.ref || agencyRef;
+      console.log(`[PUT Profile] Updating document: ${updateRef.id}`);
+
+      // Build update object excluding undefined values (Firestore doesn't accept undefined)
+      const updateData = { updatedAt: new Date().toISOString() };
+      if (name !== undefined) updateData.name = name;
+      if (email !== undefined) updateData.email = email;
+      if (description !== undefined) updateData.description = description;
+      if (website !== undefined) updateData.website = website;
+      if (location !== undefined) updateData.location = location;
+      if (language !== undefined) updateData.language = language;
+      if (timezone !== undefined) updateData.timezone = timezone;
+      if (logo !== undefined) updateData.logo = logo;
+
+      await updateRef.update(updateData);
+    } else {
+      const { resource: agency } = await agenciesContainer
+        .item(agencyId, agencyId)
+        .read();
+      if (!agency) return res.status(404).json({ error: "Agency not found" });
+
+      // Update fields
+      agency.name = name || agency.name;
+      agency.email = email || agency.email;
+      agency.description = description || agency.description;
+      agency.website = website || agency.website;
+      agency.location = location || agency.location;
+      agency.language = language || agency.language;
+      agency.timezone = timezone || agency.timezone;
+      agency.logo = logo || agency.logo;
+      agency.updatedAt = new Date().toISOString();
+
+      await agenciesContainer.item(agencyId, agencyId).replace(agency);
+    }
+
+    res.json({ success: true, message: "Profile updated successfully" });
+  } catch (err) {
+    console.error("Update Profile Error:", err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// API: Get User Profile
+app.get("/api/user/profile", async (req, res) => {
+  const { userId } = req.query;
+  if (!userId) return res.status(400).json({ error: "Missing userId" });
+
+  console.log(
+    `[GET User Profile] Fetching for ${userId} (Cloud: ${USE_GOOGLE_CLOUD})`
+  );
+
+  try {
+    let user = null;
+
+    if (USE_GOOGLE_CLOUD) {
+      // Try direct lookup
+      let doc = await firestoreDb.collection("Users").doc(userId).get();
+      console.log(`[GET User Profile] Direct lookup: ${doc.exists}`);
+
+      // Fallback: query by id field
+      if (!doc.exists) {
+        const snapshot = await firestoreDb
+          .collection("Users")
+          .where("id", "==", userId)
+          .limit(1)
+          .get();
+        if (!snapshot.empty) {
+          doc = snapshot.docs[0];
+          console.log(`[GET User Profile] Found by id field`);
+        }
+      }
+
+      user = doc.exists ? { id: doc.id, ...doc.data() } : null;
+    } else {
+      const { resource } = await usersContainer.item(userId, userId).read();
+      user = resource;
+    }
+
+    if (!user) return res.status(404).json({ error: "User not found" });
+
+    // Remove sensitive data
+    const { password, password_hash, salt, ...safeUser } = user;
+    res.json(safeUser);
+  } catch (err) {
+    console.error("Get User Profile Error:", err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// API: Update User Profile
+app.put("/api/user/profile", async (req, res) => {
+  const { userId, name, bio } = req.body;
+  if (!userId) return res.status(400).json({ error: "Missing userId" });
+
+  console.log(
+    `[PUT User Profile] Updating userId: ${userId} (Cloud: ${USE_GOOGLE_CLOUD})`
+  );
+
+  try {
+    if (USE_GOOGLE_CLOUD) {
+      const userRef = firestoreDb.collection("Users").doc(userId);
+      let doc = await userRef.get();
+
+      console.log(`[PUT User Profile] Direct doc lookup: ${doc.exists}`);
+
+      // Fallback: query by id field
+      if (!doc.exists) {
+        const snapshot = await firestoreDb
+          .collection("Users")
+          .where("id", "==", userId)
+          .limit(1)
+          .get();
+        if (!snapshot.empty) {
+          doc = snapshot.docs[0];
+          console.log(`[PUT User Profile] Found by id field`);
+        }
+      }
+
+      if (!doc.exists) return res.status(404).json({ error: "User not found" });
+
+      const updateRef = doc.ref || userRef;
+
+      // Build update object excluding undefined values
+      const updateData = { updatedAt: new Date().toISOString() };
+      if (name !== undefined) updateData.name = name;
+      if (bio !== undefined) updateData.bio = bio;
+
+      await updateRef.update(updateData);
+      console.log(`[PUT User Profile] Updated successfully`);
+    } else {
+      const { resource: user } = await usersContainer
+        .item(userId, userId)
+        .read();
+      if (!user) return res.status(404).json({ error: "User not found" });
+
+      if (name !== undefined) user.name = name;
+      if (bio !== undefined) user.bio = bio;
+      user.updatedAt = new Date().toISOString();
+
+      await usersContainer.items.upsert(user);
+    }
+
+    res.json({ success: true, message: "Profile updated successfully" });
+  } catch (err) {
+    console.error("Update User Profile Error:", err);
+    res.status(500).json({ error: err.message });
   }
 });
 
