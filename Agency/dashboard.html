@@ -1,4 +1,4 @@
-<!doctype html>
+<!DOCTYPE html>
 <html class="dark" lang="en">
   <head>
     <meta charset="utf-8" />
@@ -67,15 +67,13 @@
         backdrop-filter: blur(8px);
         -webkit-backdrop-filter: blur(8px);
         border: 1px solid rgba(255, 255, 255, 0.4);
-        box-shadow:
-          0 4px 6px -1px rgba(0, 0, 0, 0.05),
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05),
           0 2px 4px -1px rgba(0, 0, 0, 0.03);
       }
       .dark .glass-card {
         background: rgba(30, 41, 59, 0.6);
         border: 1px solid rgba(255, 255, 255, 0.05);
-        box-shadow:
-          0 4px 6px -1px rgba(0, 0, 0, 0.2),
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2),
           0 2px 4px -1px rgba(0, 0, 0, 0.1);
       }
       .no-scrollbar::-webkit-scrollbar {
@@ -86,8 +84,7 @@
         scrollbar-width: none;
       }
       body {
-        background-image:
-          radial-gradient(
+        background-image: radial-gradient(
             at 0% 0%,
             rgba(59, 130, 246, 0.15) 0px,
             transparent 50%
@@ -110,8 +107,7 @@
         background-attachment: fixed;
       }
       .dark body {
-        background-image:
-          radial-gradient(
+        background-image: radial-gradient(
             at 0% 0%,
             rgba(59, 130, 246, 0.1) 0px,
             transparent 50%
@@ -381,7 +377,7 @@
                 </h3>
                 <a
                   class="text-sm text-slate-400 hover:text-white transition-colors"
-                  href="#"
+                  href="browse_data.html"
                   >View All</a
                 >
               </div>
@@ -518,7 +514,7 @@
         try {
           // 1. Fetch Purchases (Total Spend & Active Datasets)
           const purchaseRes = await fetch(
-            `/api/agency/purchases?agencyId=${user.id}`,
+            `/api/agency/purchases?agencyId=${user.id}`
           );
           const purchaseData = await purchaseRes.json();
           let purchases = [];
@@ -533,15 +529,16 @@
               ? purchaseData.totalSpent
               : purchases.reduce(
                   (sum, item) => sum + (item.sold_price || 0),
-                  0,
+                  0
                 );
 
           if (purchases.length > 0 || totalSpend > 0) {
-            document.getElementById("total-spend").textContent =
-              `₹${totalSpend.toLocaleString(undefined, {
-                minimumFractionDigits: 0,
-                maximumFractionDigits: 0,
-              })}`;
+            document.getElementById(
+              "total-spend"
+            ).textContent = `₹${totalSpend.toLocaleString(undefined, {
+              minimumFractionDigits: 0,
+              maximumFractionDigits: 0,
+            })}`;
             document.getElementById("active-datasets").textContent =
               purchases.length;
           }
@@ -599,7 +596,7 @@
             recentPurchases.forEach((purchase, index) => {
               const isFirst = index === 0;
               const purchaseDate = new Date(
-                purchase.transaction_date || purchase.soldAt,
+                purchase.transaction_date || purchase.soldAt
               );
               const timeAgo = getTimeAgo(purchaseDate);
 
