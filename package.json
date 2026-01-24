@@ -29,12 +29,14 @@
     "firebase-admin": "^13.6.0",
     "helmet": "^8.1.0",
     "instamojo-nodejs": "^0.0.5",
+    "mammoth": "^1.11.0",
     "nodemailer": "^7.0.12",
     "openai": "^6.16.0",
     "passport": "^0.7.0",
     "passport-github2": "^0.1.12",
     "passport-google-oauth20": "^2.0.0",
-    "pdf-parse": "^2.4.5",
-    "razorpay": "^2.9.6"
+    "pdf-parse": "^1.1.1",
+    "razorpay": "^2.9.6",
+    "xlsx": "^0.18.5"
   }
 }

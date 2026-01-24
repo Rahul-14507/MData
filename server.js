@@ -82,6 +82,11 @@ const createImageAnalysisClient =
   require("@azure-rest/ai-vision-image-analysis").default;
 const { AzureKeyCredential } = require("@azure/core-auth");
 
+// Document parsing libraries
+const pdfParse = require("pdf-parse");
+const mammoth = require("mammoth");
+const XLSX = require("xlsx");
+
 const app = express();
 const PORT = process.env.PORT || 3000;
 
@@ -1699,6 +1704,10 @@ app.post("/api/process-file", async (req, res) => {
       ".jsx",
       ".tsx",
     ].includes(fileExtension);
+    const isPdf = fileExtension === ".pdf";
+    const isDocx = fileExtension === ".docx";
+    const isExcel = [".xlsx", ".xls"].includes(fileExtension);
+    const isDocument = isPdf || isDocx || isExcel;
 
     // Initialize metadata with user-provided fields
     const metadata = {
@@ -1736,6 +1745,37 @@ app.post("/api/process-file", async (req, res) => {
 
           if (isText) {
             contentString = blobContent.toString("utf-8");
+          } else if (isPdf) {
+            // Extract text from PDF using pdf-parse v1.x
+            try {
+              const pdfData = await pdfParse(blobContent);
+              contentString = pdfData.text || "";
+              console.log(`Extracted ${contentString.length} chars from PDF`);
+            } catch (pdfErr) {
+              console.error("PDF parsing failed:", pdfErr.message);
+            }
+          } else if (isDocx) {
+            // Extract text from DOCX
+            try {
+              const docxResult = await mammoth.extractRawText({
+                buffer: blobContent,
+              });
+              contentString = docxResult.value;
+              console.log(`Extracted ${contentString.length} chars from DOCX`);
+            } catch (docxErr) {
+              console.error("DOCX parsing failed:", docxErr.message);
+            }
+          } else if (isExcel) {
+            // Extract text from Excel
+            try {
+              const workbook = XLSX.read(blobContent, { type: "buffer" });
+              const sheetName = workbook.SheetNames[0];
+              const sheet = workbook.Sheets[sheetName];
+              contentString = XLSX.utils.sheet_to_csv(sheet);
+              console.log(`Extracted ${contentString.length} chars from Excel`);
+            } catch (xlsxErr) {
+              console.error("Excel parsing failed:", xlsxErr.message);
+            }
           }
           console.log(
             `Downloaded ${blobName} from GCS (${blobContent.length} bytes)`,
@@ -1766,8 +1806,8 @@ app.post("/api/process-file", async (req, res) => {
           metadata.quality_score = 50;
           metadata.payout = 10;
         }
-      } else if (isText) {
-        metadata.analysis_type = "code_or_text";
+      } else if (isText || isDocument) {
+        metadata.analysis_type = isDocument ? "document" : "code_or_text";
 
         if (contentString) {
           const aiResult = await analyzeContentQualityGPT4o(
@@ -1821,6 +1861,31 @@ app.post("/api/process-file", async (req, res) => {
 
           if (isText) {
             contentString = blobContent.toString("utf-8");
+          } else if (isPdf) {
+            try {
+              const pdfData = await pdfParse(blobContent);
+              contentString = pdfData.text || "";
+            } catch (pdfErr) {
+              console.error("PDF parsing failed:", pdfErr.message);
+            }
+          } else if (isDocx) {
+            try {
+              const docxResult = await mammoth.extractRawText({
+                buffer: blobContent,
+              });
+              contentString = docxResult.value;
+            } catch (docxErr) {
+              console.error("DOCX parsing failed:", docxErr.message);
+            }
+          } else if (isExcel) {
+            try {
+              const workbook = XLSX.read(blobContent, { type: "buffer" });
+              const sheetName = workbook.SheetNames[0];
+              const sheet = workbook.Sheets[sheetName];
+              contentString = XLSX.utils.sheet_to_csv(sheet);
+            } catch (xlsxErr) {
+              console.error("Excel parsing failed:", xlsxErr.message);
+            }
           }
         }
       } catch (downloadErr) {
@@ -1851,8 +1916,8 @@ app.post("/api/process-file", async (req, res) => {
           metadata.quality_score = 50;
           metadata.payout = 10;
         }
-      } else if (isText) {
-        metadata.analysis_type = "code_or_text";
+      } else if (isText || isDocument) {
+        metadata.analysis_type = isDocument ? "document" : "code_or_text";
 
         if (contentString) {
           const aiResult = await analyzeContentQualityGPT4o(
