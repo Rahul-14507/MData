@@ -3,7 +3,7 @@ require("dotenv").config();
 // ========== DUAL-CLOUD TOGGLE ==========
 const USE_GOOGLE_CLOUD = process.env.USE_GOOGLE_CLOUD === "true";
 console.log(
-  `\n🌐 Cloud Provider: ${USE_GOOGLE_CLOUD ? "Google Cloud" : "Azure"}\n`
+  `\n🌐 Cloud Provider: ${USE_GOOGLE_CLOUD ? "Google Cloud" : "Azure"}\n`,
 );
 
 // Google Cloud SDKs (conditionally loaded)
@@ -36,7 +36,7 @@ if (USE_GOOGLE_CLOUD) {
       console.log("📋 Using service account from environment variables");
     } else {
       throw new Error(
-        "No service account credentials found (JSON file or env vars)"
+        "No service account credentials found (JSON file or env vars)",
       );
     }
 
@@ -54,14 +54,14 @@ if (USE_GOOGLE_CLOUD) {
     });
     gcsBucket = gcsStorage.bucket(process.env.GCS_BUCKET_NAME);
     console.log(
-      `✅ Google Cloud Storage initialized (Bucket: ${process.env.GCS_BUCKET_NAME})`
+      `✅ Google Cloud Storage initialized (Bucket: ${process.env.GCS_BUCKET_NAME})`,
     );
 
     console.log("ℹ️  AI Analysis: Using Azure Vision + Azure Gemini");
   } catch (gcpError) {
     console.error("❌ Google Cloud initialization failed:", gcpError.message);
     console.log(
-      "   Make sure service-account-key.json exists OR GOOGLE_PROJECT_ID, GOOGLE_CLIENT_EMAIL, GOOGLE_PRIVATE_KEY are set in .env"
+      "   Make sure service-account-key.json exists OR GOOGLE_PROJECT_ID, GOOGLE_CLIENT_EMAIL, GOOGLE_PRIVATE_KEY are set in .env",
     );
   }
 }
@@ -117,7 +117,7 @@ function getVisionClient() {
   if (!visionClient && process.env.VISION_ENDPOINT && process.env.VISION_KEY) {
     visionClient = createImageAnalysisClient(
       process.env.VISION_ENDPOINT,
-      new AzureKeyCredential(process.env.VISION_KEY)
+      new AzureKeyCredential(process.env.VISION_KEY),
     );
     console.log("Azure Vision AI client initialized.");
   }
@@ -287,13 +287,13 @@ app.use(express.static(__dirname));
 
 // Clean URL routes for legal pages
 app.get("/terms", (req, res) =>
-  res.sendFile(path.join(__dirname, "terms.html"))
+  res.sendFile(path.join(__dirname, "terms.html")),
 );
 app.get("/privacy", (req, res) =>
-  res.sendFile(path.join(__dirname, "privacy.html"))
+  res.sendFile(path.join(__dirname, "privacy.html")),
 );
 app.get("/refund", (req, res) =>
-  res.sendFile(path.join(__dirname, "refund.html"))
+  res.sendFile(path.join(__dirname, "refund.html")),
 );
 
 // ========== SESSION & PASSPORT CONFIGURATION ==========
@@ -307,7 +307,7 @@ app.use(
       secure: process.env.NODE_ENV === "production",
       maxAge: 24 * 60 * 60 * 1000, // 24 hours
     },
-  })
+  }),
 );
 
 app.use(passport.initialize());
@@ -377,15 +377,15 @@ if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
 
           await container.items.create(newUser);
           console.log(
-            `OAuth: Created new ${role} account for ${email} via Google`
+            `OAuth: Created new ${role} account for ${email} via Google`,
           );
           return done(null, { ...newUser, role });
         } catch (err) {
           console.error("Google OAuth error:", err);
           return done(err, null);
         }
-      }
-    )
+      },
+    ),
   );
   console.log("Google OAuth strategy configured.");
 }
@@ -439,15 +439,15 @@ if (process.env.GITHUB_CLIENT_ID && process.env.GITHUB_CLIENT_SECRET) {
 
           await container.items.create(newUser);
           console.log(
-            `OAuth: Created new ${role} account for ${email} via GitHub`
+            `OAuth: Created new ${role} account for ${email} via GitHub`,
           );
           return done(null, { ...newUser, role });
         } catch (err) {
           console.error("GitHub OAuth error:", err);
           return done(err, null);
         }
-      }
-    )
+      },
+    ),
   );
   console.log("GitHub OAuth strategy configured.");
 }
@@ -509,7 +509,7 @@ let containerClient;
 try {
   if (storageConnectionString) {
     blobServiceClient = BlobServiceClient.fromConnectionString(
-      storageConnectionString
+      storageConnectionString,
     );
     containerClient = blobServiceClient.getContainerClient("uploads");
     console.log("Connected to Azure Blob Storage.");
@@ -540,7 +540,7 @@ app.get("/auth/google", (req, res, next) => {
   passport.authenticate("google", { scope: ["profile", "email"] })(
     req,
     res,
-    next
+    next,
   );
 });
 
@@ -566,7 +566,7 @@ app.get(
         window.location.href = '${redirectUrl}';
       </script>
     `);
-  }
+  },
 );
 
 // GitHub OAuth
@@ -596,104 +596,8 @@ app.get(
         window.location.href = '${redirectUrl}';
       </script>
     `);
-  }
+  },
 );
-
-// API: Generate SAS Token / GCS Signed URL for blob storage
-app.get("/api/storage/sas", async (req, res) => {
-  try {
-    const blobName = req.query.blobName;
-    const permissions = req.query.permissions || "r"; // 'r' for read, 'w' for write
-
-    if (USE_GOOGLE_CLOUD) {
-      // ========== GOOGLE CLOUD STORAGE SIGNED URL ==========
-      if (!gcsBucket) {
-        return res
-          .status(500)
-          .json({ error: "Google Cloud Storage not configured" });
-      }
-
-      const fileName =
-        blobName ||
-        `upload_${Date.now()}_${crypto.randomBytes(4).toString("hex")}`;
-      const file = gcsBucket.file(fileName);
-
-      const options = {
-        version: "v4",
-        action: permissions.includes("w") ? "write" : "read",
-        expires: Date.now() + 30 * 60 * 1000, // 30 minutes
-      };
-
-      // For uploads, set content type
-      if (permissions.includes("w")) {
-        options.contentType = "application/octet-stream";
-      }
-
-      const [url] = await file.getSignedUrl(options);
-
-      return res.json({
-        sasUrl: url,
-        blobName: fileName,
-        provider: "gcs",
-      });
-    } else {
-      // ========== AZURE BLOB STORAGE SAS TOKEN ==========
-      if (!blobServiceClient || !containerClient) {
-        return res.status(500).json({ error: "Azure Storage not configured" });
-      }
-
-      if (!blobName) {
-        // Container-level SAS for uploads (existing behavior)
-        const containerPermissions = new ContainerSASPermissions();
-        containerPermissions.write = true;
-        containerPermissions.create = true;
-        containerPermissions.list = true;
-        containerPermissions.read = true;
-
-        const expiryDate = new Date();
-        expiryDate.setMinutes(expiryDate.getMinutes() + 30);
-
-        const sasToken = generateBlobSASQueryParameters(
-          {
-            containerName: "uploads",
-            permissions: containerPermissions,
-            expiresOn: expiryDate,
-          },
-          blobServiceClient.credential
-        ).toString();
-
-        const sasUrl = `${containerClient.url}?${sasToken}`;
-        return res.json({ sasUrl, provider: "azure" });
-      }
-
-      // Blob-specific SAS for downloads
-      const { BlobSASPermissions } = require("@azure/storage-blob");
-      const blobClient = containerClient.getBlobClient(blobName);
-
-      const blobPermissions = new BlobSASPermissions();
-      blobPermissions.read = true;
-
-      const expiryDate = new Date();
-      expiryDate.setMinutes(expiryDate.getMinutes() + 30);
-
-      const sasToken = generateBlobSASQueryParameters(
-        {
-          containerName: "uploads",
-          blobName: blobName,
-          permissions: blobPermissions,
-          expiresOn: expiryDate,
-        },
-        blobServiceClient.credential
-      ).toString();
-
-      const sasUrl = `${blobClient.url}?${sasToken}`;
-      res.json({ sasUrl, provider: "azure" });
-    }
-  } catch (error) {
-    console.error("SAS/Signed URL Gen Error:", error);
-    res.status(500).json({ error: error.message });
-  }
-});
 
 // API: User Stats
 app.get("/api/stats", async (req, res) => {
@@ -1022,7 +926,7 @@ app.get("/api/agency/purchases", async (req, res) => {
         .get();
       totalSpent = ordersSnap.docs.reduce(
         (sum, doc) => sum + (doc.data().totalAmount || 0),
-        0
+        0,
       );
     } else {
       // ========== COSMOS DB QUERY ==========
@@ -1087,7 +991,7 @@ app.post("/api/market/purchase", async (req, res) => {
     const totalBatchValue = purchasedCount * 25.0;
     const totalQualityScore = itemsToBuy.reduce(
       (sum, item) => sum + (item.quality_score || 0),
-      0
+      0,
     );
 
     // 4. Update Items
@@ -1155,7 +1059,7 @@ app.post("/api/market/checkout", async (req, res) => {
 
         const totalQuality = itemsToBuy.reduce(
           (sum, i) => sum + (i.quality_score || 0),
-          0
+          0,
         );
 
         for (const item of itemsToBuy) {
@@ -1218,7 +1122,7 @@ app.post("/api/login", async (req, res) => {
       console.log(
         `${role === "agency" ? "Agency" : "User"} ${user.name} logged in. ID: ${
           user.id
-        }`
+        }`,
       );
     } else {
       // ========== COSMOS DB QUERY ==========
@@ -1270,7 +1174,7 @@ app.post("/api/login", async (req, res) => {
     console.log(
       `${accountType.charAt(0).toUpperCase() + accountType.slice(1)} ${
         user.name
-      } logged in successfully.`
+      } logged in successfully.`,
     );
 
     const redirectUrl =
@@ -1381,7 +1285,7 @@ app.post("/api/signup", async (req, res) => {
         newAccount.name
       } created in ${collectionName} [${
         USE_GOOGLE_CLOUD ? "Firestore" : "Cosmos DB"
-      }].`
+      }].`,
     );
 
     const redirectUrl =
@@ -1530,7 +1434,7 @@ app.delete("/api/agency/cart/:itemId", async (req, res) => {
       }
 
       agency.cart = agency.cart.filter(
-        (c) => c.id !== itemId && c.category !== itemId
+        (c) => c.id !== itemId && c.category !== itemId,
       );
       await docRef.set(agency, { merge: true });
     } else {
@@ -1544,7 +1448,7 @@ app.delete("/api/agency/cart/:itemId", async (req, res) => {
       }
 
       agency.cart = agency.cart.filter(
-        (c) => c.id !== itemId && c.category !== itemId
+        (c) => c.id !== itemId && c.category !== itemId,
       );
       await agenciesContainer.items.upsert(agency);
     }
@@ -1774,13 +1678,13 @@ app.post("/api/process-file", async (req, res) => {
     console.log(
       `Processing file: ${blobName} for user: ${userId} [${
         USE_GOOGLE_CLOUD ? "GCP" : "Azure"
-      }]`
+      }]`,
     );
 
     const filename = originalName || blobName;
     const fileExtension = path.extname(filename).toLowerCase();
     const isImage = [".jpg", ".jpeg", ".png", ".gif", ".webp"].includes(
-      fileExtension
+      fileExtension,
     );
     const isText = [
       ".txt",
@@ -1834,7 +1738,7 @@ app.post("/api/process-file", async (req, res) => {
             contentString = blobContent.toString("utf-8");
           }
           console.log(
-            `Downloaded ${blobName} from GCS (${blobContent.length} bytes)`
+            `Downloaded ${blobName} from GCS (${blobContent.length} bytes)`,
           );
         }
       } catch (downloadErr) {
@@ -1856,7 +1760,7 @@ app.post("/api/process-file", async (req, res) => {
           metadata.payout = calculatePayout(score);
 
           metadata.market_category = await classifyContent(
-            `Image with tags: ${visionResult.tags.join(", ")}`
+            `Image with tags: ${visionResult.tags.join(", ")}`,
           );
         } else {
           metadata.quality_score = 50;
@@ -1868,7 +1772,7 @@ app.post("/api/process-file", async (req, res) => {
         if (contentString) {
           const aiResult = await analyzeContentQualityGPT4o(
             contentString,
-            filename
+            filename,
           );
           metadata.quality_score = aiResult.quality_score;
           metadata.payout = aiResult.payout;
@@ -1877,7 +1781,7 @@ app.post("/api/process-file", async (req, res) => {
           metadata.market_category = await classifyContent(
             `Code/Text file named ${filename}. Summary: ${
               aiResult.ai_analysis?.summary || "N/A"
-            }`
+            }`,
           );
         } else {
           metadata.quality_score = 50;
@@ -1901,7 +1805,7 @@ app.post("/api/process-file", async (req, res) => {
         .doc(blobName)
         .set(metadata, { merge: true });
       console.log(
-        `SUCCESS [GCP]: File ${filename} processed with Score: ${metadata.quality_score}`
+        `SUCCESS [GCP]: File ${filename} processed with Score: ${metadata.quality_score}`,
       );
     } else {
       // ========== AZURE BLOB STORAGE DOWNLOAD ==========
@@ -1922,7 +1826,7 @@ app.post("/api/process-file", async (req, res) => {
       } catch (downloadErr) {
         console.error(
           "Failed to download blob for analysis:",
-          downloadErr.message
+          downloadErr.message,
         );
       }
 
@@ -1941,7 +1845,7 @@ app.post("/api/process-file", async (req, res) => {
           metadata.payout = calculatePayout(score);
 
           metadata.market_category = await classifyContent(
-            `Image with tags: ${visionResult.tags.join(", ")}`
+            `Image with tags: ${visionResult.tags.join(", ")}`,
           );
         } else {
           metadata.quality_score = 50;
@@ -1953,7 +1857,7 @@ app.post("/api/process-file", async (req, res) => {
         if (contentString) {
           const aiResult = await analyzeContentQualityGPT4o(
             contentString,
-            filename
+            filename,
           );
           metadata.quality_score = aiResult.quality_score;
           metadata.payout = aiResult.payout;
@@ -1962,7 +1866,7 @@ app.post("/api/process-file", async (req, res) => {
           metadata.market_category = await classifyContent(
             `Code/Text file named ${filename}. Summary: ${
               aiResult.ai_analysis?.summary || "N/A"
-            }`
+            }`,
           );
         } else {
           metadata.quality_score = 50;
@@ -1984,7 +1888,7 @@ app.post("/api/process-file", async (req, res) => {
       const submissionsContainer = database.container("Submissions");
       await submissionsContainer.items.upsert(metadata);
       console.log(
-        `SUCCESS [Azure]: File ${filename} processed with Score: ${metadata.quality_score}`
+        `SUCCESS [Azure]: File ${filename} processed with Score: ${metadata.quality_score}`,
       );
     }
 
@@ -2016,8 +1920,8 @@ if (process.env.RAZORPAY_KEY_ID && process.env.RAZORPAY_KEY_SECRET) {
   });
   console.log(
     `Razorpay initialized (Test Mode: ${process.env.RAZORPAY_KEY_ID.startsWith(
-      "rzp_test_"
-    )})`
+      "rzp_test_",
+    )})`,
   );
 }
 
@@ -2190,7 +2094,7 @@ app.post("/api/checkout/verify-payment", async (req, res) => {
                 "Found category for cart item:",
                 itemId,
                 "->",
-                cartItem.category
+                cartItem.category,
               );
             } else {
               purchasedCategories.push(itemId);
@@ -2218,7 +2122,7 @@ app.post("/api/checkout/verify-payment", async (req, res) => {
                 "Updating submission:",
                 submission.id,
                 "from user:",
-                submission.userId
+                submission.userId,
               );
               await firestoreDb
                 .collection("Submissions")
@@ -2248,7 +2152,7 @@ app.post("/api/checkout/verify-payment", async (req, res) => {
                   "User",
                   submission.userId,
                   "credited:",
-                  submission.payout || 25
+                  submission.payout || 25,
                 );
               }
             }
@@ -2257,7 +2161,7 @@ app.post("/api/checkout/verify-payment", async (req, res) => {
           console.error(
             "Error processing category:",
             category,
-            queryErr.message
+            queryErr.message,
           );
         }
       }
@@ -2348,7 +2252,7 @@ app.post("/api/checkout/verify-payment", async (req, res) => {
               console.error(
                 "Error updating submission:",
                 submission.id,
-                updateErr.message
+                updateErr.message,
               );
             }
           }
@@ -2356,7 +2260,7 @@ app.post("/api/checkout/verify-payment", async (req, res) => {
           console.error(
             "Error querying submissions for category:",
             category,
-            queryErr.message
+            queryErr.message,
           );
         }
       }
@@ -2381,7 +2285,7 @@ app.post("/api/checkout/verify-payment", async (req, res) => {
     }
 
     console.log(
-      `Payment ${razorpay_payment_id} verified for order ${order.id}`
+      `Payment ${razorpay_payment_id} verified for order ${order.id}`,
     );
 
     res.json({
@@ -2422,6 +2326,181 @@ app.get("/api/checkout/status/:orderId", async (req, res) => {
     });
   } catch (err) {
     console.error("Order status error:", err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ========== FILE UPLOAD APIs ==========
+
+// API: Get Upload SAS/Signed URL
+app.get("/api/storage/sas", async (req, res) => {
+  try {
+    const { filename, contentType } = req.query;
+    if (!filename) return res.status(400).json({ error: "Missing filename" });
+
+    if (USE_GOOGLE_CLOUD) {
+      // Google Cloud Storage Signed URL (v4)
+      const mimeType = contentType || "application/octet-stream";
+
+      const [url] = await gcsBucket.file(filename).getSignedUrl({
+        version: "v4",
+        action: "write",
+        expires: Date.now() + 15 * 60 * 1000,
+        contentType: mimeType,
+      });
+
+      res.set(
+        "Cache-Control",
+        "no-store, no-cache, must-revalidate, proxy-revalidate",
+      );
+      res.set("Pragma", "no-cache");
+      res.set("Expires", "0");
+      res.set("Surrogate-Control", "no-store");
+
+      res.json({
+        sasUrl: url,
+        provider: "gcp",
+        requiredHeaders: {
+          "Content-Type": mimeType,
+        },
+      });
+    } else {
+      // Azure Blob SAS
+      const containerName = "uploads";
+      const permissions = ContainerSASPermissions.parse("racwd");
+      const validMinutes = 60;
+
+      // Extract Account Name & Key
+      const connStr = process.env.AZURE_STORAGE_CONNECTION_STRING;
+      const accountMap = new Map(
+        connStr.split(";").map((s) => s.split("=", 2)),
+      );
+      const accountName = accountMap.get("AccountName");
+      const accountKey = accountMap.get("AccountKey");
+
+      if (!accountName || !accountKey) throw new Error("Invalid Azure Creds");
+
+      const sharedKeyCredential = new StorageSharedKeyCredential(
+        accountName,
+        accountKey,
+      );
+
+      const sasOptions = {
+        containerName,
+        blobName: filename,
+        permissions,
+        startsOn: new Date(),
+        expiresOn: new Date(new Date().valueOf() + validMinutes * 60 * 1000),
+      };
+
+      const sasToken = generateBlobSASQueryParameters(
+        sasOptions,
+        sharedKeyCredential,
+      ).toString();
+
+      const sasUrl = `https://${accountName}.blob.core.windows.net/${containerName}/${filename}?${sasToken}`;
+
+      res.json({
+        sasUrl,
+        provider: "azure",
+        requiredHeaders: {
+          "x-ms-blob-type": "BlockBlob",
+        },
+      });
+    }
+  } catch (err) {
+    console.error("SAS Generation Error:", err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// API: Get Download Signed URL (read-only)
+app.get("/api/storage/download", async (req, res) => {
+  try {
+    const { filename } = req.query;
+    if (!filename) return res.status(400).json({ error: "Missing filename" });
+
+    if (USE_GOOGLE_CLOUD) {
+      // Google Cloud Storage Signed URL for reading with download disposition
+      const [url] = await gcsBucket.file(filename).getSignedUrl({
+        version: "v4",
+        action: "read",
+        expires: Date.now() + 30 * 60 * 1000, // 30 minutes
+        responseDisposition: `attachment; filename="${filename}"`,
+      });
+
+      res.json({
+        downloadUrl: url,
+        provider: "gcp",
+      });
+    } else {
+      // Azure Blob SAS for reading
+      const { BlobSASPermissions } = require("@azure/storage-blob");
+      const blobClient = containerClient.getBlobClient(filename);
+
+      const blobPermissions = new BlobSASPermissions();
+      blobPermissions.read = true;
+
+      const expiryDate = new Date();
+      expiryDate.setMinutes(expiryDate.getMinutes() + 30);
+
+      const sasToken = generateBlobSASQueryParameters(
+        {
+          containerName: "uploads",
+          blobName: filename,
+          permissions: blobPermissions,
+          expiresOn: expiryDate,
+        },
+        blobServiceClient.credential,
+      ).toString();
+
+      const downloadUrl = `${blobClient.url}?${sasToken}`;
+      res.json({ downloadUrl, provider: "azure" });
+    }
+  } catch (err) {
+    console.error("Download URL Generation Error:", err);
+    res.status(500).json({ error: err.message });
+  }
+});
+// API: Process Uploaded File
+app.post("/api/process-file", async (req, res) => {
+  try {
+    const { blobName, userId, originalName, fileSize } = req.body;
+
+    if (!blobName || !userId)
+      return res.status(400).json({ error: "Missing blobName or userId" });
+
+    const submissionId = crypto.randomUUID();
+    const newSubmission = {
+      id: submissionId,
+      userId,
+      original_name: originalName,
+      blob_name: blobName,
+      size: fileSize,
+      upload_date: new Date().toISOString(),
+      status: "completed",
+      market_category: "General",
+      quality_score: 85,
+      payout: 0,
+    };
+
+    if (USE_GOOGLE_CLOUD) {
+      await firestoreDb
+        .collection("Submissions")
+        .doc(submissionId)
+        .set(newSubmission);
+    } else {
+      const container = database.container("Submissions");
+      await container.items.create(newSubmission);
+    }
+
+    res.json({
+      success: true,
+      submissionId,
+      message: "File processed and saved.",
+    });
+  } catch (err) {
+    console.error("Process File Error:", err);
     res.status(500).json({ error: err.message });
   }
 });
@@ -2478,7 +2557,7 @@ app.post("/api/user/withdraw-request", async (req, res) => {
       withdrawnAmount = withdrawalsSnap.docs
         .map((d) => d.data())
         .filter((w) =>
-          ["pending", "processing", "completed"].includes(w.status)
+          ["pending", "processing", "completed"].includes(w.status),
         )
         .reduce((sum, w) => sum + w.amount, 0);
     } else {
@@ -2514,7 +2593,7 @@ app.post("/api/user/withdraw-request", async (req, res) => {
     if (amount > availableBalance) {
       return res.status(400).json({
         error: `Insufficient balance. Available: ₹${availableBalance.toFixed(
-          2
+          2,
         )}`,
       });
     }
@@ -2831,7 +2910,7 @@ app.get("/api/agency/profile", async (req, res) => {
   if (!agencyId) return res.status(400).json({ error: "Missing agencyId" });
 
   console.log(
-    `[GET Profile] Fetching for ${agencyId} (Cloud: ${USE_GOOGLE_CLOUD})`
+    `[GET Profile] Fetching for ${agencyId} (Cloud: ${USE_GOOGLE_CLOUD})`,
   );
 
   try {
@@ -2854,7 +2933,7 @@ app.get("/api/agency/profile", async (req, res) => {
         if (!snapshot.empty) {
           doc = snapshot.docs[0];
           console.log(
-            `[GET Profile] Found in Agencies by id! Doc key: ${doc.id}`
+            `[GET Profile] Found in Agencies by id! Doc key: ${doc.id}`,
           );
         }
       }
@@ -2917,7 +2996,7 @@ app.put("/api/agency/profile", async (req, res) => {
   if (!agencyId) return res.status(400).json({ error: "Missing agencyId" });
 
   console.log(
-    `[PUT Profile] Updating agencyId: ${agencyId} (Cloud: ${USE_GOOGLE_CLOUD})`
+    `[PUT Profile] Updating agencyId: ${agencyId} (Cloud: ${USE_GOOGLE_CLOUD})`,
   );
 
   try {
@@ -2939,7 +3018,7 @@ app.put("/api/agency/profile", async (req, res) => {
         if (!snapshot.empty) {
           doc = snapshot.docs[0];
           console.log(
-            `[PUT Profile] Found in Agencies by id! Doc key: ${doc.id}`
+            `[PUT Profile] Found in Agencies by id! Doc key: ${doc.id}`,
           );
         }
       }
@@ -3019,7 +3098,7 @@ app.get("/api/user/profile", async (req, res) => {
   if (!userId) return res.status(400).json({ error: "Missing userId" });
 
   console.log(
-    `[GET User Profile] Fetching for ${userId} (Cloud: ${USE_GOOGLE_CLOUD})`
+    `[GET User Profile] Fetching for ${userId} (Cloud: ${USE_GOOGLE_CLOUD})`,
   );
 
   try {
@@ -3066,7 +3145,7 @@ app.put("/api/user/profile", async (req, res) => {
   if (!userId) return res.status(400).json({ error: "Missing userId" });
 
   console.log(
-    `[PUT User Profile] Updating userId: ${userId} (Cloud: ${USE_GOOGLE_CLOUD})`
+    `[PUT User Profile] Updating userId: ${userId} (Cloud: ${USE_GOOGLE_CLOUD})`,
   );
 
   try {

@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 <html class="dark" lang="en">
   <head>
     <meta charset="utf-8" />
@@ -68,17 +68,20 @@
         backdrop-filter: blur(8px);
         -webkit-backdrop-filter: blur(8px);
         border: 1px solid rgba(255, 255, 255, 0.4);
-        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05),
+        box-shadow:
+          0 4px 6px -1px rgba(0, 0, 0, 0.05),
           0 2px 4px -1px rgba(0, 0, 0, 0.03);
       }
       .dark .glass-card {
         background: rgba(30, 41, 59, 0.6);
         border: 1px solid rgba(255, 255, 255, 0.05);
-        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2),
+        box-shadow:
+          0 4px 6px -1px rgba(0, 0, 0, 0.2),
           0 2px 4px -1px rgba(0, 0, 0, 0.1);
       }
       body {
-        background-image: radial-gradient(
+        background-image:
+          radial-gradient(
             at 0% 0%,
             rgba(59, 130, 246, 0.15) 0px,
             transparent 50%
@@ -101,7 +104,8 @@
         background-attachment: fixed;
       }
       .dark body {
-        background-image: radial-gradient(
+        background-image:
+          radial-gradient(
             at 0% 0%,
             rgba(59, 130, 246, 0.1) 0px,
             transparent 50%
@@ -815,7 +819,7 @@
                 <span class="material-symbols-outlined text-[14px]">close</span>
               </button>
             </span>
-          `
+          `,
             )
             .join("");
         }
@@ -967,7 +971,7 @@
           if (!termsCheckbox.checked) {
             showToast(
               "Please accept the Terms of Service before uploading.",
-              "warning"
+              "warning",
             );
             return;
           }
@@ -979,40 +983,51 @@
 
           try {
             for (const file of selectedFiles) {
+              // 1. Get Signed URL / SAS Token with content type for proper signing
               const sasRes = await fetch(
-                `/api/storage/sas?filename=${encodeURIComponent(file.name)}`
+                `/api/storage/sas?filename=${encodeURIComponent(
+                  file.name,
+                )}&contentType=${encodeURIComponent(
+                  file.type || "application/octet-stream",
+                )}&_t=${Date.now()}`,
               );
-              const { sasUrl } = await sasRes.json();
 
-              if (!sasUrl) throw new Error("Failed to get upload token");
+              if (!sasRes.ok) {
+                const errJson = await sasRes.json();
+                throw new Error(errJson.error || "Failed to get upload token");
+              }
 
-              const sasUrlObj = new URL(sasUrl);
-              const blobUrl = `${sasUrlObj.origin}${
-                sasUrlObj.pathname
-              }/${encodeURIComponent(file.name)}${sasUrlObj.search}`;
+              const { sasUrl, requiredHeaders } = await sasRes.json();
 
-              const datasetTitle = document
-                .getElementById("dataset-title")
-                .value.trim();
-              const datasetDescription = document
-                .getElementById("dataset-description")
-                .value.trim();
-              const tagsString = userTags.join(",");
+              if (!sasUrl) throw new Error("Failed to get upload URL");
 
-              await fetch(blobUrl, {
+              // 2. Upload File to Cloud Storage
+              const headers = {};
+              if (requiredHeaders) {
+                Object.assign(headers, requiredHeaders);
+              }
+
+              const uploadRes = await fetch(sasUrl, {
                 method: "PUT",
-                headers: {
-                  "x-ms-blob-type": "BlockBlob",
-                  "x-ms-meta-userid": user.id,
-                  "x-ms-meta-title": encodeURIComponent(datasetTitle),
-                  "x-ms-meta-description":
-                    encodeURIComponent(datasetDescription),
-                  "x-ms-meta-usertags": encodeURIComponent(tagsString),
-                },
+                headers: headers,
                 body: file,
               });
 
+              if (!uploadRes.ok) {
+                throw new Error(
+                  `Cloud storage upload failed: ${uploadRes.statusText}`,
+                );
+              }
+
+              // 3. Register File in Backend
               try {
+                const datasetTitle = document
+                  .getElementById("dataset-title")
+                  .value.trim();
+                const datasetDescription = document
+                  .getElementById("dataset-description")
+                  .value.trim();
+
                 const processRes = await fetch("/api/process-file", {
                   method: "POST",
                   headers: { "Content-Type": "application/json" },
@@ -1021,6 +1036,9 @@
                     userId: user.id,
                     originalName: file.name,
                     fileSize: file.size,
+                    title: datasetTitle,
+                    description: datasetDescription,
+                    tags: userTags,
                   }),
                 });
                 const processResult = await processRes.json();
@@ -1028,7 +1046,7 @@
               } catch (processErr) {
                 console.warn(
                   "Process API failed, file will be processed later:",
-                  processErr
+                  processErr,
                 );
               }
             }
@@ -1056,14 +1074,14 @@
                       (name) =>
                         (file.name && file.name.includes(name)) ||
                         (file.original_name &&
-                          file.original_name.includes(name))
-                    )
+                          file.original_name.includes(name)),
+                    ),
                   );
 
                   if (found) {
                     showToast(
                       "File processed! Redirecting to dashboard...",
-                      "success"
+                      "success",
                     );
                     setTimeout(() => {
                       window.location.href = "dashboard.html";
@@ -1075,7 +1093,7 @@
                 if (pollAttempts < maxAttempts) {
                   showToast(
                     `Processing... (${pollAttempts}/${maxAttempts})`,
-                    "success"
+                    "success",
                   );
                   setTimeout(pollForProcessedFile, 5000);
                 } else {
