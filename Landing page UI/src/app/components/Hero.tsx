@@ -1,6 +1,6 @@
 import React from "react";
 import { motion } from "framer-motion";
-import { ArrowRight, Check, PlayCircle } from "lucide-react";
+import { ArrowRight, Check, Search } from "lucide-react";
 
 interface HeroProps {
   onOpenAuth?: (mode: "login" | "signup", role?: "user" | "agency") => void;
@@ -79,11 +79,11 @@ export function Hero({ onOpenAuth }: HeroProps) {
                 Start Uploading <ArrowRight className="w-4 h-4" />
               </button>
               <button
-                onClick={() => onOpenAuth?.("login")}
+                onClick={() => onOpenAuth?.("signup", "agency")}
                 className="px-8 py-4 bg-white dark:bg-[#1c1917] text-zinc-900 dark:text-[#e7e5e4] border border-zinc-200 dark:border-[#292524] rounded-xl font-semibold flex items-center gap-2 hover:bg-zinc-50 dark:hover:bg-[#292524] transition-all"
               >
-                <PlayCircle className="w-4 h-4 text-zinc-400 dark:text-[#78716c]" />{" "}
-                Watch Demo
+                <Search className="w-4 h-4 text-zinc-400 dark:text-[#78716c]" />{" "}
+                Browse Datasets
               </button>
             </div>
 
@@ -121,7 +121,7 @@ export function Hero({ onOpenAuth }: HeroProps) {
                       Total Earnings
                     </div>
                     <div className="text-3xl font-bold text-zinc-900 dark:text-[#e7e5e4]">
-                      $12,450.00
+                      ₹12,450.00
                     </div>
                   </div>
                   <div className="w-10 h-10 rounded-full bg-zinc-100 dark:bg-[#292524] flex items-center justify-center">
@@ -154,7 +154,7 @@ export function Hero({ onOpenAuth }: HeroProps) {
                       </div>
                     </div>
                     <span className="text-xs font-bold text-green-600 dark:text-[#4ade80]">
-                      +$450
+                      +₹450
                     </span>
                   </div>
                   <div className="p-3 bg-zinc-50 dark:bg-[#0c0a09]/50 rounded-xl flex items-center justify-between border border-transparent dark:border-[#292524]">
@@ -167,7 +167,7 @@ export function Hero({ onOpenAuth }: HeroProps) {
                       </div>
                     </div>
                     <span className="text-xs font-bold text-green-600 dark:text-[#4ade80]">
-                      +$820
+                      +₹820
                     </span>
                   </div>
                 </div>
