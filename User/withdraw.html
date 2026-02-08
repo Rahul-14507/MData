@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 <html class="dark" lang="en">
   <head>
     <meta charset="utf-8" />
@@ -21,9 +21,14 @@
         theme: {
           extend: {
             colors: {
-              primary: "#3b82f6",
-              "background-dark": "#0f172a",
-              "surface-dark": "#1e293b",
+              primary: "#ea580c",
+              "primary-hover": "#c2410c",
+              "background-light": "#FAF9F6",
+              "background-dark": "#0c0a09",
+              "surface-dark": "#1c1917",
+              "surface-light": "#ffffff",
+              "border-dark": "#292524",
+              "muted-dark": "#78716c",
             },
             fontFamily: {
               display: ["Inter", "sans-serif"],
@@ -45,7 +50,8 @@
         border: 1px solid rgba(255, 255, 255, 0.05);
       }
       body {
-        background-image: radial-gradient(
+        background-image:
+          radial-gradient(
             at 0% 0%,
             rgba(59, 130, 246, 0.1) 0px,
             transparent 50%
@@ -301,14 +307,14 @@
           type === "success"
             ? "bg-emerald-500/90"
             : type === "error"
-            ? "bg-red-500/90"
-            : "bg-blue-500/90";
+              ? "bg-red-500/90"
+              : "bg-blue-500/90";
         const icon =
           type === "success"
             ? "check_circle"
             : type === "error"
-            ? "error"
-            : "info";
+              ? "error"
+              : "info";
 
         toast.className = `${bgColor} backdrop-blur-lg text-white px-5 py-3 rounded-xl shadow-2xl flex items-center gap-3 animate-fade-in min-w-[280px]`;
         toast.innerHTML = `
@@ -330,15 +336,12 @@
           const res = await fetch(`/api/user/balance?userId=${user.id}`);
           const data = await res.json();
 
-          document.getElementById(
-            "available-balance"
-          ).textContent = `₹${data.availableBalance}`;
-          document.getElementById(
-            "total-earned"
-          ).textContent = `₹${data.totalEarnings}`;
-          document.getElementById(
-            "pending-amount"
-          ).textContent = `₹${data.pendingWithdrawals}`;
+          document.getElementById("available-balance").textContent =
+            `₹${data.availableBalance}`;
+          document.getElementById("total-earned").textContent =
+            `₹${data.totalEarnings}`;
+          document.getElementById("pending-amount").textContent =
+            `₹${data.pendingWithdrawals}`;
         } catch (err) {
           console.error("Balance error:", err);
         }

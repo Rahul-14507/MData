@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 <html class="dark" lang="en">
   <head>
     <meta charset="utf-8" />
@@ -21,12 +21,14 @@
         theme: {
           extend: {
             colors: {
-              primary: "#3b82f6",
-              "primary-hover": "#2563eb",
-              "background-light": "#f0f4f8",
-              "background-dark": "#0f172a",
-              "surface-dark": "#1e293b",
+              primary: "#ea580c",
+              "primary-hover": "#c2410c",
+              "background-light": "#FAF9F6",
+              "background-dark": "#0c0a09",
+              "surface-dark": "#1c1917",
               "surface-light": "#ffffff",
+              "border-dark": "#292524",
+              "muted-dark": "#78716c",
             },
             fontFamily: {
               display: ["Inter", "sans-serif"],
@@ -67,13 +69,15 @@
         backdrop-filter: blur(8px);
         -webkit-backdrop-filter: blur(8px);
         border: 1px solid rgba(255, 255, 255, 0.4);
-        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05),
+        box-shadow:
+          0 4px 6px -1px rgba(0, 0, 0, 0.05),
           0 2px 4px -1px rgba(0, 0, 0, 0.03);
       }
       .dark .glass-card {
         background: rgba(30, 41, 59, 0.6);
         border: 1px solid rgba(255, 255, 255, 0.05);
-        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2),
+        box-shadow:
+          0 4px 6px -1px rgba(0, 0, 0, 0.2),
           0 2px 4px -1px rgba(0, 0, 0, 0.1);
       }
       .no-scrollbar::-webkit-scrollbar {
@@ -84,7 +88,8 @@
         scrollbar-width: none;
       }
       body {
-        background-image: radial-gradient(
+        background-image:
+          radial-gradient(
             at 0% 0%,
             rgba(59, 130, 246, 0.15) 0px,
             transparent 50%
@@ -107,7 +112,8 @@
         background-attachment: fixed;
       }
       .dark body {
-        background-image: radial-gradient(
+        background-image:
+          radial-gradient(
             at 0% 0%,
             rgba(59, 130, 246, 0.1) 0px,
             transparent 50%
@@ -422,18 +428,18 @@
           type === "success"
             ? "bg-emerald-500/90"
             : type === "error"
-            ? "bg-red-500/90"
-            : type === "warning"
-            ? "bg-amber-500/90"
-            : "bg-blue-500/90";
+              ? "bg-red-500/90"
+              : type === "warning"
+                ? "bg-amber-500/90"
+                : "bg-blue-500/90";
         const icon =
           type === "success"
             ? "check_circle"
             : type === "error"
-            ? "error"
-            : type === "warning"
-            ? "warning"
-            : "info";
+              ? "error"
+              : type === "warning"
+                ? "warning"
+                : "info";
 
         toast.className = `${bgColor} backdrop-blur-lg text-white px-5 py-3.5 rounded-xl shadow-2xl flex items-center gap-3 min-w-[300px] border border-white/10`;
         toast.style.animation = "slideInRight 0.3s ease-out forwards";
@@ -568,7 +574,7 @@
           filteredCategories = [...allCategories];
         } else {
           filteredCategories = allCategories.filter((cat) =>
-            cat.market_category.toLowerCase().includes(query)
+            cat.market_category.toLowerCase().includes(query),
           );
         }
         currentPage = 1;
@@ -580,7 +586,7 @@
         const grid = document.getElementById("dataset-grid");
         const resultsCount = document.getElementById("results-count");
         const paginationContainer = document.getElementById(
-          "pagination-container"
+          "pagination-container",
         );
 
         // Update results count
@@ -601,7 +607,7 @@
         const startIdx = (page - 1) * itemsPerPage;
         const endIdx = Math.min(
           startIdx + itemsPerPage,
-          filteredCategories.length
+          filteredCategories.length,
         );
         const pageItems = filteredCategories.slice(startIdx, endIdx);
 
@@ -696,8 +702,8 @@
 
         let html = `
           <button onclick="goToPage(${currentPage - 1})" ${
-          currentPage === 1 ? "disabled" : ""
-        } class="size-10 flex items-center justify-center rounded-lg border border-white/10 text-slate-400 hover:text-white hover:bg-white/5 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+            currentPage === 1 ? "disabled" : ""
+          } class="size-10 flex items-center justify-center rounded-lg border border-white/10 text-slate-400 hover:text-white hover:bg-white/5 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
             <span class="material-symbols-outlined">chevron_left</span>
           </button>
         `;
@@ -712,8 +718,8 @@
 
         html += `
           <button onclick="goToPage(${currentPage + 1})" ${
-          currentPage === totalPages ? "disabled" : ""
-        } class="size-10 flex items-center justify-center rounded-lg border border-white/10 text-slate-400 hover:text-white hover:bg-white/5 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+            currentPage === totalPages ? "disabled" : ""
+          } class="size-10 flex items-center justify-center rounded-lg border border-white/10 text-slate-400 hover:text-white hover:bg-white/5 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
             <span class="material-symbols-outlined">chevron_right</span>
           </button>
         `;

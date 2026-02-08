@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 <html class="dark" lang="en">
   <head>
     <meta charset="utf-8" />
@@ -21,12 +21,14 @@
         theme: {
           extend: {
             colors: {
-              primary: "#3b82f6",
-              "primary-hover": "#2563eb",
-              "background-light": "#f0f4f8",
-              "background-dark": "#0f172a",
-              "surface-dark": "#1e293b",
+              primary: "#ea580c",
+              "primary-hover": "#c2410c",
+              "background-light": "#FAF9F6",
+              "background-dark": "#0c0a09",
+              "surface-dark": "#1c1917",
               "surface-light": "#ffffff",
+              "border-dark": "#292524",
+              "muted-dark": "#78716c",
             },
             fontFamily: {
               display: ["Inter", "sans-serif"],
@@ -67,13 +69,15 @@
         backdrop-filter: blur(8px);
         -webkit-backdrop-filter: blur(8px);
         border: 1px solid rgba(255, 255, 255, 0.4);
-        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05),
+        box-shadow:
+          0 4px 6px -1px rgba(0, 0, 0, 0.05),
           0 2px 4px -1px rgba(0, 0, 0, 0.03);
       }
       .dark .glass-card {
         background: rgba(30, 41, 59, 0.6);
         border: 1px solid rgba(255, 255, 255, 0.05);
-        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2),
+        box-shadow:
+          0 4px 6px -1px rgba(0, 0, 0, 0.2),
           0 2px 4px -1px rgba(0, 0, 0, 0.1);
       }
       .glass-input {
@@ -89,11 +93,13 @@
       }
       .hover-card-effect:hover {
         transform: translateY(-4px);
-        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1),
+        box-shadow:
+          0 20px 25px -5px rgba(0, 0, 0, 0.1),
           0 10px 10px -5px rgba(0, 0, 0, 0.04);
       }
       .dark .hover-card-effect:hover {
-        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3),
+        box-shadow:
+          0 20px 25px -5px rgba(0, 0, 0, 0.3),
           0 10px 10px -5px rgba(0, 0, 0, 0.2);
         background: rgba(30, 41, 59, 0.6);
         border-color: rgba(255, 255, 255, 0.15);
@@ -106,7 +112,8 @@
         scrollbar-width: none;
       }
       body {
-        background-image: radial-gradient(
+        background-image:
+          radial-gradient(
             at 0% 0%,
             rgba(59, 130, 246, 0.15) 0px,
             transparent 50%
@@ -129,7 +136,8 @@
         background-attachment: fixed;
       }
       .dark body {
-        background-image: radial-gradient(
+        background-image:
+          radial-gradient(
             at 0% 0%,
             rgba(59, 130, 246, 0.1) 0px,
             transparent 50%
@@ -406,7 +414,7 @@
                     >
                   </button>
                   <button
-                    onclick="window.location.href='../index.html'"
+                    onclick="window.location.href = '../index.html'"
                     class="w-full flex items-center justify-between p-4 rounded-xl hover:bg-red-500/10 transition-colors group"
                   >
                     <div class="flex items-center gap-4">
@@ -669,7 +677,7 @@
         btn.addEventListener("click", (e) => {
           e.stopPropagation();
           toggleSidebar();
-        })
+        }),
       );
       overlay.addEventListener("click", toggleSidebar);
 
@@ -799,7 +807,7 @@
 
             // Update header
             const headerName = document.querySelector(
-              "header .text-sm.font-semibold.text-white"
+              "header .text-sm.font-semibold.text-white",
             );
             if (headerName)
               headerName.textContent = profile.name || "Agency User";
@@ -879,7 +887,7 @@
       async function sendPasswordOtp() {
         const newPass = document.getElementById("new-password").value;
         const confirmPass = document.getElementById(
-          "confirm-new-password"
+          "confirm-new-password",
         ).value;
 
         if (newPass.length < 6) {
