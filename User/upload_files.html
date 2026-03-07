@@ -963,6 +963,14 @@
           uploadBtn.disabled = !termsCheckbox.checked;
         });
 
+        // SHA-256 Hashing Function using Web Crypto API
+        async function calculateSHA256(file) {
+          const buffer = await file.arrayBuffer();
+          const hashBuffer = await crypto.subtle.digest("SHA-256", buffer);
+          const hashArray = Array.from(new Uint8Array(hashBuffer));
+          return hashArray.map((b) => b.toString(16).padStart(2, "0")).join("");
+        }
+
         // Upload Process
         uploadBtn.addEventListener("click", async () => {
           if (selectedFiles.length === 0) {
@@ -980,12 +988,40 @@
 
           const btnText = uploadBtn.querySelector("span:first-child");
           const originalText = btnText.textContent;
-          btnText.textContent = "Uploading...";
+          btnText.textContent = "Processing...";
           uploadBtn.classList.add("uploading");
+
+          const successfulUploads = [];
+          const rejectedFiles = [];
 
           try {
             for (const file of selectedFiles) {
-              // 1. Get Signed URL / SAS Token with content type for proper signing
+              // Step 0: Calculate file hash
+              btnText.textContent = `Hashing ${file.name}...`;
+              const fileHash = await calculateSHA256(file);
+
+              // Step 1: Check for duplicates
+              const dupRes = await fetch("/api/check-duplicate", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ hash: fileHash }),
+              });
+
+              if (!dupRes.ok) {
+                throw new Error("Failed to check for duplicates");
+              }
+
+              const dupResult = await dupRes.json();
+
+              if (dupResult.exists) {
+                // File is a duplicate - reject it
+                rejectedFiles.push(file.name);
+                showToast(`${file.name}: ${dupResult.message}`, "error");
+                continue; // Skip to next file
+              }
+
+              // Step 2: Get Signed URL / SAS Token
+              btnText.textContent = `Uploading ${file.name}...`;
               const sasRes = await fetch(
                 `/api/storage/sas?filename=${encodeURIComponent(
                   file.name,
@@ -1003,7 +1039,7 @@
 
               if (!sasUrl) throw new Error("Failed to get upload URL");
 
-              // 2. Upload File to Cloud Storage
+              // Step 3: Upload File to Cloud Storage
               const headers = {};
               if (requiredHeaders) {
                 Object.assign(headers, requiredHeaders);
@@ -1021,7 +1057,7 @@
                 );
               }
 
-              // 3. Register File in Backend
+              // Step 4: Register File in Backend (with hash)
               try {
                 const datasetTitle = document
                   .getElementById("dataset-title")
@@ -1038,6 +1074,7 @@
                     userId: user.id,
                     originalName: file.name,
                     fileSize: file.size,
+                    fileHash: fileHash,
                     title: datasetTitle,
                     description: datasetDescription,
                     tags: userTags,
@@ -1045,15 +1082,30 @@
                 });
                 const processResult = await processRes.json();
                 console.log("File processed:", processResult);
+                successfulUploads.push(file.name);
               } catch (processErr) {
                 console.warn(
                   "Process API failed, file will be processed later:",
                   processErr,
                 );
+                successfulUploads.push(file.name);
               }
             }
 
-            showToast("Upload & Processing Complete!", "success");
+            // Summary
+            if (successfulUploads.length > 0) {
+              showToast(
+                `${successfulUploads.length} file(s) uploaded successfully!`,
+                "success",
+              );
+            }
+
+            if (rejectedFiles.length > 0 && successfulUploads.length === 0) {
+              showToast(
+                `All ${rejectedFiles.length} file(s) were rejected as duplicates.`,
+                "error",
+              );
+            }
 
             const uploadedFileNames = selectedFiles.map((f) => f.name);
             selectedFiles = [];

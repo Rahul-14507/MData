@@ -129,7 +129,72 @@ function getVisionClient() {
   return visionClient;
 }
 
-// ========== AI ANALYSIS FUNCTIONS ==========
+// Azure Document Intelligence Client (Using native fetch for zero-dependency)
+async function analyzeWithDI(fileBuffer) {
+  const endpoint = process.env.AZURE_DOCUMENT_INTELLIGENCE_ENDPOINT;
+  const key = process.env.AZURE_DOCUMENT_INTELLIGENCE_KEY;
+
+  if (!endpoint || !key) {
+    console.warn("Document Intelligence not configured");
+    return { text: "" };
+  }
+
+  try {
+    // 1. Start Analysis
+    const response = await fetch(
+      `${endpoint}/documentintelligence/documentModels/prebuilt-read:analyze?api-version=2024-11-30`,
+      {
+        method: "POST",
+        headers: {
+          "Ocp-Apim-Subscription-Key": key,
+          "Content-Type": "application/octet-stream",
+        },
+        body: fileBuffer,
+      },
+    );
+
+    if (!response.ok) {
+      const errText = await response.text();
+      throw new Error(
+        `DI Analysis startup failed: ${response.status} ${errText}`,
+      );
+    }
+
+    // 2. Get Operation Location for Polling
+    const operationUrl = response.headers.get("Operation-Location");
+    if (!operationUrl) throw new Error("No Operation-Location header found");
+
+    // 3. Poll for results
+    let result = null;
+    let attempts = 0;
+    const maxAttempts = 30;
+
+    while (attempts < maxAttempts) {
+      const pollResponse = await fetch(operationUrl, {
+        headers: { "Ocp-Apim-Subscription-Key": key },
+      });
+      result = await pollResponse.json();
+
+      if (result.status === "succeeded") break;
+      if (result.status === "failed") throw new Error("DI Analysis failed");
+
+      attempts++;
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+    }
+
+    if (!result || result.status !== "succeeded") {
+      throw new Error("DI Analysis timed out or failed");
+    }
+
+    return {
+      text: result.analyzeResult?.content || "",
+      modelId: "prebuilt-read",
+    };
+  } catch (e) {
+    console.error("Document Intelligence analysis failed:", e.message);
+    return { text: "", error: e.message };
+  }
+}
 
 // Content Safety Check (simplified - logs warning if not configured)
 async function analyzeContentSafety(content, isImage = false) {
@@ -140,7 +205,7 @@ async function analyzeContentSafety(content, isImage = false) {
 }
 
 // GPT-4o Content Quality Analysis
-async function analyzeContentQualityGPT4o(content, filename) {
+async function analyzeContentQualityGPT4o(content, filename, diText = "") {
   try {
     const client = getOpenAIClient();
     if (!client) {
@@ -152,11 +217,16 @@ async function analyzeContentQualityGPT4o(content, filename) {
       };
     }
 
-    const preview = content.substring(0, 8000);
-    const prompt = `Analyze the following file named '${filename}'.
+    // Combine preview content and extracted DI text
+    const preview = content.substring(0, 4000);
+    const textPart = diText
+      ? `\nExtracted Text from Document Intelligence:\n${diText.substring(0, 4000)}`
+      : "";
+
+    const prompt = `Analyze the following file named '${filename}'. ${textPart}
     
 Determine:
-1. Is this valid, high-quality code/text?
+1. Is this valid, high-quality code/text/document?
 2. What does it do? (Short summary)
 3. Assign a 'Trust Score' from 1 to 100 based on utility, cleanliness, and complexity.
 
@@ -167,7 +237,7 @@ Return ONLY a JSON object:
     "reasoning": "<string>"
 }
 
-Content:
+Content Preview:
 ${preview}`;
 
     const response = await client.chat.completions.create({
@@ -271,7 +341,7 @@ async function classifyContent(description) {
   }
 }
 
-// Calculate payout based on quality score
+// Calculate payout based on quality score (what user receives - 80% of price)
 function calculatePayout(qualityScore) {
   if (qualityScore < 50) {
     return Math.max(0.1, qualityScore * 0.1);
@@ -280,6 +350,14 @@ function calculatePayout(qualityScore) {
   } else {
     return 20 + (qualityScore - 80) * 4.0;
   }
+}
+
+// Calculate price based on quality score (what agency pays)
+// Price = Payout / 0.8 (since user gets 80%, platform takes 20%)
+// Range: ~₹5 (low quality) to ~₹100+ (high quality)
+function calculatePrice(qualityScore) {
+  const payout = calculatePayout(qualityScore);
+  return Math.round((payout / 0.8) * 100) / 100; // Round to 2 decimal places
 }
 
 // Middleware
@@ -887,17 +965,74 @@ app.get("/api/market/summaries", async (req, res) => {
       marketStats[cat].sum_score += score;
     });
 
-    const result = Object.keys(marketStats).map((cat) => ({
-      market_category: cat,
-      total_files: marketStats[cat].count,
-      avg_quality: (
-        marketStats[cat].sum_score / marketStats[cat].count
-      ).toFixed(1),
-    }));
+    const result = Object.keys(marketStats).map((cat) => {
+      const avgQuality = marketStats[cat].sum_score / marketStats[cat].count;
+      const avgPrice = calculatePrice(avgQuality);
+      return {
+        market_category: cat,
+        total_files: marketStats[cat].count,
+        avg_quality: avgQuality.toFixed(1),
+        avg_price: avgPrice.toFixed(2),
+      };
+    });
 
     res.json(result);
   } catch (err) {
     console.error("Market Summaries Error:", err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// API: Market Category Preview (for agencies to see sample data before buying)
+app.get("/api/market/preview/:category", async (req, res) => {
+  try {
+    const category = req.params.category;
+    if (!category) {
+      return res.status(400).json({ error: "Missing category parameter" });
+    }
+
+    let items = [];
+
+    if (USE_GOOGLE_CLOUD) {
+      const snapshot = await firestoreDb
+        .collection("Submissions")
+        .where("market_category", "==", category)
+        .where("sold_to", "==", null)
+        .limit(5)
+        .get();
+      items = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+    } else {
+      const container = database.container("Submissions");
+      const { resources } = await container.items
+        .query({
+          query:
+            "SELECT TOP 5 c.id, c.original_name, c.quality_score, c.tags, c.description, c.upload_date FROM c WHERE c.market_category = @category AND (c.sold_to = null OR NOT IS_DEFINED(c.sold_to))",
+          parameters: [{ name: "@category", value: category }],
+        })
+        .fetchAll();
+      items = resources;
+    }
+
+    // Return preview data (metadata only, no download URLs)
+    const preview = items.map((item) => ({
+      id: item.id,
+      name: item.original_name,
+      quality_score: item.quality_score || 50,
+      estimated_price: calculatePrice(item.quality_score || 50).toFixed(2),
+      tags: item.tags || [],
+      description: item.description
+        ? item.description.slice(0, 100) + "..."
+        : "No description",
+      upload_date: item.upload_date,
+    }));
+
+    res.json({
+      category,
+      sample_count: preview.length,
+      samples: preview,
+    });
+  } catch (err) {
+    console.error("Market Preview Error:", err);
     res.status(500).json({ error: err.message });
   }
 });
@@ -993,27 +1128,20 @@ app.post("/api/market/purchase", async (req, res) => {
     // 3. Buy top 5
     const itemsToBuy = unsoldItems.slice(0, 5);
     const purchasedCount = itemsToBuy.length;
-    const totalBatchValue = purchasedCount * 25.0;
-    const totalQualityScore = itemsToBuy.reduce(
-      (sum, item) => sum + (item.quality_score || 0),
-      0,
-    );
 
-    // 4. Update Items
+    // 4. Calculate dynamic pricing and update Items
+    let totalBatchValue = 0;
     for (const item of itemsToBuy) {
+      const itemQuality = item.quality_score || 50;
+      const itemPrice = calculatePrice(itemQuality);
+      const itemPayout = calculatePayout(itemQuality);
+
       item.sold_to = agencyId;
       item.transaction_date = new Date().toISOString();
-      const itemQuality = item.quality_score || 0;
-
-      let itemPayout = 0;
-      if (totalQualityScore > 0) {
-        itemPayout = totalBatchValue * (itemQuality / totalQualityScore);
-      } else {
-        itemPayout = totalBatchValue / purchasedCount;
-      }
-
       item.payout = itemPayout;
-      item.sold_price = itemPayout; // Agency view
+      item.sold_price = itemPrice; // Agency pays this
+
+      totalBatchValue += itemPrice;
 
       await container.items.upsert(item);
     }
@@ -1055,28 +1183,23 @@ app.post("/api/market/checkout", async (req, res) => {
       const unsoldItems = allItems.filter((i) => !i.sold_to);
 
       if (unsoldItems.length > 0) {
-        // Buy top 5
+        // Buy top 5 with dynamic pricing
         const itemsToBuy = unsoldItems.slice(0, 5);
         const count = itemsToBuy.length;
-        const batchValue = count * 25.0;
-        totalCost += batchValue;
         totalPurchased += count;
 
-        const totalQuality = itemsToBuy.reduce(
-          (sum, i) => sum + (i.quality_score || 0),
-          0,
-        );
-
         for (const item of itemsToBuy) {
+          const q = item.quality_score || 50;
+          const itemPrice = calculatePrice(q);
+          const itemPayout = calculatePayout(q);
+
           item.sold_to = agencyId;
           item.transaction_date = new Date().toISOString();
-          const q = item.quality_score || 0;
-          const payout =
-            totalQuality > 0
-              ? batchValue * (q / totalQuality)
-              : batchValue / count;
-          item.sold_price = payout;
-          item.payout = payout;
+          item.sold_price = itemPrice;
+          item.payout = itemPayout;
+
+          totalCost += itemPrice;
+
           await container.items.upsert(item);
         }
       }
@@ -1790,37 +1913,72 @@ app.post("/api/process-file", async (req, res) => {
         metadata.analysis_type = "image";
 
         if (blobContent) {
+          // Pass image to DI for OCR if it's text-heavy or for supplement
+          const diResult = await analyzeWithDI(blobContent);
+          const diText = diResult.text || "";
+
           const visionResult = await analyzeImageVision(blobContent);
           metadata.tags = visionResult.tags;
           metadata.caption = visionResult.caption;
-          metadata.ai_analysis = visionResult.ai_analysis;
 
-          const score = Math.min(visionResult.tags.length * 10, 100);
-          metadata.quality_score = score;
-          metadata.payout = calculatePayout(score);
+          // Enhanced quality analysis using Vision + DI OCR text
+          const qualityResult = await analyzeContentQualityGPT4o(
+            metadata.caption,
+            filename,
+            diText,
+          );
+
+          metadata.quality_score = qualityResult.quality_score;
+          metadata.payout = qualityResult.payout;
+          metadata.ai_analysis = {
+            ...visionResult.ai_analysis,
+            ...qualityResult.ai_analysis,
+            ocr_text_length: diText.length,
+          };
 
           metadata.market_category = await classifyContent(
-            `Image with tags: ${visionResult.tags.join(", ")}`,
+            `Image with tags: ${visionResult.tags.join(", ")}. OCR Text: ${diText.substring(0, 500)}`,
           );
         } else {
           metadata.quality_score = 50;
           metadata.payout = 10;
         }
       } else if (isText || isDocument) {
-        metadata.analysis_type = isDocument ? "document" : "code_or_text";
+        metadata.analysis_type = isDocument ? "document" : "text";
 
-        if (contentString) {
-          const aiResult = await analyzeContentQualityGPT4o(
-            contentString,
+        if (blobContent) {
+          let diText = "";
+          // Use DI for OCR heavy files or generic documents
+          if (
+            isPdf ||
+            isDocx ||
+            isExcel ||
+            (isText && blobContent.length > 5000)
+          ) {
+            const diResult = await analyzeWithDI(blobContent);
+            diText = diResult.text || "";
+          }
+
+          const qualityResult = await analyzeContentQualityGPT4o(
+            contentString || diText,
             filename,
+            diText,
           );
-          metadata.quality_score = aiResult.quality_score;
-          metadata.payout = aiResult.payout;
-          metadata.ai_analysis = aiResult.ai_analysis;
+
+          metadata.quality_score = qualityResult.quality_score;
+          metadata.payout = qualityResult.payout;
+          metadata.ai_analysis = {
+            ...qualityResult.ai_analysis,
+            extraction_method: diText ? "azure-di" : "local-parse",
+          };
+
+          if (!metadata.description && qualityResult.ai_analysis.summary) {
+            metadata.description = qualityResult.ai_analysis.summary;
+          }
 
           metadata.market_category = await classifyContent(
-            `Code/Text file named ${filename}. Summary: ${
-              aiResult.ai_analysis?.summary || "N/A"
+            `File named ${filename}. Summary: ${
+              qualityResult.ai_analysis?.summary || "N/A"
             }`,
           );
         } else {
@@ -2527,10 +2685,55 @@ app.get("/api/storage/download", async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
+
+// API: Check for Duplicate File by Hash
+app.post("/api/check-duplicate", async (req, res) => {
+  try {
+    const { hash } = req.body;
+    if (!hash) {
+      return res.status(400).json({ error: "Missing file hash" });
+    }
+
+    let exists = false;
+
+    if (USE_GOOGLE_CLOUD) {
+      // ========== FIRESTORE ==========
+      const snapshot = await firestoreDb
+        .collection("Submissions")
+        .where("file_hash", "==", hash)
+        .limit(1)
+        .get();
+      exists = !snapshot.empty;
+    } else {
+      // ========== COSMOS DB ==========
+      const container = database.container("Submissions");
+      const { resources } = await container.items
+        .query({
+          query: "SELECT TOP 1 c.id FROM c WHERE c.file_hash = @hash",
+          parameters: [{ name: "@hash", value: hash }],
+        })
+        .fetchAll();
+      exists = resources.length > 0;
+    }
+
+    if (exists) {
+      return res.json({
+        exists: true,
+        message: "This file is a sourced/duplicate copy and has been rejected.",
+      });
+    }
+
+    res.json({ exists: false });
+  } catch (err) {
+    console.error("Check Duplicate Error:", err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // API: Process Uploaded File
 app.post("/api/process-file", async (req, res) => {
   try {
-    const { blobName, userId, originalName, fileSize } = req.body;
+    const { blobName, userId, originalName, fileSize, fileHash } = req.body;
 
     if (!blobName || !userId)
       return res.status(400).json({ error: "Missing blobName or userId" });
@@ -2542,6 +2745,7 @@ app.post("/api/process-file", async (req, res) => {
       original_name: originalName,
       blob_name: blobName,
       size: fileSize,
+      file_hash: fileHash || null,
       upload_date: new Date().toISOString(),
       status: "completed",
       market_category: "General",
