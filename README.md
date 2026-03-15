@@ -12,7 +12,7 @@ A marketplace where data contributors earn rewards for quality datasets, and AI 
 
 - **For Contributors:** Upload datasets → AI analysis → Earn payouts based on quality
 - **For Agencies:** Browse marketplace → Cart system → Purchase verified datasets
-- **AI-Powered:** GPT-4o quality scoring, Vision AI image tagging
+- **AI-Powered:** GPT-4o quality scoring, Vision AI image tagging, Document Intelligence OCR
 - **Secure:** Email OTP auth, encrypted storage, SSL
 
 ---
@@ -25,7 +25,7 @@ A marketplace where data contributors earn rewards for quality datasets, and AI 
 | Backend  | Node.js 20, Express.js             |
 | Database | Azure Cosmos DB (NoSQL)            |
 | Storage  | Azure Blob Storage                 |
-| AI       | Azure OpenAI (GPT-4o), Vision AI   |
+| AI       | Azure OpenAI (GPT-4o), Vision AI, Document Intelligence |
 | Hosting  | Azure App Service (B1 Linux)       |
 | CI/CD    | GitHub Actions                     |
 
@@ -97,6 +97,8 @@ GitHub Actions auto-deploys to Azure App Service.
 | `VISION_KEY`                      | Vision AI key      |
 | `SMTP_USER`                       | Email (for OTP)    |
 | `SMTP_PASS`                       | Email app password |
+| `AZURE_DOCUMENT_INTELLIGENCE_ENDPOINT` | Document Intelligence URL |
+| `AZURE_DOCUMENT_INTELLIGENCE_KEY`      | Document Intelligence key |
 
 ---
 
@@ -123,9 +125,9 @@ User Browser → Azure App Service (Node.js)
           ↓               ↓
      Metadata         Files
           ↓
-    ┌─────┴─────┐
-    ↓           ↓
-GPT-4o      Vision AI
+    ┌─────┼─────┐
+    ↓     ↓     ↓
+GPT-4o  Vision  DocIntel
 ```
 
 ---
