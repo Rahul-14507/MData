@@ -4,7 +4,7 @@
 
 A marketplace where data contributors earn rewards for quality datasets, and AI agencies access verified training data.
 
-**Live:** https://mdata.co.in
+[📺 Watch Demo Video](https://drive.google.com/file/d/1gVfxtLu_CMSYubloab4jR2iY7i7gQ8ed/view?usp=drive_link)
 
 ---
 
